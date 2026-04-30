@@ -1,0 +1,9 @@
+{
+  "name": "Minimal Template",
+  "dependencies": {
+    "xypriss": "latest"
+  },
+  "scripts": {
+    "dev": "xfpm exec fileonix --script src/main.ts"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Security Feature",
+  "dependencies": {
+    "xypriss-security": "latest"
+  }
+}

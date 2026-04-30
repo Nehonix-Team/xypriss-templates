@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+*.log
+.DS_Store
+.private/
+.vault.xems
+storage.xems
+admin.storage.xems
+uploads/

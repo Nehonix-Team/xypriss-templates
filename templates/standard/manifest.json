@@ -1,0 +1,14 @@
+{
+  "name": "Standard Template",
+  "dependencies": {
+    "xypriss": "latest",
+    "fileonix": "latest",
+    "nehoid": "latest",
+    "strulink": "latest"
+  },
+  "scripts": {
+    "dev": "xfpm exec fileonix --script src/main.ts",
+    "build": "xfpm exec fileonix build src/main.ts",
+    "start": "bun src/main.ts"
+  }
+}
