@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "xfpm run build",
-    "dev": "xfpm exec fileonix --script src/main.ts",
-    "start": "xfpm run src/main.ts"
+    "dev": "xfpm exec fileonix --script src/server.ts",
+    "start": "xfpm run src/server.ts"
   },
   "dependencies": {
     "fileonix": "^1.0.5",

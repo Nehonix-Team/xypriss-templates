@@ -7,15 +7,6 @@
     }
   },
   "xypriss.config.jsonc": {
-    "&merge": {
-      "$vars": {
-        "servers": {
-          "xms": {
-            "id": "&(env).XMS_DOMAIN",
-            "port": "&(env).XMS_PORT"
-          }
-        }
-      }
-    }
+    "&merge": {}
   }
 }

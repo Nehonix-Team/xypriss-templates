@@ -20,7 +20,7 @@
       "version": "&(this).$vars.__version__",
       "author": "&(this).$vars.__author__",
     },
-    "servers": {
+    "xms_nodes": {
       "auth": {
         "id": "&(env).AUTH_DOMAIN",
         "port": "&(this).$vars.authServerPort",

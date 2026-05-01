@@ -2,23 +2,22 @@ import { Router } from "xypriss";
 import { manifest } from "../configs/manifest";
 
 /**
- * Main API Router
+ * Default API Router
  * 
- * Manages core application business logic within the isolated `/api` scope.
+ * Manages core application business logic.
  */
 const router = Router();
 
 /**
  * API Root Endpoint
  * 
- * Responds with server identity and application manifest metadata for the 
- * main service instance.
+ * Responds with application manifest metadata.
  */
 router.get("/", (req, res) => {
   return res.success("Hello World from XyPriss!", {
-    serverType: "main",
+    mode: "default",
     ...manifest,
   });
 });
 
-export { router as mainRouter };
+export { router as apiRouter };

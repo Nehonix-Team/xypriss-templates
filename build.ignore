@@ -1,0 +1,17 @@
+.git
+node_modules
+.env
+build.sh
+build.ignore
+*.log
+dist
+.build_temp
+.gemini
+.xfpm
+package-lock.json
+*.zip
+SCRATCH
+tests
+docs
+RULES.md
+TARGET_README.md
