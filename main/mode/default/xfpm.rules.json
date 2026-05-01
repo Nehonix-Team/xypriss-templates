@@ -1,14 +1,8 @@
 {
-  "package.json": {
-    "&merge": {
-      "scripts": {
-        "dev": "xfpm exec fileonix --script main/mode/default/src/main.ts",
-        "start": "xfpm run main/mode/default/src/main.ts"
-      }
-    }
-  },
   "xypriss.config.jsonc": {
     "&rm": {
+      "mainServerPort": "",
+      "authServerPort": "",
       "$vars": {
         "xms_nodes": ""
       }

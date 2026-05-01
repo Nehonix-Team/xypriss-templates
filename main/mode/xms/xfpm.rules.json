@@ -1,9 +1,12 @@
 {
   "package.json": {
     "&merge": {
-      "scripts": {
-        "xms:start": "xfpm run main/mode/xms/src/main.ts"
-      }
+      "scripts": {}
+    }
+  },
+  "README.md": {
+    "&patch": {
+      "{{ORCHESTRATION_DESC}}": " and XMS (Multi-Server Orchestration)"
     }
   },
   "xypriss.config.jsonc": {

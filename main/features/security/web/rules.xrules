@@ -1,0 +1,20 @@
+TARGET: src/configs/xypriss.config.ts
+
+@INJECT: // -->{{SECURITY_CONFIG}}
+  security: {
+    browserOnly: { 
+      enable: true, 
+      requireSecFetch: true 
+    },
+    helmet: {
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "https://dll.nehonix.com"],
+          connectSrc: ["'self'", "https://dll.nehonix.com"]
+        }
+      }
+    },
+    cors: { origin: "*" }
+  },
+@END

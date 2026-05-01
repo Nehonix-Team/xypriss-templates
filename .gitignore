@@ -3,7 +3,9 @@ dist/
 *.log
 .DS_Store
 .private/
+*.private.md
 .vault.xems
 storage.xems
 admin.storage.xems
 uploads/
+tmp/

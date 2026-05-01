@@ -5,9 +5,10 @@
   "author": "{{AUTHOR}}",
   "type": "module",
   "scripts": {
-    "build": "xfpm run build",
+    "build": "xfpm exec tsc",
     "dev": "xfpm exec fileonix --script src/server.ts",
-    "start": "xfpm run src/server.ts"
+    "start": "xfpm run src/server.ts",
+    "audit": "xfpm audit -w"
   },
   "dependencies": {
     "fileonix": "^1.0.5",

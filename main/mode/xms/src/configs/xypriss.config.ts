@@ -4,23 +4,19 @@ import { mainServer } from "../servers/main.server";
 /**
  * XyPriss Multi-Server (XMS) Orchestration Configuration
  * 
- * XMS is a high-performance orchestration mode enabling the execution of 
- * multiple isolated server instances within a single Node.js process. 
- * This architecture facilitates resource sharing while maintaining 
- * strict isolation for security policies, caching, and routing scopes.
- * 
- * @see https://github.com/Nehonix-Team/XyPriss/blob/master/docs/config/multi-server.md
+ * In XMS mode, security and guardrail settings are applied globally 
+ * and inherited by all server instances unless overridden in specific 
+ * server definitions.
  */
 
-/**
- * Global Server Options
- * 
- * Defines the operational parameters for the XyPriss engine, including 
- * multi-server activation and registration of managed server instances.
- */
 export const serverConfigs: ServerOptions = {
+  // XMS Orchestration
   multiServer: {
     enabled: true,
     servers: [authServer, mainServer],
   },
+
+  // -->{{SECURITY_CONFIG}}
+
+  // -->{{GUARDRAILS_CONFIG}}
 };
