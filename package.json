@@ -1,0 +1,20 @@
+{
+  "name": "{{NAME}}",
+  "version": "{{VERSION}}",
+  "description": "{{DESCRIPTION}}",
+  "author": "{{AUTHOR}}",
+  "type": "module",
+  "scripts": {
+    "build": "xfpm run build",
+    "dev": "xfpm exec fileonix --script src/main.ts",
+    "start": "xfpm run src/main.ts"
+  },
+  "dependencies": {
+    "fileonix": "^1.0.5",
+    "xypriss": "^9.10.10"
+  },
+  "devDependencies": {
+    "tslib": "^2.8.1",
+    "typescript": "^5.9.3"
+  }
+}

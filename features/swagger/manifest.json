@@ -1,6 +1,0 @@
-{
-  "name": "Swagger Feature",
-  "dependencies": {
-    "xypriss-swagger": "latest"
-  }
-}

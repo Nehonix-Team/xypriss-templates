@@ -1,46 +1,10 @@
-# Dependencies
-node_modules
-.bun
-
-# Environment variables
+node_modules/
+dist/
 .env
-.env.local
-.env.test
-.env.example
-
-# Build outputs
-dist
-build
-*.tsbuildinfo
-
-# IDE
-.vscode
-.idea
-
-# Logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# OS
 .DS_Store
-
-# Testing
-coverage/
-.nyc_output
-
-# Misc
-*.swp
-*.swo
-*~
-
-# bun
-.bun/build
-
-# xypriss
-.xypriss
-
-# Next.js (if used)
-.next
+.private/
+.vault.xems
+storage.xems
+admin.storage.xems
+uploads/
