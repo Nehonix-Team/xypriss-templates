@@ -18,4 +18,5 @@ README.md
 
 tmp/
 .private/
+private/
 *.private.md
