@@ -1,0 +1,9 @@
+@TSINJECT: {{GUARDRAILS_CONFIG}}
+  requestManagement: {
+    networkQuality: {
+      enabled: true,
+      rejectOnPoorConnection: true,
+      maxLatency: 500,
+    },
+  },
+@END

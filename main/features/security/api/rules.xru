@@ -1,0 +1,8 @@
+@TSINJECT: {{SECURITY_CONFIG}}
+  security: {
+    terminalOnly: {
+      enable: true,
+      allowedTools: ["postman", "curl", "insomnia", "axios"],
+    },
+  },
+@END
