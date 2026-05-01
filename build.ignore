@@ -14,5 +14,8 @@ SCRATCH
 tests
 docs
 RULES.md
-TARGET_README.md
-tmp/*.private.md
+README.md
+
+tmp/
+.private/
+*.private.md

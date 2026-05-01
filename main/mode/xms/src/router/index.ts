@@ -1,6 +1,8 @@
 import { Router } from "xypriss";
 import { authRouter } from "../routes/auth.route";
 import { mainRouter } from "../routes/main.route";
+// xfpm:{{ROUTERS_IMPORT}}
+
 
 /**
  * XyPriss Orchestration Router
@@ -25,5 +27,7 @@ router.use("/auth", authRouter);
 
 /** Main API scope mapping */
 router.use("/api", mainRouter);
+// xfpm:{{ROUTERS_USE}}
+
 
 export default router;

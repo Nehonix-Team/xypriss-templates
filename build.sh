@@ -47,8 +47,10 @@ if [ -f "$IGNORE_FILE" ]; then
         [[ -z "$line" || "$line" == \#* ]] && continue
         
         echo "Excluding: $line"
-        rm -rf "$TEMP_DIR/$line"
+        # Use subshell to expand globs relative to TEMP_DIR
+        (cd "$TEMP_DIR" && rm -rf $line)
     done < "$IGNORE_FILE"
+
 fi
 
 # Rename TARGET_README.md to README.md in the package

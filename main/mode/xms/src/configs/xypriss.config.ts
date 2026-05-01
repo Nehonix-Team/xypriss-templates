@@ -14,9 +14,14 @@ export const serverConfigs: ServerOptions = {
   multiServer: {
     enabled: true,
     servers: [authServer, mainServer],
+    // xfpm:{{SERVER_EXTRA_CONFIG}}
   },
+
 
   // xfpm:{{SECURITY_CONFIG}}
 
   // xfpm:{{GUARDRAILS_CONFIG}}
+
+  // xfpm:{{STORAGE_CONFIG}}
 };
+

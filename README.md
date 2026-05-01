@@ -6,6 +6,23 @@ This repository defines the transformation and orchestration logic for XyPriss t
 
 The `.xru` (XyPriss Rules) format provides a declarative way to patch configuration files and inject source code into TypeScript files during the template instantiation process.
 
+## Supported Initialization Arguments
+
+When initializing a project using this template via `xfpm init`, the following arguments are available to customize the orchestration:
+
+- **`--mode`**: 
+    - `default`: Creates a standard monolithic server structure.
+    - `xms`: Creates a XyPriss Multi-Server orchestration structure.
+- **`--security`**:
+    - `api`: Injects configuration optimized for CLI/API tools (`terminalOnly`).
+    - `web`: Injects configuration optimized for browser applications with strict CSP.
+    - `standard`: Injects balanced security headers and CORS settings.
+- **`--guardrails`**:
+    - `true`: Enables native XHSC network quality protections and latency limits.
+- **`--storage`**:
+    - `xems`: Enables the XyPriss Encrypted Memory Store and injects demo session routes.
+
+
 ## Basic Syntax
 
 Rules are organized into scoped blocks targeting specific files within the project structure.
@@ -14,7 +31,23 @@ Rules are organized into scoped blocks targeting specific files within the proje
 #BEGIN:path/to/target.file
 <actions>
 #END:path/to/target.file
+
+#CREATE:path/to/new.file
+<content of the new file>
+#END:path/to/new.file
 ```
+
+**Example:**
+```xru
+#CREATE:src/configs/app.config.ts
+export const config = {
+    version: "1.0.0",
+    debug: true
+};
+#END:src/configs/app.config.ts
+```
+
+
 
 ---
 

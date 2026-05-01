@@ -15,9 +15,14 @@ export const serverConfigs: ServerOptions = {
     autoKillConflict: true,
     port: __sys__.vars.__PORT__,
     serviceName: manifest.name,
+    // xfpm:{{SERVER_EXTRA_CONFIG}}
   },
+
 
   // xfpm:{{SECURITY_CONFIG}}
 
   // xfpm:{{GUARDRAILS_CONFIG}}
+
+  // xfpm:{{STORAGE_CONFIG}}
 };
+
