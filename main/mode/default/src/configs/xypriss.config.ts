@@ -5,7 +5,8 @@
  */
 
 export const serverConfigs: ServerOptions = {
-  // --> {{SECURITY_CONFIG}}
 
-  // --> {{GUARDRAILS_CONFIG}}
+  // xfpm:{{SECURITY_CONFIG}}
+
+  // xfpm:{{GUARDRAILS_CONFIG}}
 };

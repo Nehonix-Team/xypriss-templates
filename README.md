@@ -1,80 +1,179 @@
-# XFPM Template Rule Specification
+# XyPriss Orchestration Rules (.xru)
 
-This document defines the syntax and behavior for the XyPriss Template Engine (XFPM). It allows developers to define dynamic modifications to project files during initialization without creating complex conditional logic in the source code.
+This repository defines the transformation and orchestration logic for XyPriss templates. To maintain architectural consistency and ease of maintenance, all modification rules are consolidated into `.xru` files.
 
-## 1. File Formats
+## Overview
 
-The engine supports two primary rule formats:
-- **`xfpm.rules.json`**: Optimized for structured JSON/JSONC patching.
-- **`rules.xfpm`**: Optimized for code injection and text replacement using the XFPM Declarative Language.
+The `.xru` (XyPriss Rules) format provides a declarative way to patch configuration files and inject source code into TypeScript files during the template instantiation process.
 
----
+## Basic Syntax
 
-## 2. JSON Patching (`xfpm.rules.json`)
+Rules are organized into scoped blocks targeting specific files within the project structure.
 
-Used for modifying structured files like `package.json` or `xypriss.config.jsonc`.
-
-### Actions
-
-- **`&merge`**: Deep-merges an object into the target file. Useful for adding dependencies or scripts.
-- **`&rm`**: Removes properties from a JSON object. Supports deep paths.
-- **`&rp-k` / `&rp-v`**: Replaces keys or values.
-- **`&array`**: Performs array operations (`&push`, `&filter`, `&unshift`).
-
----
-
-## 3. Code Injection (`.xfpm`)
-
-The `.xfpm` format is designed for modifying source code files (`.ts`, `.js`, `.md`). It uses clear action blocks to manage code injection based on markers.
-
-### Syntax
-
-```xfpm
-# Define the target file
-TARGET: path/to/file.ts
-
-# Action: REPLACE
-# The marker is treated as a Regular Expression by default to ensure 
-# robustness against whitespace variations.
-[REPLACE] // -->\s*{{HOOK_NAME}}
-  const x = 10;
-  console.log(x);
-[END]
-
-# Action: REMOVE
-# Deletes lines or blocks
-[REMOVE] // -->{{OBSOLETE_MARKER}}
-[END]
-
-# Action: MERGE (for JSON files within an .xfpm file)
-[MERGE] xypriss.config.jsonc
-{
-  "$vars": { "debug": true }
-}
-[END]
+```xru
+#BEGIN:path/to/target.file
+<actions>
+#END:path/to/target.file
 ```
 
-### Why use `.xfpm`?
-- **Clean Source Code**: Final projects contain pure code without template-specific conditions.
-- **Multiline Support**: No need to escape newlines or quotes like in JSON strings.
-- **Readability**: High indentation preservation and native code look.
-
 ---
 
-## 4. Simple Text Patching (`&patch`)
+## Supported Actions
 
-Available within `xfpm.rules.json` for simple string replacements in non-JSON files. 
+### 1. JSON Patching
+These actions allow for precise, non-destructive modification of JSON or JSONC files (e.g., `package.json`, `tsconfig.json`, `xypriss.config.jsonc`).
 
-> [!NOTE]
-> For complex code injection, use the `.xfpm` format instead of `&patch`.
+#### `&rm` (Remove)
+Removes specified properties or nested paths.
+- **Array Syntax**: For top-level keys.
+- **Object Syntax**: For nested paths.
 
-```json
-"README.md": {
-    "&patch": {
-        "{{PLACEHOLDER}}": "Replacement Value"
+**Example Rule:**
+```xru
+&rm: ["oldKey"]
+
+&rm: {
+    scripts: {
+        "legacy:test": ""
     }
 }
 ```
 
+**Before (`target.json`):**
+```json
+{
+  "oldKey": "value",
+  "name": "app",
+  "scripts": {
+    "start": "node index.js",
+    "legacy:test": "echo test"
+  }
+}
+```
+
+**After:**
+```json
+{
+  "name": "app",
+  "scripts": {
+    "start": "node index.js"
+  }
+}
+```
+
+#### `&rp-k` (Replace Key)
+Renames a property key while preserving its existing value.
+*Alias: `&rp-0`*
+
+**Example Rule:**
+```xru
+&rp-k: {
+    oldName: "newName"
+}
+```
+
+**Before (`target.json`):**
+```json
+{
+  "oldName": "value123"
+}
+```
+
+**After:**
+```json
+{
+  "newName": "value123"
+}
+```
+
+#### `&rp-v` (Replace Value)
+Updates the value of an existing property.
+*Alias: `&rp-1`*
+
+**Example Rule:**
+```xru
+&rp-v: {
+    version: "1.0.0-managed"
+}
+```
+
+**Before (`target.json`):**
+```json
+{
+  "version": "0.0.1"
+}
+```
+
+**After:**
+```json
+{
+  "version": "1.0.0-managed"
+}
+```
+
+#### `&merge` / `&add`
+Performs a deep-merge of the provided object into the target file. This is the preferred method for adding new configuration blocks or dependencies.
+
+**Example Rule:**
+```xru
+&merge: {
+    scripts: {
+        "xms:dev": "xfpm run xms"
+    }
+}
+```
+
+**Before (`target.json`):**
+```json
+{
+  "scripts": {
+    "start": "node index.js"
+  }
+}
+```
+
+**After:**
+```json
+{
+  "scripts": {
+    "start": "node index.js",
+    "xms:dev": "xfpm run xms"
+  }
+}
+```
+
 ---
-*Documentation version 1.1.0 - English First Policy*
+
+### 2. Special Actions
+
+#### TypeScript Injection (`@TSINJECT`)
+The `@TSINJECT` action facilitates dynamic code block insertion into TypeScript files by targeting specific comment markers.
+
+**Injection Logic:**
+1. Scans all `*.ts` files in the workspace.
+2. Locates lines containing the `// xfpm: {{VARIABLE_NAME}}` directive, regardless of its position on the line (start, middle, or end) or surrounding whitespace.
+3. Replaces the entire marker line with the content specified between the injection tags.
+
+**Example Rule:**
+```xru
+@TSINJECT: {{AUTH_LOGIC}}
+const auth = new AuthManager();
+console.log("Security layer initialized.");
+@END
+```
+
+**Corresponding Code Marker:**
+```typescript
+// xfpm: {{AUTH_LOGIC}}
+```
+
+---
+
+## Best Practices
+
+- **Modularity**: Keep `rules.xru` files localized within their respective feature or mode directories.
+- **Safety**: Prefer `&merge` over full object replacement to avoid accidental loss of configuration.
+- **Naming**: Use clear, uppercase markers for `@TSINJECT` to distinguish them from standard code comments.
+
+---
+*Managed by Nehonix-Team*

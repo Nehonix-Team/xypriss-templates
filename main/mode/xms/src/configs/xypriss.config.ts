@@ -3,9 +3,9 @@ import { mainServer } from "../servers/main.server";
 
 /**
  * XyPriss Multi-Server (XMS) Orchestration Configuration
- * 
- * In XMS mode, security and guardrail settings are applied globally 
- * and inherited by all server instances unless overridden in specific 
+ *
+ * In XMS mode, security and guardrail settings are applied globally
+ * and inherited by all server instances unless overridden in specific
  * server definitions.
  */
 
@@ -16,7 +16,7 @@ export const serverConfigs: ServerOptions = {
     servers: [authServer, mainServer],
   },
 
-  // --> {{SECURITY_CONFIG}}
+  // xfpm:{{SECURITY_CONFIG}}
 
-  // --> {{GUARDRAILS_CONFIG}}
+  // xfpm:{{GUARDRAILS_CONFIG}}
 };
