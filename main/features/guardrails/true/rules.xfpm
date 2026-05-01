@@ -1,6 +1,6 @@
 TARGET: src/configs/xypriss.config.ts
 
-@INJECT: // -->{{GUARDRAILS_CONFIG}}
+[REPLACE] // -->\s*{{GUARDRAILS_CONFIG}}
   requestManagement: {
     networkQuality: {
       enabled: true,
@@ -8,4 +8,4 @@ TARGET: src/configs/xypriss.config.ts
       maxLatency: 500
     }
   },
-@END
+[END]

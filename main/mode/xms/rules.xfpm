@@ -1,5 +1,5 @@
 TARGET: README.md
 
-@INJECT: {{ORCHESTRATION_DESC}}
+[REPLACE] {{ORCHESTRATION_DESC}}
  and XMS (Multi-Server Orchestration)
-@END
+[END]

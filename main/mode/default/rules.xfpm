@@ -1,0 +1,15 @@
+TARGET: README.md
+
+[REPLACE] {{ORCHESTRATION_DESC}}
+[END]
+
+TARGET: xypriss.config.jsonc
+
+[REMOVE] "authServerPort":
+[END]
+
+[REMOVE] "mainServerPort":
+[END]
+
+[REMOVE] "xms_nodes":
+[END]

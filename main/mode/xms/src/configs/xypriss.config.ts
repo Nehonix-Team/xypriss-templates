@@ -16,7 +16,7 @@ export const serverConfigs: ServerOptions = {
     servers: [authServer, mainServer],
   },
 
-  // -->{{SECURITY_CONFIG}}
+  // --> {{SECURITY_CONFIG}}
 
-  // -->{{GUARDRAILS_CONFIG}}
+  // --> {{GUARDRAILS_CONFIG}}
 };

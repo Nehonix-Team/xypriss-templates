@@ -1,60 +1,80 @@
-# XyPriss Template Configuration (XFPM)
+# XFPM Template Rule Specification
 
-L'orchestration des templates XyPriss repose sur deux mécanismes complémentaires : le patching JSON pour les fichiers de configuration structurés et l'injection de code via des fichiers de règles dédiés pour les fichiers source.
+This document defines the syntax and behavior for the XyPriss Template Engine (XFPM). It allows developers to define dynamic modifications to project files during initialization without creating complex conditional logic in the source code.
 
-## 1. Patching JSON (`xfpm.rules.json`)
+## 1. File Formats
 
-Le fichier `xfpm.rules.json` est utilisé pour modifier dynamiquement les fichiers JSON/JSONC (comme `package.json` ou `xypriss.config.jsonc`).
-
-### Actions Supportées
-
-- **`&merge`** : Fusion récursive d'objets (idéal pour ajouter des scripts ou des dépendances).
-- **`&rm`** : Suppression de clés ou de chemins d'objets.
-- **`&rp-k` / `&rp-v`** : Remplacement de clés ou de valeurs.
-- **`&array`** : Manipulation d'arrays (`&push`, `&filter`, etc.).
+The engine supports two primary rule formats:
+- **`xfpm.rules.json`**: Optimized for structured JSON/JSONC patching.
+- **`rules.xfpm`**: Optimized for code injection and text replacement using the XFPM Declarative Language.
 
 ---
 
-## 2. Injection de Code (`.xrules`)
+## 2. JSON Patching (`xfpm.rules.json`)
 
-Pour les fichiers source (`.ts`, `.js`) ou les fichiers texte complexes, nous utilisons des fichiers de règles avec l'extension **`.xrules`**. Cette approche évite d'inclure de la logique conditionnelle complexe dans le code source du template et permet d'injecter du code "propre" et multiligne.
+Used for modifying structured files like `package.json` or `xypriss.config.jsonc`.
 
-### Syntaxe `.xrules`
+### Actions
 
-Un fichier `.xrules` définit un fichier cible et un ou plusieurs blocs d'injection basés sur des marqueurs (commentaires) dans le code source.
+- **`&merge`**: Deep-merges an object into the target file. Useful for adding dependencies or scripts.
+- **`&rm`**: Removes properties from a JSON object. Supports deep paths.
+- **`&rp-k` / `&rp-v`**: Replaces keys or values.
+- **`&array`**: Performs array operations (`&push`, `&filter`, `&unshift`).
 
-```text
-TARGET: chemin/vers/fichier.ts
+---
 
-@INJECT: // -->{{HOOK_NAME}}
-  // Le code à injecter ici
-  const example = true;
-@END
+## 3. Code Injection (`.xfpm`)
+
+The `.xfpm` format is designed for modifying source code files (`.ts`, `.js`, `.md`). It uses clear action blocks to manage code injection based on markers.
+
+### Syntax
+
+```xfpm
+# Define the target file
+TARGET: path/to/file.ts
+
+# Action: REPLACE
+# The marker is treated as a Regular Expression by default to ensure 
+# robustness against whitespace variations.
+[REPLACE] // -->\s*{{HOOK_NAME}}
+  const x = 10;
+  console.log(x);
+[END]
+
+# Action: REMOVE
+# Deletes lines or blocks
+[REMOVE] // -->{{OBSOLETE_MARKER}}
+[END]
+
+# Action: MERGE (for JSON files within an .xfpm file)
+[MERGE] xypriss.config.jsonc
+{
+  "$vars": { "debug": true }
+}
+[END]
 ```
 
-### Fonctionnement du moteur XFPM
-
-1. Le moteur identifie le fichier `TARGET`.
-2. Il recherche la ligne correspondant exactement à la valeur après `@INJECT:`.
-3. Il remplace cette ligne par le bloc de code contenu entre `@INJECT` et `@END`.
-
-### Pourquoi `.xrules` ?
-
-- **Code Source Propre** : Pas de ternaires ou de `if (mode === 'xms')` dans le projet final.
-- **Lisibilité** : Contrairement au JSON, le code injecté conserve son indentation et sa lisibilité naturelle.
-- **Modularité** : Chaque fonctionnalité (ex: `--security api`) peut avoir son propre fichier de règles d'injection.
+### Why use `.xfpm`?
+- **Clean Source Code**: Final projects contain pure code without template-specific conditions.
+- **Multiline Support**: No need to escape newlines or quotes like in JSON strings.
+- **Readability**: High indentation preservation and native code look.
 
 ---
 
-## 3. Patching Texte Simple (`&patch` - Déprécié pour le code)
+## 4. Simple Text Patching (`&patch`)
 
-L'action `&patch` dans `xfpm.rules.json` reste disponible pour des remplacements de chaînes simples dans les fichiers non-JSON (ex: `README.md`), mais son utilisation est déconseillée pour l'injection de code multiligne au profit des fichiers `.xrules`.
+Available within `xfpm.rules.json` for simple string replacements in non-JSON files. 
 
-### Exemple `&patch`
+> [!NOTE]
+> For complex code injection, use the `.xfpm` format instead of `&patch`.
+
 ```json
 "README.md": {
     "&patch": {
-        "{{ORCHESTRATION_DESC}}": " and XMS (Multi-Server Orchestration)"
+        "{{PLACEHOLDER}}": "Replacement Value"
     }
 }
 ```
+
+---
+*Documentation version 1.1.0 - English First Policy*

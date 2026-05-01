@@ -1,65 +1,48 @@
-# {{NAME}}
+# XyPriss Project Template
 
-{{DESCRIPTION}}
-
-> Powered by XyPriss — The Enterprise-Grade Framework for Secure Backends.
+Welcome to your new **XyPriss** project. This project has been initialized using the high-performance XHSC engine and is designed with a **Zero-Trust** security model in mind.
 
 ## Overview
 
-This project is a high-performance service built on the XyPriss framework. It leverages XHSC (Hyper-System Core) for native networking{{ORCHESTRATION_DESC}} to deliver robust isolation, security, and scalability.
-
-## Getting Started
-
-### Prerequisites
-
-- [XFPM](https://github.com/Nehonix-Team/xfpm): The mandatory package manager for XyPriss projects.
-- Node.js: Latest LTS version.
-
-### Installation
-
-```bash
-xfpm install
-```
-
-### Development
-
-Run the development environment with real-time hot-reloading and native telemetry:
-
-```bash
-xfpm run dev
-```
-
-### Production
-
-Build and start the production instance with full optimization:
-
-```bash
-xfpm run build
-xfpm run start
-```
+This template provides a modular foundation for building secure, scalable, and high-performance server-side applications. It leverages native networking capabilities{{ORCHESTRATION_DESC}} to deliver robust isolation and developer efficiency.
 
 ## Project Architecture
 
-L'architecture du projet est organisée de manière modulaire pour garantir une isolation stricte des responsabilités :
+The project is organized into modular layers to ensure strict separation of concerns:
 
-- **Core Entry Point** : Le point d'entrée principal (généralement `src/server.ts`) orchestre le démarrage des sous-systèmes et des instances de serveurs.
-- **Configuration Store** : Gestion déterministe des variables d'environnement via le **Environment Security Shield**, assurant qu'aucun secret ne fuite globalement.
-- **Traffic Management** : Utilisation du routeur natif Radix-Trie pour une distribution efficace des requêtes.
-- **Business Logic** : Couche de services isolée permettant une maintenance simplifiée et des tests modulaires.
-- **Server Definitions** : Configuration des instances isolées (XMS) permettant de faire cohabiter plusieurs services (ex: API, Auth, Admin) sur des ports distincts.
+- **Core Entry Point**: The main server instance (typically `src/server.ts`) orchestrates subsystems and boot cycles.
+- **Configuration Store**: Managed via the **Environment Security Shield**, ensuring no secrets leak globally.
+- **Traffic Management**: Uses the native Radix-Trie router for efficient request distribution.
+- **Business Logic**: Isolated service layers for simplified maintenance and testing.
+- **Server Definitions**: (XMS Mode) Multiple isolated server instances (e.g., API, Auth, Admin) running on distinct ports.
 
-## Core Capabilities
+## CLI Options
 
-- **XHSC Engine** : Couche réseau native offrant un traitement des requêtes avec une latence minimale.
-- **Environment Security Shield** : Isolation stricte au niveau du root du projet et chargement déterministe des configurations.
-- **Multi-Server Orchestration (XMS)** : Support pour l'exécution de plusieurs serveurs isolés au sein d'un processus unique.
-- **Network Quality Guardrails** : Protection intégrée contre les menaces réseau courantes et les goulots d'étranglement de performance.
+When initializing via `xfpm init`, you can customize your project with the following arguments:
 
-## Documentation and Support
+- **`--mode`**: `default` (monolith) or `xms` (multi-server orchestration).
+- **`--security`**: `api` (restricted access for CLI/API tools) or `web` (restricted access for browsers with strict CSP).
+- **`--guardrails`**: `true` to enable native XHSC network protections.
 
-- [XyPriss Documentation](https://github.com/Nehonix-Team/XyPriss)
-- [Multi-Server Configuration Guide](https://github.com/Nehonix-Team/XyPriss/blob/master/docs/config/multi-server.md)
-- [Security Overview](https://github.com/Nehonix-Team/XyPriss/blob/master/docs/security/security-features-overview.md)
+## Getting Started
+
+1. **Install Dependencies**:
+   ```bash
+   xfpm install
+   ```
+
+2. **Configure Environment**:
+   Copy `.env.example` to `.env` and fill in your secrets.
+
+3. **Run in Development**:
+   ```bash
+   xfpm run dev
+   ```
+
+4. **Run Audit**:
+   ```bash
+   xfpm run audit
+   ```
 
 ---
-Project initialized by {{AUTHOR}} using XFPM v{{XFPM_VERSION}}
+*Project initialized by {{AUTHOR}} using XFPM & XyPriss*

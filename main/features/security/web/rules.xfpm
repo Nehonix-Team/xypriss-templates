@@ -1,6 +1,6 @@
 TARGET: src/configs/xypriss.config.ts
 
-@INJECT: // -->{{SECURITY_CONFIG}}
+[REPLACE] // -->\s*{{SECURITY_CONFIG}}
   security: {
     browserOnly: { 
       enable: true, 
@@ -17,4 +17,4 @@ TARGET: src/configs/xypriss.config.ts
     },
     cors: { origin: "*" }
   },
-@END
+[END]

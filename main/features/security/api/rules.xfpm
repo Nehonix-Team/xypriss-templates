@@ -1,10 +1,10 @@
 TARGET: src/configs/xypriss.config.ts
 
-@INJECT: // -->{{SECURITY_CONFIG}}
+[REPLACE] // -->\s*{{SECURITY_CONFIG}}
   security: {
     terminalOnly: { 
       enable: true, 
       allowedTools: ["postman", "curl", "insomnia", "axios"] 
     }
   },
-@END
+[END]
