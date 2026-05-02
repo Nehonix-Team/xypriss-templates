@@ -1,5 +1,5 @@
 #BEGIN:src/configs/xypriss.config.ts
-@TSINJECT: {{SERVER_EXTRA_CONFIG}}
+@TSINJECT: {{STORAGE_CONFIG}}
     xems: {
       enable: true,
       ttl: "15m",

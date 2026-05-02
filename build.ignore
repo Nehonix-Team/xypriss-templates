@@ -1,6 +1,5 @@
 .git
 node_modules
-.env
 build.sh
 build.ignore
 *.log
