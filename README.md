@@ -1,6 +1,6 @@
-# XyPriss Orchestration Rules (.xru)
+# XyPriss Rule Unit (.xru)
 
-This repository defines the transformation and orchestration logic for XyPriss templates. To maintain architectural consistency and ease of maintenance, all modification rules are consolidated into `.xru` files.
+This repository defines the transformation and orchestration logic for XyPriss templates. To maintain architectural consistency and ease of maintenance, all modification rules are consolidated into [`.xru`](https://github.com/Nehonix-Team/XFPM/blob/master/internal/xru/README.md) files.
 
 ## Overview
 
