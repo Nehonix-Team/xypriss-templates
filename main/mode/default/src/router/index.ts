@@ -12,7 +12,6 @@ const router = Router();
 
 /** API scope mapping */
 router.use("/api", apiRouter);
-// xfpm:{{ROUTERS_USE}}
 
 
 export default router;

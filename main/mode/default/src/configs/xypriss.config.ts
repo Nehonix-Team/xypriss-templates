@@ -4,6 +4,7 @@
  * Configured for a standard, single-instance server operation.
  */
 
+import { __sys__ } from "xypriss";
 import { manifest } from "./manifest";
 
 export const serverConfigs: ServerOptions = {
@@ -13,16 +14,8 @@ export const serverConfigs: ServerOptions = {
    */
   server: {
     autoKillConflict: true,
-    port: __sys__.vars.__PORT__,
+    port: Number(__sys__.vars.__PORT__),
     serviceName: manifest.name,
-    // xfpm:{{SERVER_EXTRA_CONFIG}}
+    version: manifest.version,
   },
-
-
-  // xfpm:{{SECURITY_CONFIG}}
-
-  // xfpm:{{GUARDRAILS_CONFIG}}
-
-  // xfpm:{{STORAGE_CONFIG}}
 };
-
