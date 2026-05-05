@@ -129,7 +129,22 @@ let SERVERS = {DATA.{MODE}}
     // Only generate server-specific configs and wrappers in XMS mode
     #IF: {MODE} == "xms"
         #CREATE: "configs/xms.config.ts"
-            export const xmsc: any = __sys__.vars.get("xms_nodes");
+
+            export const xmsc: XMS_NODE = __sys__.vars.get("xms_nodes");
+
+            interface XMS_NODE {
+                main: {
+                    route: string;
+                    desc: string;
+                    extra?: string;
+                };
+                auth: {
+                    route: string;
+                    desc: string;
+                    extra?: string;
+                };
+            }
+
         #END
         #CREATE: "servers/{S}.server.ts"
             import { MultiServerConfig } from "xypriss";
@@ -165,7 +180,6 @@ U.LOG: "<green>[SUCCESS]</> {MODE} Orchestration complete."
 // Remove the rules directory after orchestration
 U.LOG: "<yellow>[CLEANUP]</> Removing rules directory..."
 S.GET: "OS" as CURRENT_OS
-U.LOG: "<bold>{CURRENT_OS}</>"
 
 #IF: {CURRENT_OS} == "windows"
     S.EXEC: "rmdir /s /q ..\\rules"

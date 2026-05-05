@@ -19,3 +19,5 @@ tmp/
 .private/
 private/
 *.private.md
+
+test.xru
