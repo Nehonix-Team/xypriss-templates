@@ -59,7 +59,7 @@ let SERVERS = {DATA.{MODE}}
 U.LOG: "<green>[SUCCESS]</> {MODE} Orchestration complete."
 U.LOG: "<yellow>[CLEANUP]</> Removing rules directory..."
 
-S.GET: "CWD" as CURRENT_CWD
+// S.GET: "CWD" as CURRENT_CWD
 
 // FS.RM is cross-platform and handles both Windows and Unix-like systems
 FS.RM: "rules"
