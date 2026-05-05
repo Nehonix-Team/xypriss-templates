@@ -40,7 +40,7 @@ The project is organized into modular layers to ensure strict separation of conc
 
 3. **Run in Development**:
    ```bash
-   xfpm run dev
+   xfpm dev
    ```
 
 4. **Run Audit**:

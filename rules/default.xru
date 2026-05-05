@@ -9,6 +9,12 @@
     @END
 #END
 
+#BEGIN: ".env"
+    @INJECT: /(?m)^PORT=.*$\n?/
+    PORT={PORT}
+    @END
+#END
+
 // Cleanup XMS-related properties from the JSONC configuration
 #BEGIN: "xypriss.config.jsonc"
     @INJECT: /(?m)^[ \t]*"(auth|main)ServerPort":.*$\n?/
@@ -26,10 +32,10 @@
          * Standard single-server configuration.
          * Configured for high-performance standalone operation.
          */
-        server: { 
-            autoKillConflict: true, 
-            port: 8080, 
-            serviceName: "default-app" 
+        server: {
+            autoKillConflict: true,
+            port: __sys__.vars.__port__,
+            serviceName: manifest.name,
         },
     @END
 #END
