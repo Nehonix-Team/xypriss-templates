@@ -1,6 +1,0 @@
-@TSINJECT: {{SECURITY_CONFIG}}
-  security: {
-    helmet: true,
-    cors: true,
-  },
-@END

@@ -30,5 +30,6 @@
         "port": "&(this).$vars.mainServerPort",
       },
     },
-  },
+  "xems_secret": "a_very_secret_32_byte_key_placeholder",
+},
 }

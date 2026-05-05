@@ -1,7 +1,5 @@
 import { Router } from "xypriss";
 import { manifest } from "../configs/manifest";
-// xfpm:{{ROUTE_EXTRA_IMPORT}}
-
 
 /**
  * Default API Router
@@ -21,8 +19,5 @@ router.get("/", (req, res) => {
     ...manifest,
   });
 });
-
-// xfpm:{{ROUTE_EXTRA_LOGIC}}
-
 
 export { router as apiRouter };
