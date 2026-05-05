@@ -5,7 +5,7 @@
 // 1. ARGUMENTS & MODULES
 #ARG: MODE as "default" 
 #ARG: NAME as "my-xypriss-app"
-#ARG: VERSION as "1.0.2"
+#ARG: VERSION as "1.0.0"
 #ARG: DESCRIPTION as "A high-performance XyPriss server."
 #ARG: AUTHOR as "Nehonix-Team"
 
