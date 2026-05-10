@@ -63,7 +63,7 @@ For further technical details, refer to the following resources:
 
 - [XyPriss Repository](https://github.com/Nehonix-Team/XyPriss)
 - [XRU Syntax Reference](https://github.com/Nehonix-Team/xru/blob/master/doc/syntax.md)
-- [XFPM Documentation](https://github.com/Nehonix-Team/xfpm)
+- [XFPM Init Documentation](https://github.com/Nehonix-Team/XFPM/blob/master/docs/commands/init.md)
 
 ---
 
