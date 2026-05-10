@@ -1,20 +1,17 @@
 # XyPriss Rule Unit (.xru)
 
-XRU is a Domain-Specific Language (DSL) designed for **Structured Text Transformation**. It operates as a **Structured Text Patcher (STP)**, applying complex mutations to configuration files and TypeScript source code while preserving formatting, comments, and non-standard syntaxes.
+[XRU](https://github.com/Nehonix-Team/xru) is a Domain-Specific Language (DSL) designed for **Structured Text Transformation**. It operates as a **Structured Text Patcher (STP)**, applying complex mutations to configuration files and TypeScript source code while preserving formatting, comments, and non-standard syntaxes.
 
-This repository defines the transformation and orchestration logic for XyPriss templates. All modification rules are consolidated into `.xru` files to maintain architectural consistency and ease of maintenance.
+This repository defines the transformation and orchestration logic for XyPriss templates. All modification rules are consolidated into [`.xru`](https://github.com/Nehonix-Team/xru) files to maintain architectural consistency and ease of maintenance.
 
 ---
 
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Installation](#installation)
-3. [Key Features](#key-features)
-4. [Syntax Overview](#syntax-overview)
-5. [Usage Example](#usage-example)
-6. [Best Practices](#best-practices)
-7. [Documentation](#documentation)
+2. [Key Features](#key-features)
+3. [Best Practices](#best-practices)
+4. [Documentation](#documentation)
 
 ---
 
@@ -52,34 +49,6 @@ Full syntax documentation is available at [xru/doc/syntax.md](https://github.com
 
 ---
 
-## Usage Example
-
-Create a file named `patch.xru`:
-
-```xru
-let app = "MyProject"
-
-#SELECT: ./src
-#LOG: "<cyan>[INFO]</> Patching {app}..."
-
-#BEGIN: config.json
-  SET version "1.0.0"
-  MERGE metadata {
-    "author": "XyPriss"
-  }
-#END
-
-#LOG: "<green>[SUCCESS]</> Done."
-```
-
-Apply it with:
-
-```bash
-xru patch.xru .
-```
-
----
-
 ## Best Practices
 
 - **Modularity** — Keep `rules.xru` files localized within their respective feature or mode directories. Avoid global rule files that span unrelated concerns.
@@ -95,12 +64,6 @@ For full documentation, refer to the following resources:
 - [XRU Repository](https://github.com/Nehonix-Team/xru)
 - [XyPriss Repository](https://github.com/Nehonix-Team/XyPriss)
 - [Syntax Reference](https://github.com/Nehonix-Team/xru/doc/syntax.md)
-
----
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
 
 ---
 
