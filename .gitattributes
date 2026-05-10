@@ -1,3 +1,3 @@
-# Map XyPriss Rule Units (.xru) to Rust for identification and highlighting
-*.xru linguist-language=Rust
+# Map XyPriss Rule Units (.xru) to Erlang for identification (Magenta color) and highlighting
+*.xru linguist-language=Erlang
 rules/*.xru linguist-detectable=true
