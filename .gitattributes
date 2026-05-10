@@ -1,0 +1,3 @@
+# Map XyPriss Rule Units (.xru) to Rust for identification and highlighting
+*.xru linguist-language=Rust
+rules/*.xru linguist-detectable=true
