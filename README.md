@@ -1,70 +1,70 @@
-# XyPriss Rule Unit (.xru)
+# XyPriss Framework Template
 
-[XRU](https://github.com/Nehonix-Team/xru) is a Domain-Specific Language (DSL) designed for **Structured Text Transformation**. It operates as a **Structured Text Patcher (STP)**, applying complex mutations to configuration files and TypeScript source code while preserving formatting, comments, and non-standard syntaxes.
-
-This repository defines the transformation and orchestration logic for XyPriss templates. All modification rules are consolidated into [`.xru`](https://github.com/Nehonix-Team/xru) files to maintain architectural consistency and ease of maintenance.
-
----
-
-## Table of Contents
-
-1. [Overview](#overview)
-2. [Key Features](#key-features)
-3. [Best Practices](#best-practices)
-4. [Documentation](#documentation)
+Official blueprint for initializing high-performance XyPriss projects via `xfpm init`.
 
 ---
 
 ## Overview
 
-XyPriss is an **Enterprise-Grade Hybrid Web Framework** that combines the raw performance of compiled native binaries with the productivity and flexibility of TypeScript. It is designed for teams that require both operational speed and developer velocity, without compromise.
+XyPriss is an **Enterprise-Grade Hybrid Web Framework** that combines the raw performance of compiled native binaries with the productivity and flexibility of TypeScript. This repository serves as the foundational template, providing a secure, modular, and scalable architecture out of the box.
 
-**Security Briefing:** XyPriss enforces a "Secure by Default" architecture. Core variables are protected by a native Environment Security Shield that blocks direct `process.env` access to prevent leakage. This is complemented by a built-in, zero-dependency storage system (XEMS), high-speed Go-powered networking (XHSC), and a Zero-Trust Plugin Security layer.
-
----
-
-## Key Features
-
-- **Structured Text Patching** — Applies mutations while preserving formatting, comments, and non-standard syntaxes.
-- **Declarative Rule Files** — Define patching operations in `.xru` files for reproducible and auditable transformations.
-- **Scoping Directives** — Target specific files or directories using `#SELECT` and `#BEGIN`/`#END` blocks.
-- **Variable Interpolation** — Declare variables with `let` and reference them throughout the rule file.
-- **Code Injection** — Inject source code directly into TypeScript files during template instantiation.
-- **Log Colorization** — Built-in colored output support via `#LOG` directives.
-- **CLI Integration** — Simple command-line interface for applying patches in any workflow.
+It is designed for teams that require operational speed, developer velocity, and a "Secure by Default" architecture.
 
 ---
 
-## Syntax Overview
+## Core Features
 
-XRU syntax is organized around five core concepts:
-
-1. **Syntax Overview** — General rules and log colorization.
-2. **Directives** — Scoping (`#BEGIN`, `#SELECT`) and utility (`#LOG`, `#EXEC`) directives.
-3. **Actions** — Patching operations, symbols (`++`, `>>`), and code injections.
-4. **Variables** — Scoping rules, declarations, and interpolation.
-5. **CLI Usage** — Command-line options and examples.
-
-Full syntax documentation is available at [xru/doc/syntax.md](https://github.com/Nehonix-Team/xru).
+- **Native Performance** — Powered by the XHSC engine for low-latency request handling and high-speed Go networking.
+- **Zero-Trust Security** — Built-in environment security shield that prevents direct `process.env` access and protects core variables.
+- **Modular Design** — Strict separation of concerns between core entry points, configuration stores, and business logic.
+- **XFPM Integrated** — Seamlessly optimized for the XyPriss Package Manager ecosystem for streamlined dependency management.
 
 ---
 
-## Best Practices
+## Dynamic Orchestration (XRU)
 
-- **Modularity** — Keep `rules.xru` files localized within their respective feature or mode directories. Avoid global rule files that span unrelated concerns.
-- **Versioning** — Commit `.xru` files alongside the source they patch for full traceability.
-- **Naming Conventions** — Use descriptive names for rule files (e.g., `init.xru`, `upgrade-v2.xru`) to communicate intent clearly.
+This template utilizes **[XyPriss Rule Units (.xru)](https://github.com/Nehonix-Team/xru)** to perform dynamic project transformation during initialization. Rather than providing static boilerplate, XRU acts as a **Structured Text Patcher (STP)** to customize the project in real-time.
+
+### How it works:
+
+1.  **Metadata Injection** — Dynamically updates `package.json` and project documentation with user-provided details (Name, Version, Author).
+2.  **Modular Logic** — Orchestrates different project modes (e.g., Default vs. XMS) using declarative rules.
+3.  **Format Preservation** — Applies mutations while strictly preserving code formatting, comments, and non-standard syntaxes.
+4.  **Self-Cleanup** — The orchestration logic residing in the `rules/` directory is automatically executed and removed after initialization.
+
+The entry point for this logic is [rules/orchestrate.xru](./rules/orchestrate.xru).
+
+---
+
+## Project Structure
+
+- `src/` — Core source code, server instances, and service layers.
+- `rules/` — XRU transformation logic and orchestration scripts.
+- `xypriss.config.jsonc` — Framework-level configuration and security settings.
+- `TARGET_README.md` — The template used to generate the final project documentation.
+
+---
+
+## Usage
+
+To bootstrap a new project using this template, execute the following command:
+
+```bash
+xfpm init <project-name>
+```
+
+This command fetches the template and runs the orchestration engine to finalize the local setup.
 
 ---
 
 ## Documentation
 
-For full documentation, refer to the following resources:
+For further technical details, refer to the following resources:
 
-- [XRU Repository](https://github.com/Nehonix-Team/xru)
 - [XyPriss Repository](https://github.com/Nehonix-Team/XyPriss)
-- [Syntax Reference](https://github.com/Nehonix-Team/xru/doc/syntax.md)
+- [XRU Syntax Reference](https://github.com/Nehonix-Team/xru/blob/master/doc/syntax.md)
+- [XFPM Documentation](https://github.com/Nehonix-Team/xfpm)
 
 ---
 
-_Copyright (c) 2026 Nehonix-Team. All rights reserved._
+*Copyright (c) 2026 Nehonix-Team. All rights reserved.*
