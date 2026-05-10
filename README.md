@@ -1,212 +1,107 @@
 # XyPriss Rule Unit (.xru)
 
-This repository defines the transformation and orchestration logic for XyPriss templates. To maintain architectural consistency and ease of maintenance, all modification rules are consolidated into [`.xru`](https://github.com/Nehonix-Team/XFPM/blob/master/internal/xru/README.md) files.
+XRU is a Domain-Specific Language (DSL) designed for **Structured Text Transformation**. It operates as a **Structured Text Patcher (STP)**, applying complex mutations to configuration files and TypeScript source code while preserving formatting, comments, and non-standard syntaxes.
+
+This repository defines the transformation and orchestration logic for XyPriss templates. All modification rules are consolidated into `.xru` files to maintain architectural consistency and ease of maintenance.
+
+---
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Installation](#installation)
+3. [Key Features](#key-features)
+4. [Syntax Overview](#syntax-overview)
+5. [Usage Example](#usage-example)
+6. [Best Practices](#best-practices)
+7. [Documentation](#documentation)
+
+---
 
 ## Overview
 
-The `.xru` (XyPriss Rules) format provides a declarative way to patch configuration files and inject source code into TypeScript files during the template instantiation process.
+XyPriss is an **Enterprise-Grade Hybrid Web Framework** that combines the raw performance of compiled native binaries with the productivity and flexibility of TypeScript. It is designed for teams that require both operational speed and developer velocity, without compromise.
 
-## Supported Initialization Arguments
-
-When initializing a project using this template via `xfpm init`, the following arguments are available to customize the orchestration:
-
-- **`--mode`**: 
-    - `default`: Creates a standard monolithic server structure.
-    - `xms`: Creates a XyPriss Multi-Server orchestration structure.
-- **`--security`**:
-    - `api`: Injects configuration optimized for CLI/API tools (`terminalOnly`).
-    - `web`: Injects configuration optimized for browser applications with strict CSP.
-    - `standard`: Injects balanced security headers and CORS settings.
-- **`--guardrails`**:
-    - `true`: Enables native XHSC network quality protections and latency limits.
-- **`--storage`**:
-    - `xems`: Enables the XyPriss Encrypted Memory Store and injects demo session routes.
-
-
-## Basic Syntax
-
-Rules are organized into scoped blocks targeting specific files within the project structure.
-
-```xru
-#BEGIN:path/to/target.file
-<actions>
-#END:path/to/target.file
-
-#CREATE:path/to/new.file
-<content of the new file>
-#END:path/to/new.file
-```
-
-**Example:**
-```xru
-#CREATE:src/configs/app.config.ts
-export const config = {
-    version: "1.0.0",
-    debug: true
-};
-#END:src/configs/app.config.ts
-```
-
-
+**Security Briefing:** XyPriss enforces a "Secure by Default" architecture. Core variables are protected by a native Environment Security Shield that blocks direct `process.env` access to prevent leakage. This is complemented by a built-in, zero-dependency storage system (XEMS), high-speed Go-powered networking (XHSC), and a Zero-Trust Plugin Security layer.
 
 ---
 
-## Supported Actions
+## Key Features
 
-### 1. JSON Patching
-These actions allow for precise, non-destructive modification of JSON or JSONC files (e.g., `package.json`, `tsconfig.json`, `xypriss.config.jsonc`).
-
-#### `&rm` (Remove)
-Removes specified properties or nested paths.
-- **Array Syntax**: For top-level keys.
-- **Object Syntax**: For nested paths.
-
-**Example Rule:**
-```xru
-&rm: ["oldKey"]
-
-&rm: {
-    scripts: {
-        "legacy:test": ""
-    }
-}
-```
-
-**Before (`target.json`):**
-```json
-{
-  "oldKey": "value",
-  "name": "app",
-  "scripts": {
-    "start": "node index.js",
-    "legacy:test": "echo test"
-  }
-}
-```
-
-**After:**
-```json
-{
-  "name": "app",
-  "scripts": {
-    "start": "node index.js"
-  }
-}
-```
-
-#### `&rp-k` (Replace Key)
-Renames a property key while preserving its existing value.
-*Alias: `&rp-0`*
-
-**Example Rule:**
-```xru
-&rp-k: {
-    oldName: "newName"
-}
-```
-
-**Before (`target.json`):**
-```json
-{
-  "oldName": "value123"
-}
-```
-
-**After:**
-```json
-{
-  "newName": "value123"
-}
-```
-
-#### `&rp-v` (Replace Value)
-Updates the value of an existing property.
-*Alias: `&rp-1`*
-
-**Example Rule:**
-```xru
-&rp-v: {
-    version: "1.0.0-managed"
-}
-```
-
-**Before (`target.json`):**
-```json
-{
-  "version": "0.0.1"
-}
-```
-
-**After:**
-```json
-{
-  "version": "1.0.0-managed"
-}
-```
-
-#### `&merge` / `&add`
-Performs a deep-merge of the provided object into the target file. This is the preferred method for adding new configuration blocks or dependencies.
-
-**Example Rule:**
-```xru
-&merge: {
-    scripts: {
-        "xms:dev": "xfpm run xms"
-    }
-}
-```
-
-**Before (`target.json`):**
-```json
-{
-  "scripts": {
-    "start": "node index.js"
-  }
-}
-```
-
-**After:**
-```json
-{
-  "scripts": {
-    "start": "node index.js",
-    "xms:dev": "xfpm run xms"
-  }
-}
-```
+- **Structured Text Patching** — Applies mutations while preserving formatting, comments, and non-standard syntaxes.
+- **Declarative Rule Files** — Define patching operations in `.xru` files for reproducible and auditable transformations.
+- **Scoping Directives** — Target specific files or directories using `#SELECT` and `#BEGIN`/`#END` blocks.
+- **Variable Interpolation** — Declare variables with `let` and reference them throughout the rule file.
+- **Code Injection** — Inject source code directly into TypeScript files during template instantiation.
+- **Log Colorization** — Built-in colored output support via `#LOG` directives.
+- **CLI Integration** — Simple command-line interface for applying patches in any workflow.
 
 ---
 
-### 2. Special Actions
+## Syntax Overview
 
-#### TypeScript Injection (`@TSINJECT`)
-The `@TSINJECT` action facilitates dynamic code block insertion into TypeScript files by targeting specific comment markers.
+XRU syntax is organized around five core concepts:
 
-**Injection Logic:**
-1. Scans all `*.ts` files in the workspace.
-2. Locates lines containing the `// xfpm: {{VARIABLE_NAME}}` directive, regardless of its position on the line (start, middle, or end) or surrounding whitespace.
-3. Replaces the entire marker line with the content specified between the injection tags.
+1. **Syntax Overview** — General rules and log colorization.
+2. **Directives** — Scoping (`#BEGIN`, `#SELECT`) and utility (`#LOG`, `#EXEC`) directives.
+3. **Actions** — Patching operations, symbols (`++`, `>>`), and code injections.
+4. **Variables** — Scoping rules, declarations, and interpolation.
+5. **CLI Usage** — Command-line options and examples.
 
-**Example Rule:**
+Full syntax documentation is available at [xru/doc/syntax.md](https://github.com/Nehonix-Team/xru).
+
+---
+
+## Usage Example
+
+Create a file named `patch.xru`:
+
 ```xru
-@TSINJECT: {{AUTH_LOGIC}}
-const auth = new AuthManager();
-console.log("Security layer initialized.");
-@END
+let app = "MyProject"
+
+#SELECT: ./src
+#LOG: "<cyan>[INFO]</> Patching {app}..."
+
+#BEGIN: config.json
+  SET version "1.0.0"
+  MERGE metadata {
+    "author": "XyPriss"
+  }
+#END
+
+#LOG: "<green>[SUCCESS]</> Done."
 ```
 
-**Corresponding Code Marker:**
-```typescript
-// xfpm: {{AUTH_LOGIC}}
+Apply it with:
+
+```bash
+xru patch.xru .
 ```
 
 ---
 
 ## Best Practices
 
-- **Modularity**: Keep `rules.xru` files localized within their respective feature or mode directories.
-- **Safety**: Prefer `&merge` over full object replacement to avoid accidental loss of configuration.
-- **Naming**: Use clear, uppercase markers for `@TSINJECT` to distinguish them from standard code comments.
+- **Modularity** — Keep `rules.xru` files localized within their respective feature or mode directories. Avoid global rule files that span unrelated concerns.
+- **Versioning** — Commit `.xru` files alongside the source they patch for full traceability.
+- **Naming Conventions** — Use descriptive names for rule files (e.g., `init.xru`, `upgrade-v2.xru`) to communicate intent clearly.
 
 ---
-*Managed by Nehonix-Team*
+
+## Documentation
+
+For full documentation, refer to the following resources:
+
+- [XRU Repository](https://github.com/Nehonix-Team/xru)
+- [XyPriss Repository](https://github.com/Nehonix-Team/XyPriss)
+- [Syntax Reference](https://github.com/Nehonix-Team/xru/doc/syntax.md)
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+
+---
+
+_Copyright (c) 2026 Nehonix-Team. All rights reserved._
