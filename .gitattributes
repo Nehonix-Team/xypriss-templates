@@ -1,3 +1,0 @@
-# Map XyPriss Rule Units (.xru) to Erlang for identification (Magenta color) and highlighting
-*.xru linguist-language=Xru
-rules/*.xru linguist-detectable=true
