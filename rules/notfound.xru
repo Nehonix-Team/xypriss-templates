@@ -1,0 +1,15 @@
+// --------------------------------------------------------------------------
+// XyPriss NotFound Customization Rules
+// --------------------------------------------------------------------------
+
+#SELECT: "."
+
+#IF: {NOTFOUND} == ""
+#ELSE
+#BEGIN: "src/configs/xypriss.config.ts"
+    @INJECT: /export const serverConfigs: ServerOptions = \{/
+export const serverConfigs: ServerOptions = {
+  notFound: {NOTFOUND},
+    @END
+#END
+#END

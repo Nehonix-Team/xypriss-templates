@@ -9,10 +9,13 @@
 #ARG: DESCRIPTION as "A high-performance XyPriss server."
 #ARG: AUTHOR as "Nehonix-Team"
 #ARG: PORT as "8459"
+#ARG: NOTFOUND as ""
 
 #USE: utils as U
 #USE: fs as FS
 #USE: sys as S
+
+U.ARGS: "--notfound" as NOTFOUND
 
 U.LOG: "<cyan>[INFO]</> Orchestrating <blue>{NAME}</> (v{VERSION}) in <yellow>{MODE}</> mode..."
 
@@ -23,7 +26,14 @@ U.LOG: "<cyan>[INFO]</> Orchestrating <blue>{NAME}</> (v{VERSION}) in <yellow>{M
     ~~ /\{\{VERSION\}\}/ -> {VERSION}
     ~~ /\{\{DESCRIPTION\}\}/ -> {DESCRIPTION}
     ~~ /\{\{AUTHOR\}\}/ -> {AUTHOR}
+    @INJECT: /"dependencies":\s*\{/
+    "dependencies": {
+        "xypriss": "latest",
+    @END
+    @INJECT: /(?s),\s*"peerDependencies":\s*\{\s*"xypriss":\s*"[^"]+"\s*\}/
+    @END
 #END
+
 
 #BEGIN: "README.md"
     ~~ /\{\{SERVER_NAME\}\}/ -> {NAME}
@@ -55,12 +65,15 @@ let SERVERS = {DATA.{MODE}}
     #INCLUDE: "default.xru"
 #END
 
+#INCLUDE: "notfound.xru"
+
 // 5. FINALIZATION & CLEANUP
 U.LOG: "<green>[SUCCESS]</> {MODE} Orchestration complete."
-U.LOG: "<yellow>[CLEANUP]</> Removing rules directory..."
+U.LOG: "<yellow>[CLEANUP]</> Removing rules directory and default route boilerplate..."
 
 // S.GET: "CWD" as CURRENT_CWD
 
 // FS.RM is cross-platform and handles both Windows and Unix-like systems
+FS.RM: "src/routes/api.route.ts"
 FS.RM: "rules"
 // U.LOG: "Final project path: <red>{CURRENT_CWD}</>"
