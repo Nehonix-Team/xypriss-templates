@@ -37,8 +37,12 @@ Welcome to your new **XyPriss Plugin**. This project is configured for developin
    ```bash
    xfpm run inspect
    ```
+   > **Note:** Do not forget to add the discovered permissions to your `package.json` under the `xfpm.permissions` key (e.g., `["XHS.HOOK.HTTP.REQUEST"]`). Full list: [Unified Hook Registry](https://xypriss.nehonix.com/docs/plugins/api-reference/hooks)
 
-3. **Sign Plugin**:
+3. **Configure Files**:
+   Ensure that the `files` array in your `package.json` contains the directories you want to publish (e.g., `"dist"`) and absolutely must include `"xypriss.plugin.xsig"`. (This template pre-configures it for you).
+
+4. **Sign Plugin**:
    ```bash
    xfpm run sign
    ```
@@ -63,7 +67,15 @@ XYPRISS_SHIELD="silent"
     FS.MKDIR: "scripts"
     
     #CREATE: "src/index.ts"
-import { Plugin, PluginServer, Request, Response, NextFunction, XyPrissPlugin } from "xypriss";
+import { Plugin } from "xypriss";
+import type {
+  PluginServer,
+  Request,
+  Response,
+  NextFunction,
+  XyPrissPlugin,
+} from "xypriss";
+
 
 export interface PluginOptions {
     // Define your plugin options here
@@ -77,11 +89,11 @@ export function createPlugin(options: PluginOptions = {}): XyPrissPlugin {
         version: pkg.version,
         description: pkg.description,
         type: "NETWORK",
-        onRequest(req, res, next) {
+        onRequest(_req: Request, _res: Response, next: NextFunction) {
             // Hook logic
             next();
         },
-        onServerStart(server) {
+        onServerStart(_server: PluginServer) {
             console.log("[" + pkg.name + "] Initialized");
         }
     }, __sys__.__root__);
@@ -92,6 +104,16 @@ export function createPlugin(options: PluginOptions = {}): XyPrissPlugin {
 import { Plugin } from "xypriss";
 import { createPlugin } from "../src/index.js";
 
+/**
+ * XyPriss Plugin Inspection Script
+ * 
+ * This script analyzes your plugin's hooks to determine which permissions
+ * are required. You must declare the discovered permissions in your
+ * package.json under the `xfpm.permissions` array before signing.
+ * 
+ * For the complete list of available permissions, see:
+ * https://xypriss.nehonix.com/docs/plugins/api-reference/hooks
+ */
 Plugin.inspect(createPlugin());
 /* @ts-ignore */
 process.exit(0);

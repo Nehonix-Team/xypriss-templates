@@ -49,7 +49,14 @@ U.LOG: "<cyan>[INFO]</> Orchestrating <blue>{NAME}</> (v{VERSION}) in <yellow>{M
             "inspect": "xfpm run scripts/inspect.ts",
             "sign": "xfpm sign ./ --min-version 1.0.0 --fix",
             "prepublish": "xfpm run build && xfpm run sign"
-        }
+        },
+        "xfpm": {
+            "permissions": []
+        },
+        "files": [
+            "dist",
+            "xypriss.plugin.xsig"
+        ]
         @END
         @INJECT: /(?s)"dependencies":\s*\{.*?\},\s*/
         @END
