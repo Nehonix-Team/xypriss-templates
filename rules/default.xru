@@ -57,7 +57,7 @@
 // 3. FILE GENERATION
 #FOR: S in {SERVERS}
     #CREATE: "routes/{S}.route.ts"
-        import { Router } from "xypriss";
+        import { Router, Send } from "xypriss";
 
         /**
          * Default Route Module.
@@ -65,12 +65,13 @@
          */
         export const {S}Router = Router();
 
-        {S}Router.get("/", (ctx) => { 
-            ctx.body = { 
+        {S}Router.get("/", (req, res) => { 
+        const send = new Send(res)
+        send.ok("Standalone server is running", { 
                 status: "online",
-                message: "Standalone server is running",
                 timestamp: new Date().toISOString()
-            }; 
+         }); 
+         return
         });
     #END
 #END

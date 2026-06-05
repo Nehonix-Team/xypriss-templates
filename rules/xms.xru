@@ -99,7 +99,7 @@ interface XMS_NODE {
     #END
 
     #CREATE: "routes/{S}.route.ts"
-        import { Router } from "xypriss";
+        import { Router, Send } from "xypriss";
 
         /**
          * Router for the {S} module.
@@ -107,13 +107,16 @@ interface XMS_NODE {
          */
         export const {S}Router = Router();
 
-        {S}Router.get("/", (ctx) => { 
-            ctx.body = { 
+        {S}Router.get("/", (req, res) => { 
+        const send = new Send(res)
+
+         send.ok("Welcome {S}", { 
                 status: "success",
                 message: "Welcome to the {S} instance", 
                 mode: "XMS",
                 timestamp: new Date().toISOString()
-            }; 
+            }); 
+         return
         });
     #END
 #END

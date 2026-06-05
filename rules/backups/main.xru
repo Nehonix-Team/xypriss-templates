@@ -59,9 +59,14 @@ U.LOG: "<cyan>[INFO]</> Orchestrating in <yellow>Default</> mode..."
 // 4. FILE GENERATION
 // Create the main route file
 #CREATE: "routes/main.route.ts"
-    import { Router } from "xypriss";
-    export const mainRouter = Router();
-    mainRouter.get("/", (ctx) => { ctx.body = { message: "Default server" }; });
+    import { Router, Send } from "xypriss";
+    export const router = Router();
+    router.get("/", (req, res) => { 
+        const send = new Send(res)
+        send.ok("Default server")
+        return
+    });
+    export {router as mainRouter}
 #END
 
 U.LOG: "<green>[SUCCESS]</> Default Orchestration complete."
