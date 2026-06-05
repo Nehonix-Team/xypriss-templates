@@ -2,7 +2,7 @@
 // It is automatically loaded by the XyPriss when booting up your server.
 // You can configure it like you want according to the docs.
 // For more information, check the documentation at:
-// https://github.com/Nehonix-Team/XyPriss/blob/master/docs/config/configuration.md
+// https://xypriss.nehonix.com/docs/config/guide
 
 {
   "$vars": {

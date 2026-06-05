@@ -1,0 +1,105 @@
+#IF: {IS_PLUGIN} != ""
+    U.LOG: "<cyan>[INFO]</> Preparing plugin environment..."
+
+    #CREATE: "xypriss.config.jsonc"
+// This file is a configuration file for XyPriss Plugins.
+// For more information, check the documentation at:
+// https://xypriss.nehonix.com/docs/plugins
+
+{
+  "type": "plugin",
+  "$vars": {
+    "__name__": "&(pkg).name",
+    "__description__": "&(pkg).description",
+    "__version__": "&(pkg).version",
+    "__author__": "&(pkg).author"
+  }
+}
+    #END
+
+    #CREATE: "README.md"
+# {NAME}
+
+Welcome to your new **XyPriss Plugin**. This project is configured for developing high-performance plugins for the XyPriss ecosystem.
+
+## Overview
+
+{DESCRIPTION}
+
+## Development
+
+1. **Install Dependencies**:
+   ```bash
+   xfpm install
+   ```
+
+2. **Inspect Permissions**:
+   ```bash
+   xfpm run inspect
+   ```
+
+3. **Sign Plugin**:
+   ```bash
+   xfpm run sign
+   ```
+
+## Documentation
+
+- [XyPriss Plugins Documentation](https://xypriss.nehonix.com/docs/plugins)
+- [Authoring Plugins Guide](https://xypriss.nehonix.com/docs/plugins/tutorials/authoring)
+- [API Reference](https://xypriss.nehonix.com/docs/plugins/api-reference/hooks)
+
+---
+*Plugin initialized by {AUTHOR} using XFPM*
+    #END
+
+    #CREATE: ".env"
+XYPRISS_SHIELD="silent"
+// # PLUGIN_SECRET="your-plugin-secret-here" // non necessaire
+    #END
+
+    FS.RM: "src"
+    FS.MKDIR: "src"
+    FS.MKDIR: "scripts"
+    
+    #CREATE: "src/index.ts"
+import { Plugin, PluginServer, Request, Response, NextFunction, XyPrissPlugin } from "xypriss";
+
+export interface PluginOptions {
+    // Define your plugin options here
+}
+
+export function createPlugin(options: PluginOptions = {}): XyPrissPlugin {
+    const pkg = Plugin.manifest<{ name: string; version: string; description: string }>(__sys__);
+
+    return Plugin.create({
+        name: pkg.name,
+        version: pkg.version,
+        description: pkg.description,
+        type: "NETWORK",
+        onRequest(req, res, next) {
+            // Hook logic
+            next();
+        },
+        onServerStart(server) {
+            console.log("[" + pkg.name + "] Initialized");
+        }
+    }, __sys__.__root__);
+}
+    #END
+
+    #CREATE: "scripts/inspect.ts"
+import { Plugin } from "xypriss";
+import { createPlugin } from "../src/index.js";
+
+Plugin.inspect(createPlugin());
+/* @ts-ignore */
+process.exit(0);
+    #END
+
+    U.LOG: "<green>[SUCCESS]</> Plugin orchestration complete."
+    U.LOG: "<yellow>[CLEANUP]</> Removing rules directory..."
+    FS.RM: "rules"
+    FS.RM: ".vscode"
+    U.EXIT: 0
+#END
