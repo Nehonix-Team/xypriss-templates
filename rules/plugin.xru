@@ -81,7 +81,7 @@ export interface PluginOptions {
     // Define your plugin options here
 }
 
-export function createPlugin(options: PluginOptions = {}): XyPrissPlugin {
+export function {NAME}(options: PluginOptions = {}): XyPrissPlugin {
     const pkg = Plugin.manifest<{ name: string; version: string; description: string }>(__sys__);
 
     return Plugin.create({
@@ -102,7 +102,7 @@ export function createPlugin(options: PluginOptions = {}): XyPrissPlugin {
 
     #CREATE: "scripts/inspect.ts"
 import { Plugin } from "xypriss";
-import { createPlugin } from "../src/index.js";
+import { {NAME} } from "../src/index.js";
 
 /**
  * XyPriss Plugin Inspection Script
@@ -114,7 +114,7 @@ import { createPlugin } from "../src/index.js";
  * For the complete list of available permissions, see:
  * https://xypriss.nehonix.com/docs/plugins/api-reference/hooks
  */
-Plugin.inspect(createPlugin());
+Plugin.inspect({NAME}());
 /* @ts-ignore */
 process.exit(0);
     #END
