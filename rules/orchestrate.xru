@@ -8,8 +8,7 @@
 #ARG: VERSION or "1.0.0"
 #ARG: DESCRIPTION or "A high-performance XyPriss server."
 #ARG: AUTHOR or "Nehonix-Team"
-#ARG: PORT or "8459"
-#ARG: NOTFOUND or ""
+
 #ARG: PLUGIN or ""
 
 #USE: utils as U
@@ -80,6 +79,8 @@ U.LOG: "<cyan>[INFO]</> Orchestrating <blue>{NAME}</> (v{VERSION}) in <yellow>{M
 // 3. PLUGIN ORCHESTRATION
 #INCLUDE: "plugin.xru"
 
+#IF: {PLUGIN} == ""
+
 // 4. DATA DEFINITION
 #JSONVAR: DATA
 {
@@ -116,3 +117,5 @@ U.LOG: "<yellow>[CLEANUP]</> Removing rules directory and default route boilerpl
 FS.RM: "src/routes/api.route.ts"
 FS.RM: "rules"
 // U.LOG: "Final project path: <red>{CURRENT_CWD}</>"
+
+#END

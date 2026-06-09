@@ -1,4 +1,8 @@
 // --------------------------------------------------------------------------
+#ARG: NOTFOUND or ""
+
+// Remove the default template notfound endpoint
+FS.RM: "src/notfound.ts"
 // XyPriss NotFound Customization Rules
 // --------------------------------------------------------------------------
 
