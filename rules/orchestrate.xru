@@ -19,11 +19,8 @@ U.ARGS: "--notfound" as NOTFOUND
 U.ARGS: "--plugin" as IS_PLUGIN
 
 #IF: {IS_PLUGIN} != ""
-    U.LOG: "{IS_PLUGIN}"
     #IF: {IS_PLUGIN} != "true"
         let NAME = "{IS_PLUGIN}"
-    #ELSE
-        U.LOG: "diff from true"
     #END
     
 #END
@@ -39,7 +36,6 @@ U.LOG: "<cyan>[INFO]</> Orchestrating <blue>{NAME}</> (v{VERSION}) in <yellow>{M
     ~~ /\{\{AUTHOR\}\}/ -> {AUTHOR}
     
     #IF: {IS_PLUGIN} == ""
-        U.LOG: "IS PLUGIN IS NOT SET"
         // Configuration Serveur - use regex injections to update package.json
         // Remove peerDependencies block if present (handles last-property case)
         @INJECT: /(?s),?\s*"peerDependencies"\s*:\s*\{.*?\}\s*,?\s*/

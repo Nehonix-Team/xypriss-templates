@@ -119,8 +119,8 @@ Plugin.inspect(createPlugin());
 process.exit(0);
     #END
 
-    U.LOG: "<green>[SUCCESS]</> Plugin orchestration complete."
-    U.LOG: "<yellow>[CLEANUP]</> Removing rules directory..."
+    U.LOG: "<green>[PLUGIN::SUCCESS]</> Plugin orchestration complete."
+    U.LOG: "<yellow>[PLUGIN::CLEANUP]</> Removing rules directory..."
     FS.RM: "rules"
     FS.RM: ".vscode"
     U.EXIT: 0
