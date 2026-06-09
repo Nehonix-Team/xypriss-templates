@@ -19,9 +19,13 @@ U.ARGS: "--notfound" as NOTFOUND
 U.ARGS: "--plugin" as IS_PLUGIN
 
 #IF: {IS_PLUGIN} != ""
+    U.LOG: "{IS_PLUGIN}"
     #IF: {IS_PLUGIN} != "true"
         let NAME = "{IS_PLUGIN}"
+    #ELSE
+        U.LOG: "diff from true"
     #END
+    
 #END
 
 U.LOG: "<cyan>[INFO]</> Orchestrating <blue>{NAME}</> (v{VERSION}) in <yellow>{MODE}</> mode..."
@@ -35,9 +39,22 @@ U.LOG: "<cyan>[INFO]</> Orchestrating <blue>{NAME}</> (v{VERSION}) in <yellow>{M
     ~~ /\{\{AUTHOR\}\}/ -> {AUTHOR}
     
     #IF: {IS_PLUGIN} == ""
-        // Configuration Serveur
-        SET "dependencies.xypriss" "latest"
-        REMOVE "peerDependencies.xypriss"
+        U.LOG: "IS PLUGIN IS NOT SET"
+        // Configuration Serveur - use regex injections to update package.json
+        // Remove peerDependencies block if present (handles last-property case)
+        @INJECT: /(?s),?\s*"peerDependencies"\s*:\s*\{.*?\}\s*,?\s*/
+        @END
+        // Inject xypriss into dependencies (replace dependencies block with xypriss added)
+        @INJECT: /(?s)"dependencies":\s*\{.*?\}/
+        "dependencies": {
+            "fileonix": "^1.0.5",
+            "xypriss": "latest"
+        }
+        @END
+        // Cleanup any trailing comma before the final closing brace
+        @INJECT: /,\s*(\n\s*})$/
+        $1
+        @END
     #ELSE
         @INJECT: /(?s)"scripts":\s*\{.*?\}/
         "scripts": {
@@ -45,7 +62,7 @@ U.LOG: "<cyan>[INFO]</> Orchestrating <blue>{NAME}</> (v{VERSION}) in <yellow>{M
             "audit": "xfpm audit -w",
             "inspect": "xfpm run scripts/inspect.ts",
             "sign": "xfpm sign ./ --min-version 1.0.0 --fix",
-            "prepublish": "xfpm run build && xfpm run sign"
+            "prepublish": "xfpm run build && xfpm run sign",
         },
         "xfpm": {
             "permissions": []
