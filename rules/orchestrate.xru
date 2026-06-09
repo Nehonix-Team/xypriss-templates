@@ -10,17 +10,15 @@
 #ARG: AUTHOR or "Nehonix-Team"
 #ARG: PORT or "8459"
 #ARG: NOTFOUND or ""
+#ARG: PLUGIN or ""
 
 #USE: utils as U
 #USE: fs as FS
 #USE: sys as S
 
-U.ARGS: "--notfound" as NOTFOUND
-U.ARGS: "--plugin" as IS_PLUGIN
-
-#IF: {IS_PLUGIN} != ""
-    #IF: {IS_PLUGIN} != "true"
-        let NAME = "{IS_PLUGIN}"
+#IF: {PLUGIN} != ""
+    #IF: {PLUGIN} != "true"
+        let NAME = "{PLUGIN}"
     #END
     
 #END
@@ -35,7 +33,7 @@ U.LOG: "<cyan>[INFO]</> Orchestrating <blue>{NAME}</> (v{VERSION}) in <yellow>{M
     ~~ /\{\{DESCRIPTION\}\}/ -> {DESCRIPTION}
     ~~ /\{\{AUTHOR\}\}/ -> {AUTHOR}
     
-    #IF: {IS_PLUGIN} == ""
+    #IF: {PLUGIN} == ""
         // Configuration Serveur - use regex injections to update package.json
         // Remove peerDependencies block if present (handles last-property case)
         @INJECT: /(?s),?\s*"peerDependencies"\s*:\s*\{.*?\}\s*,?\s*/
@@ -58,7 +56,7 @@ U.LOG: "<cyan>[INFO]</> Orchestrating <blue>{NAME}</> (v{VERSION}) in <yellow>{M
             "audit": "xfpm audit -w",
             "inspect": "xfpm run scripts/inspect.ts",
             "sign": "xfpm sign ./ --min-version 1.0.0 --fix",
-            "prepublish": "xfpm run build && xfpm run sign",
+            "prepublish": "xfpm run build && xfpm run sign"
         },
         "xfpm": {
             "permissions": []

@@ -1,4 +1,4 @@
-#IF: {IS_PLUGIN} != ""
+#IF: {PLUGIN} != ""
     U.LOG: "<cyan>[INFO]</> Preparing plugin environment..."
 
     #CREATE: "xypriss.config.jsonc"
@@ -123,5 +123,7 @@ process.exit(0);
     U.LOG: "<yellow>[PLUGIN::CLEANUP]</> Removing rules directory..."
     FS.RM: "rules"
     FS.RM: ".vscode"
-    U.EXIT: 0
 #END
+
+
+// U.EXIT: 0 // which will allow XFPM to continue
