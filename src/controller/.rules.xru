@@ -2,12 +2,4 @@
 #ARG MODE: string or "default"
 #ARG CDN: bool or true
 
-#IF {MODE} == "minimal"
-    Drop(["auth.controller.ts", "cdn.controller.ts"])
-#END
-
-#IF {MODE} != "minimal"
-    #IF {CDN} == false
-        Drop(["cdn.controller.ts"])
-    #END
-#END
+PruneModule("controller", {MODE}, {CDN})
