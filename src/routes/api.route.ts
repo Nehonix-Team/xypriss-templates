@@ -1,23 +1,18 @@
-import { Router } from "xypriss";
-import { manifest } from "../configs/manifest";
+import { Router, Send } from "xypriss";
+import { ApiController } from "../controller/api.controller";
 
-/**
- * Default API Router
- * 
- * Manages core application business logic.
- */
-const router = Router();
+const r = Router();
 
-/**
- * API Root Endpoint
- * 
- * Responds with application manifest metadata.
- */
-router.get("/", (req, res) => {
-  return res.success("Hello World from XyPriss!", {
-    mode: "default",
-    ...manifest,
+r.get("/", (_req, res) => {
+  const send = new Send(res);
+  return send.ok("API Service is running", {
+    status: "online",
+    timestamp: new Date().toISOString(),
   });
 });
 
-export { router as apiRouter };
+r.get("/health", ApiController.health);
+r.get("/items", ApiController.listItems);
+
+export const apiRouter = r;
+export default r;

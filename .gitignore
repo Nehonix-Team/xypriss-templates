@@ -11,3 +11,7 @@ uploads/
 tmp/
 private/
 xru_feedback_report.md
+lib/
+bin/
+.test_sandbox/
+mods/

@@ -1,24 +1,40 @@
-import { createServer } from "xypriss";
+import { createServer, XStatic } from "xypriss";
 import { serverConfigs } from "./configs/xypriss.config";
-import router from "./router";
+import { router } from "./router";
+import { guardsRunner } from "./guards/index.guard";
+import {
+  permanentCdnPath,
+  publicCdnPath,
+  publicCdnTmpPath,
+} from "./const/cdnPaths";
+import { getRandomBytes } from "xypriss-security";
 
 /**
- * XyPriss Server Instance (Default Mode)
- * 
- * Initializes a single-instance server using standard configurations.
+ * XyPriss Server Instance
+ *
+ * Initializes the server engine using declarative enterprise configurations.
  */
 const app = createServer(serverConfigs);
+// 1. Start security and validation guards
+guardsRunner();
 
-/**
- * Global Router Integration
- * 
- * Mounts the main application router to manage service endpoints.
- */
+// 2. Mount global application router
 app.use("/", router);
 
-/**
- * Server Lifecycle Initialization
- * 
- * Starts the server engine and binds it to the defined port.
- */
+// 3. Configure secure static asset sandboxing with XStatic
+const xs = new XStatic(app, __sys__);
+
+// Sandboxed temporary uploads (confined in XyPriss tmpUserDir)
+xs.define(publicCdnTmpPath, __sys__.path.tmpUserDir, {
+  allowOutsideRoot: true, // Allows targeting /tmp/nehonix.xypriss.data/xuser/
+  allowOutsideDir: false, // Prevents any directory traversal outside tmpUserDir
+});
+
+// Permanent production assets
+xs.define(publicCdnPath, permanentCdnPath, {
+  allowOutsideRoot: false,
+  allowOutsideDir: false,
+});
+
+// 4. Start the server lifecycle
 app.start();

@@ -1,79 +1,49 @@
 // --------------------------------------------------------------------------
-#ARG: PORT or "8459"
-
-// XyPriss Default Mode Rules
+// XyPriss Default (Single-Instance Modular) Mode Rules
 // --------------------------------------------------------------------------
 
-// 1. CLEANUP ENVIRONMENT & CONFIGS
-// Open .env to remove XMS-specific variables
+U.LOG: "<cyan>[DEFAULT]</> Adapting project for Single-Instance Modular operation..."
+
+// 1. CLEANUP ENVIRONMENT VARIABLES
 #BEGIN: ".env"
-    @INJECT: /(?m)^(AUTH_SERVER_PORT|MAIN_SERVER_PORT|AUTH_DOMAIN|MAIN_DOMAIN)=.*$\n?/
+    @INJECT: /(?m)^(AUTH_SERVER_PORT|MAIN_SERVER_PORT|CDN_SERVER_PORT|AUTH_DOMAIN|MAIN_DOMAIN|CDN_DOMAIN)=.*$\n?/
     @END
 #END
 
-#BEGIN: ".env"
-    @INJECT: /(?m)^PORT=.*$\n?/
-    PORT={PORT}
-    @END
-#END
-
-// Cleanup XMS-related properties from the JSONC configuration
+// 2. CLEANUP JSONC CONFIGURATION
 #BEGIN: "xypriss.config.jsonc"
-    @INJECT: /(?m)^[ \t]*"(auth|main)ServerPort":.*$\n?/
-    @END
-    @INJECT: /(?s)[ \t]*"xms_nodes":\s*\{.*?"main":\s*\{[^\}]*\},\s*\},\r?\n?/
+    @INJECT: /(?s)[ \t]*"servers":\s*\{.*?\},\r?\n?/
     @END
 #END
 
-// 2. CODE INJECTIONS
-#SELECT: "./src/"
+// 3. REMOVE MULTI-SERVER SPECIFIC FILES
+FS.RM: "src/servers"
+FS.RM: "src/configs/servers.config.ts"
 
-#BEGIN: "configs/xypriss.config.ts"
-    @TSINJECT: SERVER_CONFIG
-        /**
-         * Standard single-server configuration.
-         * Configured for high-performance standalone operation.
-         */
-        server: {
-            autoKillConflict: true,
-            port: __sys__.vars.__port__,
-            serviceName: manifest.name,
-        },
+// 4. UPDATE XYPRISS SERVER CONFIG
+#BEGIN: "src/configs/xypriss.config.ts"
+    @INJECT: /(?m)^import\s*\{\s*(authServer|mainServer|cdnServer).*?\r?\n/
+    @END
+    @INJECT: /(?s)\s*multiServer:\s*\{.*?\},/
     @END
 #END
 
-#BEGIN: "router/index.ts"
-    @TSINJECT: ROUTERS_IMPORT
-        <#FOR: S in {SERVERS}>
-        import { {S}Router } from "../routes/{S}.route";
-        <#END>
-    @END
-    @TSINJECT: ROUTERS_USE
-        /** Mounting the primary router */
-        <#FOR: S in {SERVERS}>
-        router.use("{SERVERS.{S}.route}", {S}Router);
-        <#END>
-    @END
+// 5. UPDATE ROUTER FOR SINGLE INSTANCE
+#CREATE: "src/router.ts"
+import { Router } from "xypriss";
+import { apiRouter } from "./routes/api.route";
+import { authRouter } from "./routes/auth.route";
+import { cdnRouter } from "./routes/cdn.route";
+
+const r = Router();
+
+// Mount functional modules on standard route prefixes
+r.use("/api", apiRouter);
+r.use("/auth", authRouter);
+r.use("/cdn", cdnRouter);
+
+export { r as router };
+export default r;
 #END
 
-// 3. FILE GENERATION
-#FOR: S in {SERVERS}
-    #CREATE: "routes/{S}.route.ts"
-        import { Router, Send } from "xypriss";
-
-        /**
-         * Default Route Module.
-         * Handles the main application logic for the standalone server.
-         */
-        export const {S}Router = Router();
-
-        {S}Router.get("/", (req, res) => { 
-        const send = new Send(res)
-        send.ok("Standalone server is running", { 
-                status: "online",
-                timestamp: new Date().toISOString()
-         }); 
-         return
-        });
-    #END
-#END
+U.LOG: "<green>[DEFAULT]</> Single-instance modular structure configured."

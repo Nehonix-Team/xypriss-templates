@@ -22,3 +22,7 @@ private/
 
 test.xru
 xru_feedback_report.md
+feature-proposal.md
+lib/
+bin/
+.test_sandbox/
