@@ -1,0 +1,11 @@
+// Descripteur local : src/servers/.rules.xru
+// Gère le multi-serveurs XMS
+
+#IF {MODE} == "minimal"
+    // En mode minimaliste, on ne garde que le serveur API principal
+    Local.Keep(["api.server.ts"])
+#END
+
+#IF {PLUGIN} == true
+    Local.Keep(["api.server.ts"])
+#END

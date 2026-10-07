@@ -1,6 +1,0 @@
-// --------------------------------------------------------------------------
-// XyPriss XMS (Enterprise Multi-Server) Mode Rules
-// --------------------------------------------------------------------------
-
-U.LOG: "<cyan>[XMS]</> Configuring Enterprise Multi-Server topology (API, Auth, CDN)..."
-U.LOG: "<green>[XMS]</> Preserving modular servers, security guards, and XStatic sandboxing."

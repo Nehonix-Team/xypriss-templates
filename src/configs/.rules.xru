@@ -1,0 +1,6 @@
+// Descripteur local : src/configs/.rules.xru
+
+#IF {XEMS} == false
+    // Si l'utilisateur désactive le coffre sécurisé XEMS
+    Local.Drop(["xemsConfigs.ts"])
+#END
