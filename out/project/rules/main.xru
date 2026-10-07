@@ -1,0 +1,108 @@
+#USE utils as Utils
+#USE fs as Fs
+#USE net as Net
+#USE cmd as Cmd
+
+// -----------------------------------------------------------------------------
+// 1. ARGUMENTS CLI DU PROJET & CONFIGURATION
+// -----------------------------------------------------------------------------
+#ARG NAME: string or "my-xypriss-app"
+#ARG VERSION: string or "1.0.0"
+#ARG MODE: string or "default"
+#ARG XEMS: bool or true
+#ARG CDN: bool or true
+#ARG PLUGIN: bool or false
+#ARG INSTALL: bool or false
+
+Utils.Log("<cyan>[XRU 2.0]</> Orchestrating template <bold>{NAME}</> (mode: <yellow>{MODE}</>)")
+
+// -----------------------------------------------------------------------------
+// 1.b FONCTION GLOBALE RÉUTILISABLE PAR TOUS LES SOUS-DESCRIPTEURS (.rules.xru)
+// -----------------------------------------------------------------------------
+#GLOBAL FUNC PruneModule(kind: string, mode: string, cdn: bool)
+    #IF {mode} == "minimal"
+        Drop(["auth.{kind}.ts", "cdn.{kind}.ts"])
+    #ELIF {cdn} == false
+        Drop(["cdn.{kind}.ts"])
+    #END
+#END
+
+// -----------------------------------------------------------------------------
+// 2. MISE À JOUR DU PACKAGE.JSON
+// -----------------------------------------------------------------------------
+#FILE "package.json"
+    Replace("{{NAME}}", "{NAME}")
+    Replace("{{VERSION}}", "{VERSION}")
+
+    #IF {PLUGIN} == true
+        JsonSet("scripts.build", "xfpm exec tsc")
+        JsonSet("scripts.prepublish", "xfpm run build")
+        JsonRemove("peerDependencies")
+    #END
+#END
+
+// -----------------------------------------------------------------------------
+// 3. MUTATIONS GLOBALES SUR SRC/SERVER.TS ET SRC/ROUTER.TS
+// -----------------------------------------------------------------------------
+#IF {MODE} == "minimal"
+    Utils.Log("<yellow>[MODE: MINIMAL]</> Pruning multi-server and static assets architecture...")
+
+    #FILE "src/server.ts"
+        // Supprimer le bloc XStatic (L24-L37) tout en conservant app.use("/", router)
+        RemoveUntil("// 3. Configure secure static asset sandboxing with XStatic", "// 4. Start the server lifecycle")
+        Replace("import { createServer, XStatic } from \"xypriss\";", "import { createServer } from \"xypriss\";")
+        RemoveBlock("import {\n  permanentCdnPath", "} from \"./const/cdnPaths\";")
+    #END
+
+    #FILE "src/router.ts"
+        // Supprimer les groupes authServer et cdnServer (L16-L24)
+        RemoveUntil("// ============================== AUTH SERVER ==============================", "export { r as router };")
+        // Supprimer serverId: mainServer.id sur le groupe principal
+        Replace("r.group({ prefix: [\"/api\", \"/\"], serverId: mainServer.id }, (api) => {", "r.group({ prefix: [\"/api\", \"/\"] }, (api) => {")
+        // Nettoyer les imports devenus obsolètes
+        RemoveLines("auth.route")
+        RemoveLines("cdn.route")
+        RemoveLines("api.server")
+        RemoveLines("auth.server")
+        RemoveLines("cdn.server")
+    #END
+#END
+
+#IF {MODE} != "minimal"
+    #IF {CDN} == false
+        Utils.Log("<yellow>[CDN: DISABLED]</> Stripping CDN definitions and endpoints...")
+
+        #FILE "src/server.ts"
+            // Supprimer le bloc de configuration CDN (L27-L37)
+            RemoveUntil("// Sandboxed temporary uploads", "// 4. Start the server lifecycle")
+            RemoveBlock("import {\n  permanentCdnPath", "} from \"./const/cdnPaths\";")
+        #END
+
+        #FILE "src/router.ts"
+            // Supprimer le groupe CDN (L21-L24)
+            RemoveUntil("// ============================== CDN SERVER ==============================", "export { r as router };")
+            RemoveLines("cdn.route")
+            RemoveLines("cdn.server")
+        #END
+    #END
+#END
+
+// -----------------------------------------------------------------------------
+// 4. RÉSOLUTION DES FEUX TRICOLORES LOCAUX (.rules.xru)
+// -----------------------------------------------------------------------------
+#DISPATCH_TREE "./src", ".rules.xru"
+    #PASS MODE = {MODE}
+    #PASS CDN = {CDN}
+    #PASS XEMS = {XEMS}
+#END
+
+// -----------------------------------------------------------------------------
+// 5. INSTALLATION OPTIONNELLE VIA XFPM
+// -----------------------------------------------------------------------------
+#IF {INSTALL} == true
+    Utils.Log("<blue>[INSTALL]</> Installing dependencies via xfpm...")
+    Cmd.Exec("xfpm install")
+#END
+
+Utils.Log("<green>[SUCCESS]</> Template orchestration completed for <bold>{NAME}</>!")
+

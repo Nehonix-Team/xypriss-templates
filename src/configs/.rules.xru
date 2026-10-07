@@ -4,6 +4,7 @@
 #ARG CDN: bool or true
 
 #IF {XEMS} == false
+    Utils.Log("<red>[XEMS: DISABLED]</> Turning off XEMS session management")
     #FILE "xemsConfigs.ts"
         Replace("    enable: true,", "    enable: false, // Disabled: XEMS session management is turned off via configuration")
     #END

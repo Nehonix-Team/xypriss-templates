@@ -1,0 +1,10 @@
+// Descripteur local : src/guards/.rules.xru
+#ARG MODE: string or "default"
+
+#IF {MODE} == "minimal"
+    Drop(["auth.guard.ts"])
+    #FILE "index.guard.ts"
+        RemoveLines("auth.guard")
+        RemoveLines("authenticated")
+    #END
+#END

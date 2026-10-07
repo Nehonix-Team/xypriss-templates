@@ -1,0 +1,5 @@
+// Descripteur local : src/servers/.rules.xru
+#ARG MODE: string or "default"
+#ARG CDN: bool or true
+
+::PruneModule("server", {MODE}, {CDN})

@@ -8,6 +8,8 @@
 // -----------------------------------------------------------------------------
 #ARG NAME: string or "my-xypriss-app"
 #ARG VERSION: string or "1.0.0"
+#ARG DESCRIPTION: string or "Enterprise-grade XyPriss backend service"
+#ARG AUTHOR: string or ""
 #ARG MODE: string or "default"
 #ARG XEMS: bool or true
 #ARG CDN: bool or true
@@ -28,17 +30,27 @@ Utils.Log("<cyan>[XRU 2.0]</> Orchestrating template <bold>{NAME}</> (mode: <yel
 #END
 
 // -----------------------------------------------------------------------------
-// 2. MISE À JOUR DU PACKAGE.JSON
+// 2. MISE À JOUR DU PACKAGE.JSON ET DE TARGET_README.MD
 // -----------------------------------------------------------------------------
 #FILE "package.json"
     Replace("{{NAME}}", "{NAME}")
     Replace("{{VERSION}}", "{VERSION}")
+    Replace("{{DESCRIPTION}}", "{DESCRIPTION}")
+    Replace("{{AUTHOR}}", "{AUTHOR}")
 
     #IF {PLUGIN} == true
         JsonSet("scripts.build", "xfpm exec tsc")
         JsonSet("scripts.prepublish", "xfpm run build")
         JsonRemove("peerDependencies")
     #END
+#END
+
+#IF Fs.Exists("TARGET_README.md")
+    #FILE "TARGET_README.md"
+        Replace("{{SERVER_NAME}}", "{NAME}")
+        Replace("{{DESCRIPTION}}", "{DESCRIPTION}")
+    #END
+    Fs.Move("TARGET_README.md", "README.md")
 #END
 
 // -----------------------------------------------------------------------------
@@ -50,15 +62,16 @@ Utils.Log("<cyan>[XRU 2.0]</> Orchestrating template <bold>{NAME}</> (mode: <yel
     #FILE "src/server.ts"
         // Supprimer le bloc XStatic (L24-L37) tout en conservant app.use("/", router)
         RemoveUntil("// 3. Configure secure static asset sandboxing with XStatic", "// 4. Start the server lifecycle")
-        Replace("import { createServer, XStatic } from \"xypriss\";", "import { createServer } from \"xypriss\";")
-        RemoveBlock("import {\n  permanentCdnPath", "} from \"./const/cdnPaths\";")
+        Replace("""import { createServer, XStatic } from "xypriss";""", """import { createServer } from "xypriss";""")
+        RemoveBlock("""import {
+  permanentCdnPath""", """} from "./const/cdnPaths";""")
     #END
 
     #FILE "src/router.ts"
         // Supprimer les groupes authServer et cdnServer (L16-L24)
         RemoveUntil("// ============================== AUTH SERVER ==============================", "export { r as router };")
         // Supprimer serverId: mainServer.id sur le groupe principal
-        Replace("r.group({ prefix: [\"/api\", \"/\"], serverId: mainServer.id }, (api) => {", "r.group({ prefix: [\"/api\", \"/\"] }, (api) => {")
+        Replace("""r.group({ prefix: ["/api", "/"], serverId: mainServer.id }, (api) => {""", """r.group({ prefix: ["/api", "/"] }, (api) => {""")
         // Nettoyer les imports devenus obsolètes
         RemoveLines("auth.route")
         RemoveLines("cdn.route")
@@ -75,7 +88,8 @@ Utils.Log("<cyan>[XRU 2.0]</> Orchestrating template <bold>{NAME}</> (mode: <yel
         #FILE "src/server.ts"
             // Supprimer le bloc de configuration CDN (L27-L37)
             RemoveUntil("// Sandboxed temporary uploads", "// 4. Start the server lifecycle")
-            RemoveBlock("import {\n  permanentCdnPath", "} from \"./const/cdnPaths\";")
+            RemoveBlock("""import {
+  permanentCdnPath""", """} from "./const/cdnPaths";""")
         #END
 
         #FILE "src/router.ts"
@@ -103,6 +117,11 @@ Utils.Log("<cyan>[XRU 2.0]</> Orchestrating template <bold>{NAME}</> (mode: <yel
     Utils.Log("<blue>[INSTALL]</> Installing dependencies via xfpm...")
     Cmd.Exec("xfpm install")
 #END
+
+// -----------------------------------------------------------------------------
+// 6. NETTOYAGE DU DESCRIPTEUR RACINE
+// -----------------------------------------------------------------------------
+Fs.Remove("main.xru")
 
 Utils.Log("<green>[SUCCESS]</> Template orchestration completed for <bold>{NAME}</>!")
 

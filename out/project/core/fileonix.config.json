@@ -1,0 +1,21 @@
+{
+  "watch": ["."],
+  "ignore": ["node_modules", "dist", ".git", ".next", "build", "coverage"],
+  "extensions": [
+    ".ts",
+    ".tsx",
+    ".js",
+    ".jsx",
+    ".mjs",
+    ".cjs",
+    ".json",
+    ".env",
+    ".jsonc"
+  ],
+  "clearScreen": true,
+  "batchMode": false,
+  "maxRestarts": -1,
+  "useFileHash": true,
+  "silent": false,
+  "noSignals": false
+}

@@ -29,3 +29,4 @@ bin/
 .git/*
 mods/*
 ./vscode/*
+.xruignore
