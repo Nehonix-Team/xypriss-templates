@@ -2,4 +2,4 @@
 #ARG MODE: string or "default"
 #ARG CDN: bool or true
 
-PruneModule("controller", {MODE}, {CDN})
+global::PruneModule("controller", {MODE}, {CDN})

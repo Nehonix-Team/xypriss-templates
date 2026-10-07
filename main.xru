@@ -19,7 +19,7 @@ Utils.Log("<cyan>[XRU 2.0]</> Orchestrating template <bold>{NAME}</> (mode: <yel
 // -----------------------------------------------------------------------------
 // 1.b FONCTION GLOBALE RÉUTILISABLE PAR TOUS LES SOUS-DESCRIPTEURS (.rules.xru)
 // -----------------------------------------------------------------------------
-#GLOBAL #FUNC PruneModule(kind: string, mode: string, cdn: bool)
+#GLOBAL FUNC PruneModule(kind: string, mode: string, cdn: bool)
     #IF {mode} == "minimal"
         Drop(["auth.{kind}.ts", "cdn.{kind}.ts"])
     #ELIF {cdn} == false
@@ -105,3 +105,4 @@ Utils.Log("<cyan>[XRU 2.0]</> Orchestrating template <bold>{NAME}</> (mode: <yel
 #END
 
 Utils.Log("<green>[SUCCESS]</> Template orchestration completed for <bold>{NAME}</>!")
+
