@@ -2,6 +2,7 @@
 #USE fs as Fs
 #USE net as Net
 #USE cmd as Cmd
+#USE crypto as Crypto
 
 // -----------------------------------------------------------------------------
 // 1. ARGUMENTS CLI DU PROJET & CONFIGURATION
@@ -19,7 +20,16 @@
 Utils.Log("<cyan>[XRU 2.0]</> Orchestrating template <bold>{NAME}</> (mode: <yellow>{MODE}</>)")
 
 // -----------------------------------------------------------------------------
-// 1.b FONCTION GLOBALE RÉUTILISABLE PAR TOUS LES SOUS-DESCRIPTEURS (.rules.xru)
+// 1.b GÉNÉRATION DYNAMIQUE DES SECRETS CRYPTOGRAPHIQUES (.ENV)
+// -----------------------------------------------------------------------------
+let xemsSecret: string = Crypto.GetRandomBytes(32)
+
+#FILE ".env"
+    ReplaceLine("XEMS_SECRET=", `XEMS_SECRET="{xemsSecret}" // Auto-Generated for security`)
+#END
+
+// -----------------------------------------------------------------------------
+// 1.c FONCTION GLOBALE RÉUTILISABLE PAR TOUS LES SOUS-DESCRIPTEURS (.rules.xru)
 // -----------------------------------------------------------------------------
 #GLOBAL FUNC PruneModule(kind: string, mode: string, cdn: bool)
     #IF {mode} == "minimal"
