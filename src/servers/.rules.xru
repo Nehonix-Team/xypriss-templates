@@ -1,13 +1,13 @@
 // Descripteur local : src/servers/.rules.xru
-// Paramètres attendus : MODE (string), PLUGIN (bool)
-
-#ARG MODE: string or "enterprise"
-#ARG PLUGIN: bool or false
+#ARG MODE: string or "default"
+#ARG CDN: bool or true
 
 #IF {MODE} == "minimal"
-    Local.Keep(["api.server.ts"])
+    Drop(["auth.server.ts", "cdn.server.ts"])
 #END
 
-#IF {PLUGIN} == true
-    Local.Keep(["api.server.ts"])
+#IF {MODE} != "minimal"
+    #IF {CDN} == false
+        Drop(["cdn.server.ts"])
+    #END
 #END

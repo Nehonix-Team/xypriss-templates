@@ -19,3 +19,4 @@ interface IManifest {
   /** Application creator or organization */
   author: string;
 }
+ 

@@ -1,4 +1,4 @@
-import { date } from "utils/date";
+import { date } from "helpers/date";
 import { __sys__, XemsTypes } from "xypriss";
 
 export interface XemsCustomConfigOptions {

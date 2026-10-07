@@ -1,8 +1,10 @@
 // Descripteur local : src/guards/.rules.xru
-// Paramètre attendu : MODE (string)
-
-#ARG MODE: string or "enterprise"
+#ARG MODE: string or "default"
 
 #IF {MODE} == "minimal"
-    Local.Keep(["index.guard.ts", "auth.guard.ts"])
+    Drop(["auth.guard.ts"])
+    #FILE "index.guard.ts"
+        RemoveLines("auth.guard")
+        RemoveLines("authenticated")
+    #END
 #END

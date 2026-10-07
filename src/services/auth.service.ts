@@ -1,4 +1,4 @@
-import { hashPassword, verifyPassword } from "utils/crypto";
+import { hashPassword, verifyPassword } from "helpers/crypto";
 import { AppUser } from "../types/all";
 import { getRandomBytes, hash } from "xypriss-security";
 import { verify } from "node:crypto";
@@ -14,7 +14,7 @@ export class AuthService {
     // In production, integrate your database or ORM (e.g., Prisma)
     const token = getRandomBytes(32).toString();
     // this is an example of password hashing using the xypriss-security package.
-    
+
     const storedPass =
       "$xypriss$argon2id$v=19,m=65536,t=3,p=4$dwdhEQwS4Rgpy95YsWysaQ$kc5lHH2TJLeR+powcyKLFmB+Q40QXSY17eV5wvvNuEs";
     const isValidPass = await verifyPassword(password, storedPass);

@@ -1,5 +1,4 @@
 .git
-node_modules
 build.sh
 build.ignore
 *.log
@@ -14,7 +13,7 @@ tests
 docs
 RULES.md
 README.md
-
+node_modules/
 tmp/
 .private/
 private/
@@ -26,3 +25,7 @@ feature-proposal.md
 lib/
 bin/
 .test_sandbox/
+.vscode/settings.json
+.git/*
+mods/*
+./vscode/*

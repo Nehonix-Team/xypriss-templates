@@ -1,8 +1,28 @@
 // Descripteur local : src/configs/.rules.xru
-// Paramètre attendu : XEMS (bool)
-
+#ARG MODE: string or "default"
 #ARG XEMS: bool or true
+#ARG CDN: bool or true
 
 #IF {XEMS} == false
-    Local.Drop(["xemsConfigs.ts"])
+    #FILE "xemsConfigs.ts"
+        Replace("    enable: true,", "    enable: false, // Disabled: XEMS session management is turned off via configuration")
+    #END
+#END
+
+#IF {MODE} == "minimal"
+    #FILE "xypriss.config.ts"
+        RemoveUntil("multiServer: {", "};")
+        RemoveLines("auth.server")
+        RemoveLines("api.server")
+        RemoveLines("cdn.server")
+    #END
+#END
+
+#IF {MODE} != "minimal"
+    #IF {CDN} == false
+        #FILE "xypriss.config.ts"
+            Replace("servers: [authServer, mainServer, cdnServer],", "servers: [authServer, mainServer],")
+            RemoveLines("cdn.server")
+        #END
+    #END
 #END

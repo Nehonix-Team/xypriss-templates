@@ -1,4 +1,4 @@
-import { obj } from "utils/obj";
+import { obj } from "helpers/obj";
 import { __sys__ } from "xypriss";
 
 /**
