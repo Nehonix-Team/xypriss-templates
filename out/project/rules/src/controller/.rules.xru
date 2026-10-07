@@ -1,5 +1,0 @@
-// Descripteur local : src/controller/.rules.xru
-#ARG MODE: string or "default"
-#ARG CDN: bool or true
-
-global::PruneModule("controller", {MODE}, {CDN})

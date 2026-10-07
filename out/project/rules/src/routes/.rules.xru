@@ -1,5 +1,0 @@
-// Descripteur local : src/routes/.rules.xru
-#ARG MODE: string or "default"
-#ARG CDN: bool or true
-
-::PruneModule("route", {MODE}, {CDN})
