@@ -1,6 +1,8 @@
 // Descripteur local : src/guards/.rules.xru
+// Paramètre attendu : MODE (string)
+
+#ARG MODE: string or "enterprise"
 
 #IF {MODE} == "minimal"
-    // Pas de RBAC poussé en mode minimal, seulement le guard de base
     Local.Keep(["index.guard.ts", "auth.guard.ts"])
 #END

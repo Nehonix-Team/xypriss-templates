@@ -1,0 +1,46 @@
+#USE utils as Utils
+#USE fs as Fs
+#USE net as Net
+#USE cmd as Cmd
+
+// -----------------------------------------------------------------------------
+// 1. ARGUMENTS CLI DU PROJET & CONFIGURATION
+// -----------------------------------------------------------------------------
+#ARG NAME: string or "my-xypriss-app"
+#ARG VERSION: string or "1.0.0"
+#ARG MODE: string or "enterprise"
+#ARG PLUGIN: bool or false
+#ARG XEMS: bool or true
+#ARG INSTALL: bool or false
+
+Utils.Log("<cyan>[XRU 2.0]</> Orchestrating template <bold>{NAME}</> (mode: <yellow>{MODE}</>)")
+
+// -----------------------------------------------------------------------------
+// 2. MISE À JOUR DU PACKAGE.JSON
+// -----------------------------------------------------------------------------
+#FILE "package.json"
+    Replace("{{NAME}}", "{NAME}")
+    Replace("{{VERSION}}", "{VERSION}")
+
+    #IF {PLUGIN} == true
+        JsonSet("scripts.build", "xfpm exec tsc")
+        JsonSet("scripts.prepublish", "xfpm run build")
+        JsonRemove("peerDependencies")
+    #END
+#END
+
+// -----------------------------------------------------------------------------
+// 3. RÉSOLUTION DES FEUX TRICOLORES LOCAUX
+// Spécification explicite du pattern de descripteur (évite toute confusion)
+// -----------------------------------------------------------------------------
+#DISPATCH_TREE "./src", ".rules.xru"
+
+// -----------------------------------------------------------------------------
+// 4. INSTALLATION OPTIONNELLE VIA XFPM
+// -----------------------------------------------------------------------------
+#IF {INSTALL} == true
+    Utils.Log("<blue>[INSTALL]</> Installing dependencies via xfpm...")
+    Cmd.Exec("xfpm install")
+#END
+
+Utils.Log("<green>[SUCCESS]</> Template orchestration completed for <bold>{NAME}</>!")

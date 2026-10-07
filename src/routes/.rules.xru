@@ -1,8 +1,10 @@
 // Descripteur local : src/routes/.rules.xru
-// Gère exclusivement le cycle de vie des routes selon les arguments reçus
+// Paramètres attendus : MODE (string), PLUGIN (bool)
+
+#ARG MODE: string or "enterprise"
+#ARG PLUGIN: bool or false
 
 #IF {PLUGIN} == true
-    // Si c'est un plugin, on ne conserve que la route API essentielle
     Local.Keep(["api.route.ts"])
 #END
 
