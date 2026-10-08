@@ -1,5 +1,13 @@
-// Descripteur local : src/services/.rules.xru
+// =============================================================================
+// Module Descriptor: src/services/.rules.xru
+// =============================================================================
+// Orchestrates service layer modular pruning.
+// - In "minimal" mode: Drops auth and CDN services (auth.service.ts, cdn.service.ts).
+// - If CDN is disabled: Drops cdn.service.ts while retaining auth.service.ts.
+// =============================================================================
+
 #ARG MODE: string or "default"
 #ARG CDN: bool or true
 
-global::PruneModule("service", {MODE}, {CDN})
+// Invoke global pruning function defined in root main.xru
+::PruneModule("service", {MODE}, {CDN})

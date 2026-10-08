@@ -1,5 +1,13 @@
-// Descripteur local : src/controller/.rules.xru
+// =============================================================================
+// Module Descriptor: src/controller/.rules.xru
+// =============================================================================
+// Orchestrates controller layer modular pruning.
+// - In "minimal" mode: Drops auth and CDN controllers (auth.controller.ts, cdn.controller.ts).
+// - If CDN is disabled: Drops cdn.controller.ts while retaining auth.controller.ts.
+// =============================================================================
+
 #ARG MODE: string or "default"
 #ARG CDN: bool or true
 
-global::PruneModule("controller", {MODE}, {CDN})
+// Invoke global pruning function defined in root main.xru
+::PruneModule("controller", {MODE}, {CDN})

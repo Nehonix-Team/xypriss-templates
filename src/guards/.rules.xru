@@ -1,8 +1,19 @@
-// Descripteur local : src/guards/.rules.xru
+// =============================================================================
+// Module Descriptor: src/guards/.rules.xru
+// =============================================================================
+// Orchestrates authorization and guard lifecycle pruning.
+// - In "minimal" mode:
+//     1. Drops auth.guard.ts.
+//     2. Cleans up index.guard.ts to remove authentication guard references.
+// =============================================================================
+
 #ARG MODE: string or "default"
 
 #IF {MODE} == "minimal"
+    // Drop dedicated authentication guard
     Drop(["auth.guard.ts"])
+
+    // Remove obsolete guard exports and imports from the central index aggregator
     #FILE "index.guard.ts"
         RemoveLines("auth.guard")
         RemoveLines("authenticated")

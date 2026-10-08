@@ -1,5 +1,13 @@
-// Descripteur local : src/servers/.rules.xru
+// =============================================================================
+// Module Descriptor: src/servers/.rules.xru
+// =============================================================================
+// Orchestrates multi-server lifecycle definitions (API, Auth, and CDN isolated instances).
+// - In "minimal" mode: Drops auth and CDN servers (auth.server.ts, cdn.server.ts).
+// - If CDN is disabled: Drops cdn.server.ts while retaining auth.server.ts.
+// =============================================================================
+
 #ARG MODE: string or "default"
 #ARG CDN: bool or true
 
+// Invoke global pruning function defined in root main.xru
 ::PruneModule("server", {MODE}, {CDN})

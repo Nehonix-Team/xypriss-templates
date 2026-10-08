@@ -1,5 +1,13 @@
-// Descripteur local : src/routes/.rules.xru
+// =============================================================================
+// Module Descriptor: src/routes/.rules.xru
+// =============================================================================
+// Orchestrates route definition pruning.
+// - In "minimal" mode: Drops auth and CDN routes (auth.route.ts, cdn.route.ts).
+// - If CDN is disabled: Drops cdn.route.ts while retaining auth.route.ts.
+// =============================================================================
+
 #ARG MODE: string or "default"
 #ARG CDN: bool or true
 
+// Invoke global pruning function defined in root main.xru
 ::PruneModule("route", {MODE}, {CDN})

@@ -1,13 +1,15 @@
-// Descripteur local : src/const/.rules.xru
+// =============================================================================
+// Module Descriptor: src/const/.rules.xru
+// =============================================================================
+// Orchestrates global constants and asset configuration paths.
+// - In "minimal" mode or when CDN is disabled: Drops cdnPaths.ts.
+// =============================================================================
+
 #ARG MODE: string or "default"
 #ARG CDN: bool or true
 
 #IF {MODE} == "minimal"
     Drop(["cdnPaths.ts"])
-#END
-
-#IF {MODE} != "minimal"
-    #IF {CDN} == false
-        Drop(["cdnPaths.ts"])
-    #END
+#ELIF {CDN} == false
+    Drop(["cdnPaths.ts"])
 #END
