@@ -1,8 +1,8 @@
-#USE utils as Utils
-#USE fs as Fs
-#USE net as Net
-#USE cmd as Cmd
-#USE crypto as Crypto
+use utils as Utils
+use fs as Fs
+use net as Net
+use cmd as Cmd
+use crypto as Crypto
 
 // =============================================================================
 // Root Orchestration Descriptor: main.xru
@@ -14,133 +14,133 @@
 // -----------------------------------------------------------------------------
 // 1. CLI ARGUMENTS & CONFIGURATION SCHEMA
 // -----------------------------------------------------------------------------
-#ARG NAME: string or "my-xypriss-app"
-#ARG VERSION: string or "1.0.0"
-#ARG DESCRIPTION: string or "Enterprise-grade XyPriss backend service"
-#ARG AUTHOR: string or ""
-#ARG MODE: string or "default"
-#ARG XEMS: bool or true
-#ARG CDN: bool or true
-#ARG PLUGIN: bool or false
-#ARG INSTALL: bool or false
+arg name: string = "my-xypriss-app"
+arg version: string = "1.0.0"
+arg description: string = "Enterprise-grade XyPriss backend service"
+arg author: string = ""
+arg mode: string = "default"
+arg xems: bool = true
+arg cdn: bool = true
+arg plugin: bool = false
+arg install: bool = false
 
-Utils.Log("<cyan>[XRU 2.0]</> Orchestrating template <bold>{NAME}</> (mode: <yellow>{MODE}</>)")
+Utils.log("<cyan>[XRU 2.0]</> Orchestrating template <bold>{name}</> (mode: <yellow>{mode}</>)")
 
 // -----------------------------------------------------------------------------
 // 2. DYNAMIC CRYPTOGRAPHIC SECRET GENERATION (.env)
 // -----------------------------------------------------------------------------
-let xemsSecret: string = Crypto.GetRandomBytes(32)
+let xemsSecret: string = Crypto.getRandomBytes(32)
 
-#FILE ".env"
-    ReplaceLine("XEMS_SECRET=", `
+file ".env" {
+    replaceLine("XEMS_SECRET=", `
     # Auto-generated 256-bit secure XEMS secret
     XEMS_SECRET="{xemsSecret}" 
     `)
-#END
+}
 
 // -----------------------------------------------------------------------------
 // 3. REUSABLE GLOBAL FUNCTIONS (Invoked via ::FunctionName)
 // -----------------------------------------------------------------------------
-#GLOBAL FUNC PruneModule(kind: string, mode: string, cdn: bool)
-    #IF {mode} == "minimal"
-        Drop(["auth.{kind}.ts", "cdn.{kind}.ts"])
-    #ELIF {cdn} == false
-        Drop(["cdn.{kind}.ts"])
-    #END
-#END
+global func pruneModule(kind: string, mode: string, cdn: bool) {
+    if mode == "minimal" {
+        drop(["auth.{kind}.ts", "cdn.{kind}.ts"])
+    } elif cdn == false {
+        drop(["cdn.{kind}.ts"])
+    }
+}
 
 // -----------------------------------------------------------------------------
 // 4. METADATA HYDRATION (package.json & TARGET_README.md)
 // -----------------------------------------------------------------------------
-#FILE "package.json"
-    Replace("{{NAME}}", "{NAME}")
-    Replace("{{VERSION}}", "{VERSION}")
-    Replace("{{DESCRIPTION}}", "{DESCRIPTION}")
-    Replace("{{AUTHOR}}", "{AUTHOR}")
+file "package.json" {
+    replace("{{NAME}}", name)
+    replace("{{VERSION}}", version)
+    replace("{{DESCRIPTION}}", description)
+    replace("{{AUTHOR}}", author)
 
-    #IF {PLUGIN} == true
-        JsonSet("scripts.build", "xfpm exec tsc")
-        JsonSet("scripts.prepublish", "xfpm run build")
-        JsonRemove("peerDependencies")
-    #END
-#END
+    if plugin == true {
+        jsonSet("scripts.build", "xfpm exec tsc")
+        jsonSet("scripts.prepublish", "xfpm run build")
+        jsonRemove("peerDependencies")
+    }
+}
 
-#IF Fs.Exists("TARGET_README.md")
-    #FILE "TARGET_README.md"
-        Replace("{{SERVER_NAME}}", "{NAME}")
-        Replace("{{DESCRIPTION}}", "{DESCRIPTION}")
-    #END
-    Fs.Move("TARGET_README.md", "README.md")
-#END
+if Fs.exists("TARGET_README.md") {
+    file "TARGET_README.md" {
+        replace("{{SERVER_NAME}}", name)
+        replace("{{DESCRIPTION}}", description)
+    }
+    Fs.move("TARGET_README.md", "README.md")
+}
 
 // -----------------------------------------------------------------------------
 // 5. ARCHITECTURE PRUNING (src/server.ts & src/router.ts)
 // -----------------------------------------------------------------------------
-#IF {MODE} == "minimal"
-    Utils.Log("<yellow>[MODE: MINIMAL]</> Pruning multi-server topology and static assets architecture...")
+if mode == "minimal" {
+    Utils.log("<yellow>[MODE: MINIMAL]</> Pruning multi-server topology and static assets architecture...")
 
-    #FILE "src/server.ts"
+    file "src/server.ts" {
         // Remove static asset sandboxing (XStatic) while preserving standard routing
-        RemoveUntil("// 3. Configure secure static asset sandboxing with XStatic", "// 4. Start the server lifecycle")
-        Replace(`import { createServer, XStatic } from "xypriss";`, `import { createServer } from "xypriss";`)
-        RemoveBlock(<<<import {
+        removeUntil("// 3. Configure secure static asset sandboxing with XStatic", "// 4. Start the server lifecycle")
+        replace(`import { createServer, XStatic } from "xypriss";`, `import { createServer } from "xypriss";`)
+        removeBlock(<<<import {
   permanentCdnPath>>>, <<<} from "./const/cdnPaths";>>>)
-    #END
+    }
 
-    #FILE "src/router.ts"
+    file "src/router.ts" {
         // Remove authServer and cdnServer routing groups
-        RemoveUntil("// ============================== AUTH SERVER ==============================", "export { r as router };")
+        removeUntil("// ============================== AUTH SERVER ==============================", "export { r as router };")
         // Strip serverId constraint from default route group
-        Replace(`r.group({ prefix: ["/api", "/"], serverId: mainServer.id }, (api) => {`, `r.group({ prefix: ["/api", "/"] }, (api) => {`)
+        replace(`r.group({ prefix: ["/api", "/"], serverId: mainServer.id }, (api) => {`, `r.group({ prefix: ["/api", "/"] }, (api) => {`)
         // Clean up obsolete imports
-        RemoveLines("auth.route")
-        RemoveLines("cdn.route")
-        RemoveLines("api.server")
-        RemoveLines("auth.server")
-        RemoveLines("cdn.server")
-    #END
-#END
+        removeLines("auth.route")
+        removeLines("cdn.route")
+        removeLines("api.server")
+        removeLines("auth.server")
+        removeLines("cdn.server")
+    }
+}
 
-#IF {MODE} != "minimal"
-    #IF {CDN} == false
-        Utils.Log("<yellow>[CDN: DISABLED]</> Stripping CDN definitions and endpoints...")
+if mode != "minimal" {
+    if cdn == false {
+        Utils.log("<yellow>[CDN: DISABLED]</> Stripping CDN definitions and endpoints...")
 
-        #FILE "src/server.ts"
+        file "src/server.ts" {
             // Remove CDN sandboxing configuration
-            RemoveUntil("// Sandboxed temporary uploads", "// 4. Start the server lifecycle")
-            RemoveBlock(<<<import {
+            removeUntil("// Sandboxed temporary uploads", "// 4. Start the server lifecycle")
+            removeBlock(<<<import {
   permanentCdnPath>>>, <<<} from "./const/cdnPaths";>>>)
-        #END
+        }
 
-        #FILE "src/router.ts"
+        file "src/router.ts" {
             // Remove CDN routing group
-            RemoveUntil("// ============================== CDN SERVER ==============================", "export { r as router };")
-            RemoveLines("cdn.route")
-            RemoveLines("cdn.server")
-        #END
-    #END
-#END
+            removeUntil("// ============================== CDN SERVER ==============================", "export { r as router };")
+            removeLines("cdn.route")
+            removeLines("cdn.server")
+        }
+    }
+}
 
 // -----------------------------------------------------------------------------
 // 6. DISPATCH TREE EXECUTION (Scoped Subdescriptors)
 // -----------------------------------------------------------------------------
-#DISPATCH_TREE "./src", ".rules.xru"
-    #PASS MODE = {MODE}
-    #PASS CDN = {CDN}
-    #PASS XEMS = {XEMS}
-#END
+dispatch_tree "./src", ".rules.xru" {
+    pass mode = mode
+    pass cdn = cdn
+    pass xems = xems
+}
 
 // -----------------------------------------------------------------------------
 // 7. OPTIONAL DEPENDENCY INSTALLATION VIA XFPM
 // -----------------------------------------------------------------------------
-#IF {INSTALL} == true
-    Utils.Log("<blue>[INSTALL]</> Installing dependencies via xfpm...")
-    Cmd.Exec("xfpm install")
-#END
+if install == true {
+    Utils.log("<blue>[INSTALL]</> Installing dependencies via xfpm...")
+    Cmd.exec("xfpm install")
+}
 
 // -----------------------------------------------------------------------------
 // 8. ORCHESTRATION CLEANUP
 // -----------------------------------------------------------------------------
-Fs.Remove("main.xru")
+Fs.remove("main.xru")
 
-Utils.Log("<green>[SUCCESS]</> Template orchestration completed for <bold>{NAME}</>!")
+Utils.log("<green>[SUCCESS]</> Template orchestration completed for <bold>{name}</>!")

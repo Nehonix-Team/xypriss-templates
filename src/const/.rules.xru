@@ -5,11 +5,11 @@
 // - In "minimal" mode or when CDN is disabled: Drops cdnPaths.ts.
 // =============================================================================
 
-#ARG MODE: string or "default"
-#ARG CDN: bool or true
+arg mode: string = "default"
+arg cdn: bool = true
 
-#IF {MODE} == "minimal"
+if mode == "minimal" {
     Drop(["cdnPaths.ts"])
-#ELIF {CDN} == false
+} elif cdn == false {
     Drop(["cdnPaths.ts"])
-#END
+}

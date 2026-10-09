@@ -6,8 +6,8 @@
 // - If CDN is disabled: Drops cdn.controller.ts while retaining auth.controller.ts.
 // =============================================================================
 
-#ARG MODE: string or "default"
-#ARG CDN: bool or true
+arg mode: string = "default"
+arg cdn: bool = true
 
 // Invoke global pruning function defined in root main.xru
-::PruneModule("controller", {MODE}, {CDN})
+::PruneModule("controller", mode, cdn)

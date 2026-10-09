@@ -9,35 +9,35 @@
 //    - When CDN is disabled: Removes CDN server reference from the cluster array.
 // =============================================================================
 
-#ARG MODE: string or "default"
-#ARG XEMS: bool or true
-#ARG CDN: bool or true
+arg mode: string = "default"
+arg xems: bool = true
+arg cdn: bool = true
 
 // -----------------------------------------------------------------------------
 // 1. XEMS Session Management Configuration
 // -----------------------------------------------------------------------------
-#IF {XEMS} == false
-    Utils.Log("<yellow>[XEMS: DISABLED]</> Disabling XEMS session engine in xemsConfigs.ts")
-    #FILE "xemsConfigs.ts"
-        Replace("    enable: true,", "    enable: false, // Disabled: XEMS session management is turned off via configuration")
-    #END
-#END
+if xems == false {
+    Utils.log("<yellow>[XEMS: DISABLED]</> Disabling XEMS session engine in xemsConfigs.ts")
+    file "xemsConfigs.ts" {
+        replace("    enable: true,", "    enable: false, // Disabled: XEMS session management is turned off via configuration")
+    }
+}
 
 // -----------------------------------------------------------------------------
 // 2. Server Cluster Topology (xypriss.config.ts)
 // -----------------------------------------------------------------------------
-#IF {MODE} == "minimal"
+if mode == "minimal" {
     // Minimal mode: Strip multiServer configuration completely
-    #FILE "xypriss.config.ts"
-        RemoveUntil("multiServer: {", "};")
-        RemoveLines("auth.server")
-        RemoveLines("api.server")
-        RemoveLines("cdn.server")
-    #END
-#ELIF {CDN} == false
+    file "xypriss.config.ts" {
+        removeUntil("multiServer: {", "};")
+        removeLines("auth.server")
+        removeLines("api.server")
+        removeLines("cdn.server")
+    }
+} elif cdn == false {
     // Default mode without CDN: Remove cdnServer from cluster registry
-    #FILE "xypriss.config.ts"
-        Replace("servers: [authServer, mainServer, cdnServer],", "servers: [authServer, mainServer],")
-        RemoveLines("cdn.server")
-    #END
-#END
+    file "xypriss.config.ts" {
+        replace("servers: [authServer, mainServer, cdnServer],", "servers: [authServer, mainServer],")
+        removeLines("cdn.server")
+    }
+}

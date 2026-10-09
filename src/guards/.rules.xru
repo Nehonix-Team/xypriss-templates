@@ -7,15 +7,15 @@
 //     2. Cleans up index.guard.ts to remove authentication guard references.
 // =============================================================================
 
-#ARG MODE: string or "default"
+arg mode: string = "default"
 
-#IF {MODE} == "minimal"
+if mode == "minimal" {
     // Drop dedicated authentication guard
     Drop(["auth.guard.ts"])
 
     // Remove obsolete guard exports and imports from the central index aggregator
-    #FILE "index.guard.ts"
+    file "index.guard.ts" {
         RemoveLines("auth.guard")
         RemoveLines("authenticated")
-    #END
-#END
+    }
+}

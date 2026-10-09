@@ -1,0 +1,24 @@
+use utils as Utils
+use net as Net
+use undefinedModulefs // Should throw error
+
+let a: string = "testing with block"
+Utils.log(a)
+
+with Net.fetch("https://api.github.com/repos/Nehonix-Team/xypriss-templates/releases/latest") {
+    set method = "GET"
+    set timeout = 30s
+    set extractTo = "./src"
+
+    header "Accept" -> "application/vnd.github.v3+json"
+    header "User-Agent" -> "XRU-Engine"
+
+    on progress -> (percent, speed) => Utils.log("<cyan>[PROGRESS]</> {percent}% à {speed}")
+    on complete -> (data, err) => {
+        if err != nil {
+            Utils.log("<red>[ERROR]</> {err}")
+        } else {
+            Utils.log("<green>[DONE]</> Téléchargement terminé avec succès via bloc!")
+        }
+    }
+}

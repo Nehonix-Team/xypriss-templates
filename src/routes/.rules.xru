@@ -6,8 +6,8 @@
 // - If CDN is disabled: Drops cdn.route.ts while retaining auth.route.ts.
 // =============================================================================
 
-#ARG MODE: string or "default"
-#ARG CDN: bool or true
+arg mode: string = "default"
+arg cdn: bool = true
 
 // Invoke global pruning function defined in root main.xru
-::PruneModule("route", {MODE}, {CDN})
+::PruneModule("route", mode, cdn)
