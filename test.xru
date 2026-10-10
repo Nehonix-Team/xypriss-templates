@@ -1,49 +1,61 @@
-use std 
-from "services" use (auth, cdn)
-from "services" use cdn::deploy
+use std
 use net as Net
 use fs as Fs
 
-global let a = 1
-a =: 3
-std.println(a)
+// ==============================================================================
+// 1. DÉCLARATION D'UNE UNITÉ LOCALE AVEC MÉTHODES TYPÉES
+// ==============================================================================
+unit TemplateManager {
+    // 1. Propriétés internes d'instance
+    declare baseDir: string = "./src"
+    declare isLocked: bool = false
+    declare retryLimit: number = 3
 
-const r = cdn.deploy()
-func clean(target: string) -> bool {
-        // if r == true {
-        //     std.error("Cannot clean: TemplateManager is locked!")
-        //     return false
-        // }
+    // 2. Méthodes d'instance avec signatures strictes
+    // Règle : Toutes les branches de return doivent respecter le type déclaré (-> bool)
+    func clean(target: string) -> bool {
+        if &isLocked == true {
+            std.error("TemplateManager is locked!")
+            return false                       // Branche 1 : bool
+        }
+        std.info("Nettoyage de {&baseDir}/{target}...")
+        return true                            // Branche 2 : bool (invalide si return 'test')
+    }
 
-        Fs.remove("{&baseDir}/target")
-        std.warn("Removed {'target'}")
-        return true
+    func lock() -> void {
+        &isLocked =: true                      // Mutation directe de propriété interne avec =:
+        std.warn("TemplateManager verrouillé !")
+    }
 }
-clean("target")
 
-  
-// if r == true {
-//     std.getrandombytes(12)
-// } else{
-//   std.println("false result: {r}")
-// }
+// ==============================================================================
+// 2. INSTANCIATION & APPELS DE MÉTHODES TYPÉES
+// ==============================================================================
+let mgr = @TemplateManager()
 
+// Appel vérifié : nombre et types d'arguments contrôlés statiquement
+let success = mgr.clean("cache")
+std.println("Résultat du nettoyage : {success}")
 
-// with Net.fetch("https://api.github.com/repos/Nehonix-Team/xypriss-templates/releases/latest") {
-//     set method = "GET"
-//     set timeout = 30s
-//     // set nonExistExtractTo = "./src"
+mgr.lock()
+let blocked = mgr.clean("cache")
+std.println("Résultat après verrouillage : {blocked}")
 
-//     header "Accept" -> "application/vnd.github.v3+json"
-//     header "User-Agent" -> "XRU-Engine"
+// ==============================================================================
+// 3. TÂCHE D'ARRIÈRE-PLAN ASYNCHRONE AVEC 'with'
+// ==============================================================================
+// 'with' lance immédiatement l'opération en tâche de fond (goroutine Go)
+// Le script continue son exécution sans bloquer et sans polluer la fonction en 'async' !
+let downloadTask = with Net.fetch("https://api.github.com/repos/Nehonix-Team/xypriss-templates")
 
-//     on progress -> (percent, speed) => std.println("<cyan>[PROGRESS]</> {percent}% à {speed}")
-//     on complete -> (data, err) => {
-//         if err != nil {
-//             std.println("<red>[ERROR]</> {err}")
-//         } else {
-//             std.println("<green>[DONE]</> Téléchargement terminé avec succès via bloc!")
-//         }
-//     }
-// }
+std.info("Téléchargement lancé en arrière-plan...")
+std.info("Le script principal continue à s'exécuter en parallèle !")
+
+// Vérification de statut (thread-safe)
+let isDone = downloadTask.isDone()
+std.println("Statut immédiat : isDone = {isDone}")
+
+// Attente et récupération synchrone du résultat
+let result = downloadTask.wait()
+std.success("Tâche terminée avec succès !")
 
