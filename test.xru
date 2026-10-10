@@ -1,29 +1,35 @@
-use std as Utils
+use std 
 from "services" use (auth, cdn)
 from "services" use cdn::deploy
 use net as Net
 
 global let a = 1
-Utils.println(a)
+std.println(a)
 
-cdn.deploy()
+const r = cdn.deploy()
 
-
-with Net.fetch("https://api.github.com/repos/Nehonix-Team/xypriss-templates/releases/latest") {
-    set method = "GET"
-    set timeout = 30s
-    // set nonExistExtractTo = "./src"
-
-    header "Accept" -> "application/vnd.github.v3+json"
-    header "User-Agent" -> "XRU-Engine"
-
-    on progress -> (percent, speed) => std.println("<cyan>[PROGRESS]</> {percent}% à {speed}")
-    on complete -> (data, err) => {
-        if err != nil {
-            std.println("<red>[ERROR]</> {err}")
-        } else {
-            std.println("<green>[DONE]</> Téléchargement terminé avec succès via bloc!")
-        }
-    }
+if r == true {
+    std.println("result: {r}")
+} else{
+  std.println("false result: {r}")
 }
+
+
+// with Net.fetch("https://api.github.com/repos/Nehonix-Team/xypriss-templates/releases/latest") {
+//     set method = "GET"
+//     set timeout = 30s
+//     // set nonExistExtractTo = "./src"
+
+//     header "Accept" -> "application/vnd.github.v3+json"
+//     header "User-Agent" -> "XRU-Engine"
+
+//     on progress -> (percent, speed) => std.println("<cyan>[PROGRESS]</> {percent}% à {speed}")
+//     on complete -> (data, err) => {
+//         if err != nil {
+//             std.println("<red>[ERROR]</> {err}")
+//         } else {
+//             std.println("<green>[DONE]</> Téléchargement terminé avec succès via bloc!")
+//         }
+//     }
+// }
 
