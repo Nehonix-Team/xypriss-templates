@@ -1,4 +1,6 @@
 use std
-let a = 16
+from "root" use T::clean
 
-std.println(a + 2)
+let c = clean
+
+std.print(clean())

@@ -9,11 +9,11 @@ a =: 3
 std.println(a)
 
 const r = cdn.deploy()
- func clean(target: string) -> bool {
-        if r == true {
-            std.error("Cannot clean: TemplateManager is locked!")
-            return false
-        }
+func clean(target: string) -> bool {
+        // if r == true {
+        //     std.error("Cannot clean: TemplateManager is locked!")
+        //     return false
+        // }
 
         Fs.remove("{&baseDir}/target")
         std.warn("Removed {'target'}")
