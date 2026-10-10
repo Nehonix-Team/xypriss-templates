@@ -2,17 +2,31 @@ use std
 from "services" use (auth, cdn)
 from "services" use cdn::deploy
 use net as Net
+use fs as Fs
 
 global let a = 1
+a =: 3
 std.println(a)
 
 const r = cdn.deploy()
+ func clean(target: string) -> bool {
+        if r == true {
+            std.error("Cannot clean: TemplateManager is locked!")
+            return false
+        }
 
-if r == true {
-    std.println("result: {r}")
-} else{
-  std.println("false result: {r}")
+        Fs.remove("{&baseDir}/target")
+        std.warn("Removed {'target'}")
+        return true
 }
+clean("target")
+
+  
+// if r == true {
+//     std.getrandombytes(12)
+// } else{
+//   std.println("false result: {r}")
+// }
 
 
 // with Net.fetch("https://api.github.com/repos/Nehonix-Team/xypriss-templates/releases/latest") {
