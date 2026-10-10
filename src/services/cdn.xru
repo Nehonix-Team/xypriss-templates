@@ -1,4 +1,5 @@
 mod cdn
+use std
 
 global let cacheDir: string = "https://cdn.xypriss.dev"
 

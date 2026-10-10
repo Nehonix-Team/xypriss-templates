@@ -1,4 +1,5 @@
 mod auth
+use std
 
 global let b: string = "secret"
 
