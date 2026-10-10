@@ -1,0 +1,4 @@
+use std
+let a = 16
+
+std.println(a + 2)
