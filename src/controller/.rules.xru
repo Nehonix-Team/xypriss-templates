@@ -1,4 +1,5 @@
 use std
+from "root" use main
 
 // =============================================================================
 // Module Descriptor: src/controller/.rules.xru
@@ -11,8 +12,4 @@ use std
 arg mode: string = "default"
 arg cdn: bool = true
 
-if mode == "minimal" {
-    drop(["auth.controller.ts", "cdn.controller.ts"])
-} elif cdn == false {
-    drop(["cdn.controller.ts"])
-}
+main::prune("controller", mode, cdn)

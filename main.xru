@@ -1,3 +1,7 @@
+// Module name (use fileName if nothing is provided)
+mod main
+
+
 use std
 use fs as Fs
 use cmd as Cmd
@@ -39,7 +43,18 @@ if Fs.exists(".env") {
 }
 
 // -----------------------------------------------------------------------------
-// 3. METADATA HYDRATION (package.json & TARGET_README.md)
+// 3. REUSABLE GLOBAL FUNCTIONS (Invoked via ::functionName)
+// -----------------------------------------------------------------------------
+global func prune(kind: string, mode: string, cdn: bool) {
+    if mode == "minimal" {
+        drop(["auth.$f{kind}.ts", "cdn.$f{kind}.ts"])
+    } elif cdn == false {
+        drop(["cdn.$f{kind}.ts"])
+    }
+}
+
+// -----------------------------------------------------------------------------
+// 4. METADATA HYDRATION (package.json & TARGET_README.md)
 // -----------------------------------------------------------------------------
 file "package.json", (doc, err) -> {
     if err != nil {
@@ -68,50 +83,39 @@ if Fs.exists("TARGET_README.md") {
 }
 
 // -----------------------------------------------------------------------------
-// 4. ARCHITECTURE PRUNING (src/server.ts & src/router.ts)
+// 5. ARCHITECTURE PRUNING (src/server.ts & src/router.ts)
 // -----------------------------------------------------------------------------
-if mode == "minimal" {
-    std.println("<yellow>[MODE: MINIMAL]</> Pruning multi-server topology and static assets architecture...")
-
+if mode == "minimal" || cdn == false {
     file "src/server.ts", (doc, err) -> {
         if err != nil { return }
-        // Supprime l'importation de cdnPaths
-        doc.removeBetween("import {\n  permanentCdnPath", "} from \"./const/cdnPaths\";", true)
-        // Supprime l'import XStatic
-        doc.replaceFuzzy("import { createServer, XStatic } from \"xypriss\";", "import { createServer } from \"xypriss\";")
-        // Supprime la configuration XStatic
-        doc.removeBetween("// 3. Configure secure static asset sandboxing with XStatic", "// 4. Start the server lifecycle", false)
-        doc.removeLine("// 3. Configure secure static asset sandboxing with XStatic")
+        // Supprime l'import des chemins CDN
+        doc.removeBetween("import {\n  permanentCdnPath", "} from \"./const/cdnPaths\";")
+
+        if mode == "minimal" {
+            // Mode minimal : retrait de XStatic et sandboxing d'assets
+            doc.replaceFuzzy("import { createServer, XStatic } from \"xypriss\";", "import { createServer } from \"xypriss\";")
+            doc.removeBetween("// 3. Configure secure static asset sandboxing with XStatic", "});")
+        } elif cdn == false {
+            // Mode avec CDN désactivé : retrait des uploads temporaires
+            doc.removeBetween("// Sandboxed temporary uploads", "});")
+        }
     }
 
     file "src/router.ts", (doc, err) -> {
         if err != nil { return }
-        // Supprime les groupes de routage authServer et cdnServer
-        doc.removeBetween("// ============================== AUTH SERVER ==============================", "export { r as router };", false)
-        doc.removeLine("// ============================== AUTH SERVER ==============================")
-        // Ajuste le groupe principal pour retirer la contrainte serverId
-        doc.replaceFuzzy("r.group({ prefix: [\"/api\", \"/\"], serverId: mainServer.id }, (api) => {", "r.group({ prefix: [\"/api\", \"/\"] }, (api) => {")
-        // Nettoie les imports obsolètes
-        doc.removeLines("auth.route")
-        doc.removeLines("cdn.route")
-        doc.removeLines("api.server")
-        doc.removeLines("auth.server")
-        doc.removeLines("cdn.server")
-    }
-} elif cdn == false {
-    std.println("<yellow>[CDN: DISABLED]</> Stripping CDN definitions and endpoints...")
-
-    file "src/server.ts", (doc, err) -> {
-        if err != nil { return }
-        doc.removeBetween("import {\n  permanentCdnPath", "} from \"./const/cdnPaths\";", true)
-        doc.removeBetween("// Sandboxed temporary uploads", "// 4. Start the server lifecycle", false)
-        doc.removeLine("// Sandboxed temporary uploads")
-    }
-
-    file "src/router.ts", (doc, err) -> {
-        if err != nil { return }
-        doc.removeBetween("// ============================== CDN SERVER ==============================", "export { r as router };", false)
-        doc.removeLine("// ============================== CDN SERVER ==============================")
+        if mode == "minimal" {
+            // Mode minimal : suppression des groupes auth et cdn
+            doc.removeBetween("// ============================== AUTH SERVER", "export { r as router };", false)
+            doc.removeLines("// ==============================")
+            doc.replaceFuzzy("r.group({ prefix: [\"/api\", \"/\"], serverId: mainServer.id }, (api) => {", "r.group({ prefix: [\"/api\", \"/\"] }, (api) => {")
+            doc.removeLines("auth.route")
+            doc.removeLines("api.server")
+            doc.removeLines("auth.server")
+        } elif cdn == false {
+            // CDN désactivé : suppression du groupe cdn
+            doc.removeBetween("// ============================== CDN SERVER", "});")
+        }
+        // Imports CDN communs retirés dans les deux cas
         doc.removeLines("cdn.route")
         doc.removeLines("cdn.server")
     }

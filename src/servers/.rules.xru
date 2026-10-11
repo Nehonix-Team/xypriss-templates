@@ -1,4 +1,5 @@
 use std
+from "root" use main::prune
 
 // =============================================================================
 // Module Descriptor: src/servers/.rules.xru
@@ -11,8 +12,4 @@ use std
 arg mode: string = "default"
 arg cdn: bool = true
 
-if mode == "minimal" {
-    drop(["auth.server.ts", "cdn.server.ts"])
-} elif cdn == false {
-    drop(["cdn.server.ts"])
-}
+prune("server", mode, cdn)
