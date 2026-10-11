@@ -1,0 +1,11 @@
+mod auth
+use std
+
+global let b: string = "secret"
+
+global func login(user: string) {
+    std.println("Authenticated user: {user}")
+    return true
+}
+
+let internalKey = 123
