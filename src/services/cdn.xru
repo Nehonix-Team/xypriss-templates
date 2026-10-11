@@ -1,9 +1,0 @@
-mod cdn
-use std
-
-global let cacheDir: string = "https://cdn.xypriss.dev"
-
-global func deploy() {
-    std.println("Deploying CDN assets...")
-    return true
-}

@@ -1,0 +1,9 @@
+use std
+
+// Ce script s'exécute DANS ./samples/database/
+std.info("Sous-descripteur database en cours d'exécution...")
+
+// On décide de ne garder que postgres.ts et de supprimer tout le reste du dossier :
+Keep(["postgres.ts"])
+
+std.success("Dossier database configuré avec succès !")

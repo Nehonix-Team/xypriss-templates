@@ -1,3 +1,5 @@
+use std
+
 // =============================================================================
 // Module Descriptor: src/guards/.rules.xru
 // =============================================================================
@@ -11,11 +13,12 @@ arg mode: string = "default"
 
 if mode == "minimal" {
     // Drop dedicated authentication guard
-    Drop(["auth.guard.ts"])
+    drop(["auth.guard.ts"])
 
     // Remove obsolete guard exports and imports from the central index aggregator
-    file "index.guard.ts" {
-        RemoveLines("auth.guard")
-        RemoveLines("authenticated")
+    file "index.guard.ts", (doc, err) -> {
+        if err != nil { return }
+        doc.removeLines("auth.guard")
+        doc.removeLines("authenticated")
     }
 }

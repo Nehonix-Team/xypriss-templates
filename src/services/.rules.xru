@@ -1,4 +1,4 @@
-mod srv
+use std
 
 // =============================================================================
 // Module Descriptor: src/services/.rules.xru
@@ -11,5 +11,8 @@ mod srv
 arg mode: string = "default"
 arg cdn: bool = true
 
-// Invoke global pruning function defined in root main.xru
-::PruneModule("service", mode, cdn)
+if mode == "minimal" {
+    drop(["auth.service.ts", "cdn.service.ts"])
+} elif cdn == false {
+    drop(["cdn.service.ts"])
+}

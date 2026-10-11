@@ -1,3 +1,5 @@
+use std
+
 // =============================================================================
 // Module Descriptor: src/routes/.rules.xru
 // =============================================================================
@@ -9,5 +11,8 @@
 arg mode: string = "default"
 arg cdn: bool = true
 
-// Invoke global pruning function defined in root main.xru
-::PruneModule("route", mode, cdn)
+if mode == "minimal" {
+    drop(["auth.route.ts", "cdn.route.ts"])
+} elif cdn == false {
+    drop(["cdn.route.ts"])
+}

@@ -1,6 +1,5 @@
 use std
 use fs as Fs
-use net as Net
 use cmd as Cmd
 use crypto as Crypto
 
@@ -31,113 +30,104 @@ std.println("<cyan>[XRU 2.0]</> Orchestrating template <bold>$f{name}</> (mode: 
 // -----------------------------------------------------------------------------
 let xemsSecret: string = Crypto.getRandomBytes(32)
 
-file ".env" {
-    replaceLine("XEMS_SECRET=", `
-    # Auto-generated 256-bit secure XEMS secret
-    XEMS_SECRET="$f{xemsSecret}" 
-    `)
-}
-
-// -----------------------------------------------------------------------------
-// 3. REUSABLE GLOBAL FUNCTIONS (Invoked via ::FunctionName)
-// -----------------------------------------------------------------------------
-global func pruneModule(kind: string, mode: string, cdn: bool) {
-    if mode == "minimal" {
-        drop(["auth.$f{kind}.ts", "cdn.$f{kind}.ts"])
-    } elif cdn == false {
-        drop(["cdn.$f{kind}.ts"])
+if Fs.exists(".env") {
+    file ".env", (doc, err) -> {
+        if err != nil { return }
+        doc.removeLines("XEMS_SECRET")
+        doc.append("\nXEMS_SECRET=\"$f{xemsSecret}\"\n")
     }
 }
 
 // -----------------------------------------------------------------------------
-// 4. METADATA HYDRATION (package.json & TARGET_README.md)
+// 3. METADATA HYDRATION (package.json & TARGET_README.md)
 // -----------------------------------------------------------------------------
-file "package.json" {
-    replace("{{NAME}}", name)
-    replace("{{VERSION}}", version)
-    replace("{{DESCRIPTION}}", description)
-    replace("{{AUTHOR}}", author)
+file "package.json", (doc, err) -> {
+    if err != nil {
+        std.error("Error opening package.json: $f{err}")
+        return
+    }
+    doc.setJson("name", name)
+    doc.setJson("version", version)
+    doc.setJson("description", description)
+    doc.setJson("author", author)
 
     if plugin == true {
-        jsonSet("scripts.build", "xfpm exec tsc")
-        jsonSet("scripts.prepublish", "xfpm run build")
-        jsonRemove("peerDependencies")
+        doc.setJson("scripts.build", "xfpm exec tsc")
+        doc.setJson("scripts.prepublish", "xfpm run build")
+        doc.removeJson("peerDependencies")
     }
 }
 
 if Fs.exists("TARGET_README.md") {
-    file "TARGET_README.md" {
-        replace("{{SERVER_NAME}}", name)
-        replace("{{DESCRIPTION}}", description)
+    file "TARGET_README.md", (doc, err) -> {
+        if err != nil { return }
+        doc.replaceFuzzy("{{SERVER_NAME}}", name)
+        doc.replaceFuzzy("{{DESCRIPTION}}", description)
     }
     Fs.move("TARGET_README.md", "README.md")
 }
 
 // -----------------------------------------------------------------------------
-// 5. ARCHITECTURE PRUNING (src/server.ts & src/router.ts)
+// 4. ARCHITECTURE PRUNING (src/server.ts & src/router.ts)
 // -----------------------------------------------------------------------------
 if mode == "minimal" {
-    Utils.log("<yellow>[MODE: MINIMAL]</> Pruning multi-server topology and static assets architecture...")
+    std.println("<yellow>[MODE: MINIMAL]</> Pruning multi-server topology and static assets architecture...")
 
-    file "src/server.ts" {
-        // Remove static asset sandboxing (XStatic) while preserving standard routing
-        removeUntil("// 3. Configure secure static asset sandboxing with XStatic", "// 4. Start the server lifecycle")
-        replace(`import { createServer, XStatic } from "xypriss";`, `import { createServer } from "xypriss";`)
-        removeBlock(<<<import {
-  permanentCdnPath>>>, <<<} from "./const/cdnPaths";>>>)
+    file "src/server.ts", (doc, err) -> {
+        if err != nil { return }
+        // Supprime l'importation de cdnPaths
+        doc.removeBetween("import {\n  permanentCdnPath", "} from \"./const/cdnPaths\";", true)
+        // Supprime l'import XStatic
+        doc.replaceFuzzy("import { createServer, XStatic } from \"xypriss\";", "import { createServer } from \"xypriss\";")
+        // Supprime la configuration XStatic
+        doc.removeBetween("// 3. Configure secure static asset sandboxing with XStatic", "// 4. Start the server lifecycle", false)
+        doc.removeLine("// 3. Configure secure static asset sandboxing with XStatic")
     }
 
-    file "src/router.ts" {
-        // Remove authServer and cdnServer routing groups
-        removeUntil("// ============================== AUTH SERVER ==============================", "export { r as router };")
-        // Strip serverId constraint from default route group
-        replace(`r.group({ prefix: ["/api", "/"], serverId: mainServer.id }, (api) => {`, `r.group({ prefix: ["/api", "/"] }, (api) => {`)
-        // Clean up obsolete imports
-        removeLines("auth.route")
-        removeLines("cdn.route")
-        removeLines("api.server")
-        removeLines("auth.server")
-        removeLines("cdn.server")
+    file "src/router.ts", (doc, err) -> {
+        if err != nil { return }
+        // Supprime les groupes de routage authServer et cdnServer
+        doc.removeBetween("// ============================== AUTH SERVER ==============================", "export { r as router };", false)
+        doc.removeLine("// ============================== AUTH SERVER ==============================")
+        // Ajuste le groupe principal pour retirer la contrainte serverId
+        doc.replaceFuzzy("r.group({ prefix: [\"/api\", \"/\"], serverId: mainServer.id }, (api) => {", "r.group({ prefix: [\"/api\", \"/\"] }, (api) => {")
+        // Nettoie les imports obsolètes
+        doc.removeLines("auth.route")
+        doc.removeLines("cdn.route")
+        doc.removeLines("api.server")
+        doc.removeLines("auth.server")
+        doc.removeLines("cdn.server")
     }
-}
+} elif cdn == false {
+    std.println("<yellow>[CDN: DISABLED]</> Stripping CDN definitions and endpoints...")
 
-if mode != "minimal" {
-    if cdn == false {
-        Utils.log("<yellow>[CDN: DISABLED]</> Stripping CDN definitions and endpoints...")
+    file "src/server.ts", (doc, err) -> {
+        if err != nil { return }
+        doc.removeBetween("import {\n  permanentCdnPath", "} from \"./const/cdnPaths\";", true)
+        doc.removeBetween("// Sandboxed temporary uploads", "// 4. Start the server lifecycle", false)
+        doc.removeLine("// Sandboxed temporary uploads")
+    }
 
-        file "src/server.ts" {
-            // Remove CDN sandboxing configuration
-            removeUntil("// Sandboxed temporary uploads", "// 4. Start the server lifecycle")
-            removeBlock(<<<import {
-  permanentCdnPath>>>, <<<} from "./const/cdnPaths";>>>)
-        }
-
-        file "src/router.ts" {
-            // Remove CDN routing group
-            removeUntil("// ============================== CDN SERVER ==============================", "export { r as router };")
-            removeLines("cdn.route")
-            removeLines("cdn.server")
-        }
+    file "src/router.ts", (doc, err) -> {
+        if err != nil { return }
+        doc.removeBetween("// ============================== CDN SERVER ==============================", "export { r as router };", false)
+        doc.removeLine("// ============================== CDN SERVER ==============================")
+        doc.removeLines("cdn.route")
+        doc.removeLines("cdn.server")
     }
 }
 
 // -----------------------------------------------------------------------------
-// 6. DISPATCH TREE EXECUTION (Scoped Subdescriptors)
+// 5. DISPATCH TREE EXECUTION (Scoped Subdescriptors)
 // -----------------------------------------------------------------------------
 dispatch "./src"
 
-
 // -----------------------------------------------------------------------------
-// 7. OPTIONAL DEPENDENCY INSTALLATION VIA XFPM
+// 6. OPTIONAL DEPENDENCY INSTALLATION VIA XFPM
 // -----------------------------------------------------------------------------
 if install == true {
-    Utils.log("<blue>[INSTALL]</> Installing dependencies via xfpm...")
+    std.println("<blue>[INSTALL]</> Installing dependencies via xfpm...")
     Cmd.exec("xfpm install")
 }
-
-// -----------------------------------------------------------------------------
-// 8. ORCHESTRATION CLEANUP
-// -----------------------------------------------------------------------------
-Fs.remove("main.xru")
 
 std.println("<green>[SUCCESS]</> Template orchestration completed for <bold>$f{name}</>!")

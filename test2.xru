@@ -1,10 +1,16 @@
 use std
 
 file "package.json", (content, error) -> {
+    const a = 87
+
    if error != "" {
       std.error("Error opening file: $f{error}")
       return
    }
-   std.println("Name: $f{content.getJson('name')}")
+   std.println("Name: $f{content.getLines()('name')}")
    std.println("Lines count: $f{content.size()}")
 }
+
+let a = 8
+
+std.print("$f{a + 78}")

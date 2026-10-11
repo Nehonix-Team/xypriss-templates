@@ -1,3 +1,5 @@
+use std
+
 // =============================================================================
 // Module Descriptor: src/configs/.rules.xru
 // =============================================================================
@@ -17,9 +19,10 @@ arg cdn: bool = true
 // 1. XEMS Session Management Configuration
 // -----------------------------------------------------------------------------
 if xems == false {
-    Utils.log("<yellow>[XEMS: DISABLED]</> Disabling XEMS session engine in xemsConfigs.ts")
-    file "xemsConfigs.ts" {
-        replace("    enable: true,", "    enable: false, // Disabled: XEMS session management is turned off via configuration")
+    std.println("<yellow>[XEMS: DISABLED]</> Disabling XEMS session engine in xemsConfigs.ts")
+    file "xemsConfigs.ts", (doc, err) -> {
+        if err != nil { return }
+        doc.replaceFuzzy("enable: true,", "enable: false, // Disabled: XEMS session management is turned off via configuration")
     }
 }
 
@@ -28,16 +31,18 @@ if xems == false {
 // -----------------------------------------------------------------------------
 if mode == "minimal" {
     // Minimal mode: Strip multiServer configuration completely
-    file "xypriss.config.ts" {
-        removeUntil("multiServer: {", "};")
-        removeLines("auth.server")
-        removeLines("api.server")
-        removeLines("cdn.server")
+    file "xypriss.config.ts", (doc, err) -> {
+        if err != nil { return }
+        doc.removeBalanced("multiServer: {", "{", "}")
+        doc.removeLines("auth.server")
+        doc.removeLines("api.server")
+        doc.removeLines("cdn.server")
     }
 } elif cdn == false {
     // Default mode without CDN: Remove cdnServer from cluster registry
-    file "xypriss.config.ts" {
-        replace("servers: [authServer, mainServer, cdnServer],", "servers: [authServer, mainServer],")
-        removeLines("cdn.server")
+    file "xypriss.config.ts", (doc, err) -> {
+        if err != nil { return }
+        doc.replaceFuzzy("servers: [authServer, mainServer, cdnServer],", "servers: [authServer, mainServer],")
+        doc.removeLines("cdn.server")
     }
 }

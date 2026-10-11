@@ -1,3 +1,5 @@
+use std
+
 // =============================================================================
 // Module Descriptor: src/const/.rules.xru
 // =============================================================================
@@ -8,8 +10,6 @@
 arg mode: string = "default"
 arg cdn: bool = true
 
-if mode == "minimal" {
-    Drop(["cdnPaths.ts"])
-} elif cdn == false {
-    Drop(["cdnPaths.ts"])
+if mode == "minimal" || cdn == false {
+    drop(["cdnPaths.ts"])
 }
