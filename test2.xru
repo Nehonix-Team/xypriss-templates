@@ -5,6 +5,8 @@ const path = "./samples/database/"
 
 dispatch "{path}", "patch.xru"
 
-let databaseChoice = "postgres".replace()
+let databaseChoice = "postgres"
 
 std.println("<green>Orchestration terminée: {databaseChoice} !</>")
+
+Math.abs()
