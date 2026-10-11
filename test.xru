@@ -1,6 +1,15 @@
+mod all
 use std
 use net as Net
 use fs as Fs
+use crypto
+
+// Règle 1 & 2 : Crypto est un module natif singleton (pas de @)
+// L'interpolation évalue dynamiquement les expressions et méthodes directement !
+global let x = crypto.GetRandomBytes(12)
+
+std.println("accès directe dans une string interpolation: $f{crypto.GetRandomBytes(22)}")
+std.println("accès à une méthode en l'assignant à une variable: $f{x}")
 
 // ==============================================================================
 // 1. DÉCLARATION D'UNE UNITÉ LOCALE AVEC MÉTHODES TYPÉES
@@ -18,7 +27,7 @@ unit TemplateManager {
             std.error("TemplateManager is locked!")
             return false                       // Branche 1 : bool
         }
-        std.info("Nettoyage de {&baseDir}/{target}...")
+        std.info("Nettoyage de $f{&baseDir}/$f{target}...")
         return true                            // Branche 2 : bool (invalide si return 'test')
     }
 
@@ -28,6 +37,7 @@ unit TemplateManager {
     }
 }
 
+
 // ==============================================================================
 // 2. INSTANCIATION & APPELS DE MÉTHODES TYPÉES
 // ==============================================================================
@@ -35,36 +45,36 @@ let mgr = @TemplateManager()
 
 // Appel vérifié : nombre et types d'arguments contrôlés statiquement
 let success = mgr.clean("cache")
-std.println("Résultat du nettoyage : {success}")
+std.println("Résultat du nettoyage : $f{success}")
 
 mgr.lock()
 let blocked = mgr.clean("cache")
-std.println("Résultat après verrouillage : {blocked}")
+std.println("Résultat après verrouillage : $f{blocked}")
 
 // ==============================================================================
 // 3. TÂCHE D'ARRIÈRE-PLAN ASYNCHRONE AVEC 'with'
 // ==============================================================================
 // 'with' lance immédiatement l'opération en tâche de fond (goroutine Go)
 // La syntaxe correcte appelle la méthode cible : with Net.fetch(...)
-let downloadTask = with Net.fetch("https://fausse.url.test")
+global const downloadTask = with Net.fetch("https://fausse.url.test")
 
 std.info("Téléchargement lancé en arrière-plan...")
 std.info("Le script principal continue à s'exécuter en parallèle !")
 
 // Vérification de statut (thread-safe, autocomplété par l'IDE)
 let status = downloadTask.isDone()
-std.println("Statut immédiat : isDone = {status}")
+std.println("Statut immédiat : isDone = $f{status}")
 
 // Attente et récupération sécurisée avec catch err or <fallback>
 let result = downloadTask.wait() catch err or "Données de secours : connexion impossible"
 std.success("Tâche terminée !")
 let status2 = downloadTask.isDone()
-std.println("Statut après réponse : isDone = {status2}")
+std.println("Statut après réponse : isDone = $f{status2}")
 
 if err != nil {
-    std.warn("Erreur réseau interceptée : {err}")
+    std.warn("Erreur réseau interceptée : $f{err}")
 }
-std.println("Données obtenues : {result}")
+std.println("Données obtenues : $f{result}")
 
 
 
@@ -76,13 +86,13 @@ unit BatchWorker {
 
     // Méthode de calcul lourd simulant un traitement séquentiel par lots
     func processItems(totalItems: number) -> string {
-        std.info("[{&batchName}] Traitement en arrière-plan démarré...")
+        std.info("[$f{&batchName}] Traitement en arrière-plan démarré...")
         let sum = 0
         // Support de la nouvelle boucle for avec range (1..totalItems)
         for i in 1..totalItems {
             sum =: sum + i
         }
-        return "Lot '{&batchName}' traité avec succès : somme des indices = {sum}"
+        return "Lot '$f{&batchName}' traité avec succès : somme des indices = $f{sum}"
     }
 }
 
@@ -93,11 +103,12 @@ let batchTask = with worker.processItems(1000)
 
 std.info("Le script principal poursuit ses autres opérations...")
 let batchStatusInit = batchTask.isDone()
-std.println("Vérification statut tâche Worker : isDone = {batchStatusInit}")
+std.println("Vérification statut tâche Worker : isDone = $f{batchStatusInit}")
 
 // Récupération typée du résultat
 let workerResult = batchTask.wait()
-std.success("Résultat : {workerResult}")
+std.success("Résultat : $f{workerResult}")
 let batchStatusFinal = batchTask.isDone()
-std.println("Statut final Worker : isDone = {batchStatusFinal}")
+std.println("Statut final Worker : isDone = $f{batchStatusFinal}")
 
+dispatch "./src"

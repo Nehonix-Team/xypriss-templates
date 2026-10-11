@@ -1,12 +1,10 @@
 use std
-use math as Math
 
-const path = "./samples/database/"
-
-dispatch "{path}", "patch.xru"
-
-let databaseChoice = "postgres"
-
-std.println("<green>Orchestration terminée: {databaseChoice} !</>")
-
-Math.abs()
+file "package.json", (content, error) -> {
+   if error != "" {
+      std.error("Error opening file: $f{error}")
+      return
+   }
+   std.println("Name: $f{content.getJson('name')}")
+   std.println("Lines count: $f{content.size()}")
+}

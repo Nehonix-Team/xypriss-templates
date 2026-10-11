@@ -1,4 +1,4 @@
-use std as Utils
+use std
 use fs as Fs
 use net as Net
 use cmd as Cmd
@@ -24,7 +24,7 @@ arg cdn: bool = true
 arg plugin: bool = false
 arg install: bool = false
 
-Utils.log("<cyan>[XRU 2.0]</> Orchestrating template <bold>{name}</> (mode: <yellow>{mode}</>)")
+std.println("<cyan>[XRU 2.0]</> Orchestrating template <bold>$f{name}</> (mode: <yellow>$f{mode}</>)")
 
 // -----------------------------------------------------------------------------
 // 2. DYNAMIC CRYPTOGRAPHIC SECRET GENERATION (.env)
@@ -34,7 +34,7 @@ let xemsSecret: string = Crypto.getRandomBytes(32)
 file ".env" {
     replaceLine("XEMS_SECRET=", `
     # Auto-generated 256-bit secure XEMS secret
-    XEMS_SECRET="{xemsSecret}" 
+    XEMS_SECRET="$f{xemsSecret}" 
     `)
 }
 
@@ -43,9 +43,9 @@ file ".env" {
 // -----------------------------------------------------------------------------
 global func pruneModule(kind: string, mode: string, cdn: bool) {
     if mode == "minimal" {
-        drop(["auth.{kind}.ts", "cdn.{kind}.ts"])
+        drop(["auth.$f{kind}.ts", "cdn.$f{kind}.ts"])
     } elif cdn == false {
-        drop(["cdn.{kind}.ts"])
+        drop(["cdn.$f{kind}.ts"])
     }
 }
 
@@ -124,11 +124,8 @@ if mode != "minimal" {
 // -----------------------------------------------------------------------------
 // 6. DISPATCH TREE EXECUTION (Scoped Subdescriptors)
 // -----------------------------------------------------------------------------
-dispatch_tree "./src", ".rules.xru" {
-    pass mode = mode
-    pass cdn = cdn
-    pass xems = xems
-}
+dispatch "./src"
+
 
 // -----------------------------------------------------------------------------
 // 7. OPTIONAL DEPENDENCY INSTALLATION VIA XFPM
@@ -143,4 +140,4 @@ if install == true {
 // -----------------------------------------------------------------------------
 Fs.remove("main.xru")
 
-Utils.log("<green>[SUCCESS]</> Template orchestration completed for <bold>{name}</>!")
+std.println("<green>[SUCCESS]</> Template orchestration completed for <bold>$f{name}</>!")
