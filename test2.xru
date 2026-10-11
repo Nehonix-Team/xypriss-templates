@@ -1,6 +1,10 @@
 use std
-from "root" use T::clean
+use math as Math
 
-let c = clean
+const path = "./samples/database/"
 
-std.print(clean())
+dispatch "{path}", "patch.xru"
+
+let databaseChoice = "postgres".replace()
+
+std.println("<green>Orchestration terminée: {databaseChoice} !</>")
