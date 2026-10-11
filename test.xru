@@ -46,7 +46,7 @@ std.println("Résultat après verrouillage : {blocked}")
 // ==============================================================================
 // 'with' lance immédiatement l'opération en tâche de fond (goroutine Go)
 // La syntaxe correcte appelle la méthode cible : with Net.fetch(...)
-let downloadTask = with Net.fetch("https://api.github.com/repos/Nehonix-Team/xypriss-templates")
+let downloadTask = with Net.fetch("https://fausse.url.test")
 
 std.info("Téléchargement lancé en arrière-plan...")
 std.info("Le script principal continue à s'exécuter en parallèle !")
@@ -55,13 +55,18 @@ std.info("Le script principal continue à s'exécuter en parallèle !")
 let status = downloadTask.isDone()
 std.println("Statut immédiat : isDone = {status}")
 
-// Attente et récupération synchrone du résultat
-let result = downloadTask.wait()
-std.success("Tâche terminée avec succès !")
+// Attente et récupération sécurisée avec catch err or <fallback>
+let result = downloadTask.wait() catch err or "Données de secours : connexion impossible"
+std.success("Tâche terminée !")
 let status2 = downloadTask.isDone()
 std.println("Statut après réponse : isDone = {status2}")
-std.println("Taille des données reçues :")
-std.println(result)
+
+if err != nil {
+    std.warn("Erreur réseau interceptée : {err}")
+}
+std.println("Données obtenues : {result}")
+
+
 
 // ==============================================================================
 // 4. MODULE / UNITÉ PERSONNALISÉE AVEC BOUCLE FOR & TÂCHE DE FOND
@@ -84,7 +89,7 @@ unit BatchWorker {
 let worker = @BatchWorker()
 
 // Lancement d'une tâche de fond sur une méthode de notre unité personnalisée
-let batchTask = with worker.processItems(50)
+let batchTask = with worker.processItems(1000)
 
 std.info("Le script principal poursuit ses autres opérations...")
 let batchStatusInit = batchTask.isDone()
