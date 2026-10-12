@@ -1,3 +1,4 @@
 map {
     root -> "./"
+    services -> "./src/services/*"
 }

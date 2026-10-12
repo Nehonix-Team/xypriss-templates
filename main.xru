@@ -32,7 +32,7 @@ std.println("<cyan>[XRU 2.0]</> Orchestrating template <bold>$f{name}</> (mode: 
 // -----------------------------------------------------------------------------
 // 2. DYNAMIC CRYPTOGRAPHIC SECRET GENERATION (.env)
 // -----------------------------------------------------------------------------
-let xemsSecret: string = Crypto.getRandomBytes(32)
+const xemsSecret: string = Crypto.getRandomBytes(32)
 
 if Fs.exists(".env") {
     file ".env", (doc, err) -> {
