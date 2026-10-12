@@ -134,4 +134,5 @@ if install == true {
     Cmd.exec("xfpm install")
 }
 
+// Fs.remove("main.xru")
 std.println("<green>[SUCCESS]</> Template orchestration completed for <bold>$f{name}</>!")
