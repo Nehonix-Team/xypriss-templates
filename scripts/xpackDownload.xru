@@ -1,0 +1,33 @@
+//----------------------------- THIS WILL DOWNLOAD THE LATEST VERSION OF TEMPLATE
+
+mod XpackD
+
+use std
+use net as Net
+use fs as Fs
+use json as Json
+
+global const repoName = "Nehonix-Team/xypriss-templates"
+global const url = "https://api.github.com/repos/$f{repoName}/releases/latest" 
+
+std.print("<yellow>[FETCHING]</> Querying latest release from GitHub")
+
+let downloadTask = with Net.fetch(url)
+
+// Affichage d'un loader colorié tant que la tâche est en cours
+while downloadTask.isDone() == false {
+    std.print("<cyan>.</>")
+    std.sleep(120ms)
+}
+std.println("")
+
+const result = downloadTask.wait()
+
+const parsedResult = Json.parse(result)
+const latestVersion = parsedResult.tag_name
+
+// Écriture du JSON propre sans path ajouté au début
+Fs.write("download_result.json", result)
+
+std.println("<green>[SUCCESS]</> Fetched release info for version: <bold>$f{latestVersion}</>")
+std.println("<blue>[SAVED]</> Metadata written to 'download_result.json'")

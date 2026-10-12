@@ -1,14 +1,3 @@
 use std
 use net as Net
 
-
-with Net.fetch(""){
-    on complete -> (data, err) => {
-        std.println("data error: $f{data}")
-        if err != nil {
-            Utils.log("<red>[ERROR]</> {err}")
-        } else {
-            Utils.log("<green>[SUCCESS]</> Download complete")
-        }
-    }
-}
