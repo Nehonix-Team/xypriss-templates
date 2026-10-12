@@ -9,11 +9,16 @@ use json as Json
 use sys as Sys
 
 global const REPO = "Nehonix-Team/xypriss-templates"
-global const url = "https://api.github.com/repos/$f{REPO}/releases/latest" 
+global const url = "https://api.github.cm/repos/$f{REPO}/releases/latest"  // intentionnaly err
 // global const archiveFileName = "project.xpack"
 global const archiveFileName = "xypriss-template-20260609.zip"
 
 std.print("<yellow>[FETCHING]</> Querying latest release from GitHub")
+
+func printErr(err: string) -> void{
+   const e =  "Downloading error: $f{err}"
+    std.fatal(e)
+}
 
 let downloadTask = with Net.fetch(url)
 
@@ -27,11 +32,20 @@ std.println("")
 // L'erreur d'une tâche async n'est connue qu'au moment du wait()
 const result = downloadTask.wait() catch dErr
 
+// std.error("dErr $f{dErr}")
+
 if dErr != nil {
-    std.fatal("Error while retrieving template metadata from archives: $f{dErr}")
+   printErr(dErr)
+   Sys.exit()
 }
 
-const parsedResult = Json.parse(result)
+const parsedResult = Json.parse(result) catch err
+
+if err != nil {
+   printErr("Failed to parse metadata JSON: $f{err}")
+   Sys.exit(1)
+}
+
 const latestVersion = parsedResult.tag_name
 
 const downloadurl = `https://github.com/$f{REPO}/releases/latest/download/$f{archiveFileName}`
