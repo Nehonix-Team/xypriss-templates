@@ -1,16 +1,14 @@
 use std
+use net as Net
 
-file "package.json", (content, error) -> {
-    const a = 87
 
-   if error != "" {
-      std.error("Error opening file: $f{error}")
-      return
-   }
-   std.println("Name: $f{content.getLines()('name')}")
-   std.println("Lines count: $f{content.size()}")
+with Net.fetch(""){
+    on complete -> (data, err) => {
+        std.println("data error: $f{data}")
+        if err != nil {
+            Utils.log("<red>[ERROR]</> {err}")
+        } else {
+            Utils.log("<green>[SUCCESS]</> Download complete")
+        }
+    }
 }
-
-let a = 8
-
-std.print("$f{a + 78}")

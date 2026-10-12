@@ -1,5 +1,7 @@
 use std
 from "root" use main::prune
+from "root" use main::cdn
+from "root" use main::mode
 
 // =============================================================================
 // Module Descriptor: src/routes/.rules.xru
@@ -9,7 +11,5 @@ from "root" use main::prune
 // - If CDN is disabled: Drops cdn.route.ts while retaining auth.route.ts.
 // =============================================================================
 
-arg mode: string = "default"
-arg cdn: bool = true
 
 prune("route", mode, cdn)

@@ -1,4 +1,7 @@
 use std
+from "root" use main::xems
+from "root" use main::mode
+from "root" use main::cdn
 
 // =============================================================================
 // Module Descriptor: src/configs/.rules.xru
@@ -6,14 +9,11 @@ use std
 // Orchestrates project runtime configurations:
 // 1. XEMS Session Management (xemsConfigs.ts):
 //    - Toggles the XEMS session engine according to the XEMS flag.
-// 2. Server Cluster Topology (xypriss.config.ts):
-//    - In "minimal" mode: Strips multi-server topology and isolates single-app runtime.
+// 2. Server Cluster Topology (xypriss.config.ts & servers.config.ts):
+//    - In "minimal" mode: Strips multi-server topology, drops servers.config.ts, and isolates single-app runtime.
 //    - When CDN is disabled: Removes CDN server reference from the cluster array.
 // =============================================================================
 
-arg mode: string = "default"
-arg xems: bool = true
-arg cdn: bool = true
 
 // -----------------------------------------------------------------------------
 // 1. XEMS Session Management Configuration
@@ -27,10 +27,13 @@ if xems == false {
 }
 
 // -----------------------------------------------------------------------------
-// 2. Server Cluster Topology (xypriss.config.ts)
+// 2. Server Cluster Topology (xypriss.config.ts & servers.config.ts)
 // -----------------------------------------------------------------------------
 if mode == "minimal" {
-    // Minimal mode: Strip multiServer configuration completely
+    // Drop multiserver topology configuration file
+    drop(["servers.config.ts"])
+
+    // Minimal mode: Strip multiServer configuration completely from xypriss.config.ts
     file "xypriss.config.ts", (doc, err) -> {
         if err != nil { return }
         doc.removeBalanced("multiServer: {", "{", "}")

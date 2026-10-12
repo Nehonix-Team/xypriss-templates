@@ -6,6 +6,7 @@ use std
 use fs as Fs
 use cmd as Cmd
 use crypto as Crypto
+use net as Net
 
 // =============================================================================
 // Root Orchestration Descriptor: main.xru
@@ -17,15 +18,15 @@ use crypto as Crypto
 // -----------------------------------------------------------------------------
 // 1. CLI ARGUMENTS & CONFIGURATION SCHEMA
 // -----------------------------------------------------------------------------
-arg name: string = "my-xypriss-app"
-arg version: string = "1.0.0"
-arg description: string = "Enterprise-grade XyPriss backend service"
-arg author: string = ""
-arg mode: string = "default"
-arg xems: bool = true
-arg cdn: bool = true
-arg plugin: bool = false
-arg install: bool = false
+global arg name: string = "my-xypriss-app"
+global arg version: string = "1.0.0"
+global arg description: string = "Enterprise-grade XyPriss backend service"
+global arg author: string = ""
+global arg mode: string = "default"
+global arg xems: bool = true
+global arg cdn: bool = true
+global arg plugin: bool = false
+global arg install: bool = false
 
 std.println("<cyan>[XRU 2.0]</> Orchestrating template <bold>$f{name}</> (mode: <yellow>$f{mode}</>)")
 
@@ -41,6 +42,9 @@ if Fs.exists(".env") {
         doc.append("\nXEMS_SECRET=\"$f{xemsSecret}\"\n")
     }
 }
+
+// Download "xpack" archive from github
+// const res = Net.fetch("") catch err
 
 // -----------------------------------------------------------------------------
 // 3. REUSABLE GLOBAL FUNCTIONS (Invoked via ::functionName)
@@ -94,7 +98,8 @@ if mode == "minimal" || cdn == false {
         if mode == "minimal" {
             // Mode minimal : retrait de XStatic et sandboxing d'assets
             doc.replaceFuzzy("import { createServer, XStatic } from \"xypriss\";", "import { createServer } from \"xypriss\";")
-            doc.removeBetween("// 3. Configure secure static asset sandboxing with XStatic", "});")
+            doc.removeBetween("// 3. Configure secure static asset sandboxing with XStatic", "// 4. Start the server lifecycle", false)
+            doc.removeLines("// 3. Configure secure static asset sandboxing with XStatic")
         } elif cdn == false {
             // Mode avec CDN désactivé : retrait des uploads temporaires
             doc.removeBetween("// Sandboxed temporary uploads", "});")
@@ -119,12 +124,29 @@ if mode == "minimal" || cdn == false {
         doc.removeLines("cdn.route")
         doc.removeLines("cdn.server")
     }
+
+    if Fs.exists("xypriss.config.jsonc") {
+        file "xypriss.config.jsonc", (doc, err) -> {
+            if err != nil { return }
+            if mode == "minimal" {
+                doc.removeBalanced("\"servers\": {", "{", "}")
+            } elif cdn == false {
+                doc.removeBalanced("\"cdn\": {", "{", "}")
+            }
+        }
+    }
 }
 
 // -----------------------------------------------------------------------------
 // 5. DISPATCH TREE EXECUTION (Scoped Subdescriptors)
 // -----------------------------------------------------------------------------
 dispatch "./src"
+
+if mode == "minimal" {
+    if Fs.exists("src/servers") {
+        Fs.remove("src/servers")
+    }
+}
 
 // -----------------------------------------------------------------------------
 // 6. OPTIONAL DEPENDENCY INSTALLATION VIA XFPM

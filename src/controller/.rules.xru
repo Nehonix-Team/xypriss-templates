@@ -1,5 +1,7 @@
 use std
 from "root" use main
+from "root" use main::mode
+from "root" use main::cdn
 
 // =============================================================================
 // Module Descriptor: src/controller/.rules.xru
@@ -9,7 +11,5 @@ from "root" use main
 // - If CDN is disabled: Drops cdn.controller.ts while retaining auth.controller.ts.
 // =============================================================================
 
-arg mode: string = "default"
-arg cdn: bool = true
 
 main::prune("controller", mode, cdn)

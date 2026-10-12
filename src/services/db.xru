@@ -1,6 +1,0 @@
-mod db
-
-global func connect() {
-    std.println("Connected to database.")
-    return true
-}

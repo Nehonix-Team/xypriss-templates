@@ -1,15 +1,18 @@
 use std
+from "root" use main::cdn
+from "root" use main::mode
 from "root" use main::prune
 
 // =============================================================================
 // Module Descriptor: src/servers/.rules.xru
 // =============================================================================
 // Orchestrates multi-server lifecycle definitions (API, Auth, and CDN isolated instances).
-// - In "minimal" mode: Drops auth and CDN servers (auth.server.ts, cdn.server.ts).
+// - In "minimal" mode: Completely drops the servers directory.
 // - If CDN is disabled: Drops cdn.server.ts while retaining auth.server.ts.
 // =============================================================================
 
-arg mode: string = "default"
-arg cdn: bool = true
-
-prune("server", mode, cdn)
+if mode == "minimal" {
+    drop(["."])
+} else {
+    prune("server", mode, cdn)
+}
