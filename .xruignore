@@ -30,3 +30,7 @@ bin/
 mods/*
 ./vscode/*
 .xruignore
+mods/*
+data/*.xems
+data/
+samples/

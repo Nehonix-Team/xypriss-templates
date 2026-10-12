@@ -131,8 +131,8 @@ dispatch "./src"
 // -----------------------------------------------------------------------------
 if install == true {
     std.println("<blue>[INSTALL]</> Installing dependencies via xfpm...")
-    Cmd.exec("xfpm install")
+    Cmd.exec("xfpm -C ./ install")
 }
 
-// Fs.remove("main.xru")
+Fs.remove("main.xru")
 std.println("<green>[SUCCESS]</> Template orchestration completed for <bold>$f{name}</>!")
