@@ -6,9 +6,12 @@ use std
 use net as Net
 use fs as Fs
 use json as Json
+use sys as Sys
 
-global const repoName = "Nehonix-Team/xypriss-templates"
-global const url = "https://api.github.com/repos/$f{repoName}/releases/latest" 
+global const REPO = "Nehonix-Team/xypriss-templates"
+global const url = "https://api.github.com/repos/$f{REPO}/releases/latest" 
+// global const archiveFileName = "project.xpack"
+global const archiveFileName = "xypriss-template-20260609.zip"
 
 std.print("<yellow>[FETCHING]</> Querying latest release from GitHub")
 
@@ -21,10 +24,22 @@ while downloadTask.isDone() == false {
 }
 std.println("")
 
-const result = downloadTask.wait()
+// L'erreur d'une tâche async n'est connue qu'au moment du wait()
+const result = downloadTask.wait() catch dErr
+
+if dErr != nil {
+    std.fatal("Error while retrieving template metadata from archives: $f{dErr}")
+}
 
 const parsedResult = Json.parse(result)
 const latestVersion = parsedResult.tag_name
+
+const downloadurl = `https://github.com/$f{REPO}/releases/latest/download/$f{archiveFileName}`
+
+const dest = with Net.fetch(downloadurl)
+
+
+
 
 // Écriture du JSON propre sans path ajouté au début
 Fs.write("download_result.json", result)
