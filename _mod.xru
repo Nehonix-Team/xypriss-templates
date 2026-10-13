@@ -1,4 +1,5 @@
 map {
     root -> "./"
-    services -> "./src/services/*"
+    dll -> "./scripts/"
+
 }

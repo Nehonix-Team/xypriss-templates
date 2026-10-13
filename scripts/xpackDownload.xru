@@ -8,55 +8,58 @@ use fs as Fs
 use json as Json
 use sys as Sys
 
-global const REPO = "Nehonix-Team/xypriss-templates"
-global const url = "https://api.github.cm/repos/$f{REPO}/releases/latest"  // intentionnaly err
-// global const archiveFileName = "project.xpack"
-global const archiveFileName = "xypriss-template-20260609.zip"
 
-std.print("<yellow>[FETCHING]</> Querying latest release from GitHub")
+global func downloadRelease(){
+   const REPO = "Nehonix-Team/xypriss-templates"
+   const url = "https://api.github.com/repos/$f{REPO}/releases/latest"  // intentionnaly err
+   // global const archiveFileName = "project.xpack"
+   const archiveFileName = "xypriss-template-20260609.zip"
 
-func printErr(err: string) -> void{
-   const e =  "Downloading error: $f{err}"
-    std.fatal(e)
+   std.print("<yellow>[FETCHING]</> Querying latest release from GitHub")
+
+   func printErr(err: string) -> void{
+      const e =  "Downloading error: $f{err}"
+      std.fatal(e)
+   }
+
+   let downloadTask = with Net.fetch(url)
+
+   // Affichage d'un loader colorié tant que la tâche est en cours
+   while downloadTask.isDone() == false {
+      std.print("<cyan>.</>")
+      std.sleep(120ms)
+   }
+   std.println("")
+
+   // L'erreur d'une tâche async n'est connue qu'au moment du wait()
+   const result = downloadTask.wait() catch dErr
+
+   // std.error("dErr $f{dErr}")
+
+   if dErr != nil {
+      printErr(dErr)
+   }
+
+   const parsedResult = Json.parse(result) catch err
+
+   if err != nil {
+      printErr("Failed to parse metadata JSON: $f{err}")
+   }
+
+   const latestVersion = parsedResult.tag_name
+
+   const downloadurl = `https://github.com/$f{REPO}/releases/latest/download/$f{archiveFileName}`
+
+   const dTask = with Net.fetch(downloadurl)
+
+   const dResult = dTask.wait()
+
+   Fs.write(archiveFileName, dResult)
+
+
+   // Écriture du JSON propre sans path ajouté au début
+   // Fs.write("download_result.json", result)
+
+   std.println("<green>[SUCCESS]</> Fetched release info for version: <bold>$f{latestVersion}</>")
+   std.println("<blue>[SAVED]</> Metadata written to 'download_result.json'")
 }
-
-let downloadTask = with Net.fetch(url)
-
-// Affichage d'un loader colorié tant que la tâche est en cours
-while downloadTask.isDone() == false {
-    std.print("<cyan>.</>")
-    std.sleep(120ms)
-}
-std.println("")
-
-// L'erreur d'une tâche async n'est connue qu'au moment du wait()
-const result = downloadTask.wait() catch dErr
-
-// std.error("dErr $f{dErr}")
-
-if dErr != nil {
-   printErr(dErr)
-   Sys.exit()
-}
-
-const parsedResult = Json.parse(result) catch err
-
-if err != nil {
-   printErr("Failed to parse metadata JSON: $f{err}")
-   Sys.exit(1)
-}
-
-const latestVersion = parsedResult.tag_name
-
-const downloadurl = `https://github.com/$f{REPO}/releases/latest/download/$f{archiveFileName}`
-
-const dest = with Net.fetch(downloadurl)
-
-
-
-
-// Écriture du JSON propre sans path ajouté au début
-Fs.write("download_result.json", result)
-
-std.println("<green>[SUCCESS]</> Fetched release info for version: <bold>$f{latestVersion}</>")
-std.println("<blue>[SAVED]</> Metadata written to 'download_result.json'")
