@@ -1,0 +1,56 @@
+mod archPrune
+
+from "dll" use gArgs::cdn
+from "dll" use gArgs::mode
+use fs as Fs
+
+
+global func archPrune() {
+    if mode == "minimal" || cdn == false {
+        file "src/server.ts", (doc, err) -> {
+            if err != nil { return }
+            // Supprime l'import des chemins CDN
+            doc.removeBetween("import {\n  permanentCdnPath", "} from \"./const/cdnPaths\";")
+
+            if mode == "minimal" {
+                // Mode minimal : retrait de XStatic et sandboxing d'assets
+                doc.replaceFuzzy("import { createServer, XStatic } from \"xypriss\";", "import { createServer } from \"xypriss\";")
+                doc.removeBetween("// 3. Configure secure static asset sandboxing with XStatic", "// 4. Start the server lifecycle", false)
+                doc.removeLines("// 3. Configure secure static asset sandboxing with XStatic")
+            } elif cdn == false {
+                // Mode avec CDN désactivé : retrait des uploads temporaires
+                doc.removeBetween("// Sandboxed temporary uploads", "});")
+            }
+        }
+
+    file "src/router.ts", (doc, err) -> {
+        if err != nil { return }
+        if mode == "minimal" {
+            // Mode minimal : suppression des groupes auth et cdn
+            doc.removeBetween("// ============================== AUTH SERVER", "export { r as router };", false)
+            doc.removeLines("// ==============================")
+            doc.replaceFuzzy("r.group({ prefix: [\"/api\", \"/\"], serverId: mainServer.id }, (api) => {", "r.group({ prefix: [\"/api\", \"/\"] }, (api) => {")
+            doc.removeLines("auth.route")
+            doc.removeLines("api.server")
+            doc.removeLines("auth.server")
+        } elif cdn == false {
+            // CDN désactivé : suppression du groupe cdn
+            doc.removeBetween("// ============================== CDN SERVER", "});")
+        }
+        // Imports CDN communs retirés dans les deux cas
+        doc.removeLines("cdn.route")
+        doc.removeLines("cdn.server")
+    }
+
+    if Fs.exists("xypriss.config.jsonc") {
+        file "xypriss.config.jsonc", (doc, err) -> {
+            if err != nil { return }
+            if mode == "minimal" {
+                doc.removeBalanced("\"servers\": {", "{", "}")
+            } elif cdn == false {
+                doc.removeBalanced("\"cdn\": {", "{", "}")
+            }
+        }
+    }
+}
+}

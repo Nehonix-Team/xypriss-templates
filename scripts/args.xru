@@ -1,0 +1,12 @@
+mod gArgs
+
+
+global arg name: string = "my-xypriss-app"
+global arg version: string = "1.0.0"
+global arg description: string = "Enterprise-grade XyPriss backend service"
+global arg author: string = ""
+global arg mode: string = "default" // enterprise mode
+global arg xems: bool = true
+global arg cdn: bool = true
+global arg plugin: bool = false
+global arg install: bool = true // Default: install deps

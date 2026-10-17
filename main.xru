@@ -7,6 +7,7 @@ use fs as Fs
 use cmd as Cmd
 use crypto as Crypto
 use net as Net
+from "dll" use HM::HydratateMetaD
 
 // =============================================================================
 // Root Orchestration Descriptor: main.xru
@@ -18,17 +19,20 @@ use net as Net
 // -----------------------------------------------------------------------------
 // 1. CLI ARGUMENTS & CONFIGURATION SCHEMA
 // -----------------------------------------------------------------------------
-global arg name: string = "my-xypriss-app"
-global arg version: string = "1.0.0"
-global arg description: string = "Enterprise-grade XyPriss backend service"
-global arg author: string = ""
-global arg mode: string = "default"
-global arg xems: bool = true
-global arg cdn: bool = true
-global arg plugin: bool = false
-global arg install: bool = false
+from "dll" use gArgs::name 
+from "dll" use gArgs::mode
+from "dll" use gArgs::install
+from "dll" use gArgs::cdn
+from "dll" use archPrune::archPrune
+from "dll" use XpackD::downloadRelease
+
+
 
 std.println("<cyan>[XRU 2.0]</> Orchestrating template <bold>$f{name}</> (mode: <yellow>$f{mode}</>)")
+
+downloadRelease()
+
+
 
 // -----------------------------------------------------------------------------
 // 2. DYNAMIC CRYPTOGRAPHIC SECRET GENERATION (.env)
@@ -60,82 +64,12 @@ global func prune(kind: string, mode: string, cdn: bool) {
 // -----------------------------------------------------------------------------
 // 4. METADATA HYDRATION (package.json & TARGET_README.md)
 // -----------------------------------------------------------------------------
-file "package.json", (doc, err) -> {
-    if err != nil {
-        std.error("Error opening package.json: $f{err}")
-        return
-    }
-    doc.setJson("name", name)
-    doc.setJson("version", version)
-    doc.setJson("description", description)
-    doc.setJson("author", author)
-
-    if plugin == true {
-        doc.setJson("scripts.build", "xfpm exec tsc")
-        doc.setJson("scripts.prepublish", "xfpm run build")
-        doc.removeJson("peerDependencies")
-    }
-}
-
-if Fs.exists("TARGET_README.md") {
-    file "TARGET_README.md", (doc, err) -> {
-        if err != nil { return }
-        doc.replaceFuzzy("{{SERVER_NAME}}", name)
-        doc.replaceFuzzy("{{DESCRIPTION}}", description)
-    }
-    Fs.move("TARGET_README.md", "README.md")
-}
+HydratateMetaD()
 
 // -----------------------------------------------------------------------------
 // 5. ARCHITECTURE PRUNING (src/server.ts & src/router.ts)
 // -----------------------------------------------------------------------------
-if mode == "minimal" || cdn == false {
-    file "src/server.ts", (doc, err) -> {
-        if err != nil { return }
-        // Supprime l'import des chemins CDN
-        doc.removeBetween("import {\n  permanentCdnPath", "} from \"./const/cdnPaths\";")
-
-        if mode == "minimal" {
-            // Mode minimal : retrait de XStatic et sandboxing d'assets
-            doc.replaceFuzzy("import { createServer, XStatic } from \"xypriss\";", "import { createServer } from \"xypriss\";")
-            doc.removeBetween("// 3. Configure secure static asset sandboxing with XStatic", "// 4. Start the server lifecycle", false)
-            doc.removeLines("// 3. Configure secure static asset sandboxing with XStatic")
-        } elif cdn == false {
-            // Mode avec CDN désactivé : retrait des uploads temporaires
-            doc.removeBetween("// Sandboxed temporary uploads", "});")
-        }
-    }
-
-    file "src/router.ts", (doc, err) -> {
-        if err != nil { return }
-        if mode == "minimal" {
-            // Mode minimal : suppression des groupes auth et cdn
-            doc.removeBetween("// ============================== AUTH SERVER", "export { r as router };", false)
-            doc.removeLines("// ==============================")
-            doc.replaceFuzzy("r.group({ prefix: [\"/api\", \"/\"], serverId: mainServer.id }, (api) => {", "r.group({ prefix: [\"/api\", \"/\"] }, (api) => {")
-            doc.removeLines("auth.route")
-            doc.removeLines("api.server")
-            doc.removeLines("auth.server")
-        } elif cdn == false {
-            // CDN désactivé : suppression du groupe cdn
-            doc.removeBetween("// ============================== CDN SERVER", "});")
-        }
-        // Imports CDN communs retirés dans les deux cas
-        doc.removeLines("cdn.route")
-        doc.removeLines("cdn.server")
-    }
-
-    if Fs.exists("xypriss.config.jsonc") {
-        file "xypriss.config.jsonc", (doc, err) -> {
-            if err != nil { return }
-            if mode == "minimal" {
-                doc.removeBalanced("\"servers\": {", "{", "}")
-            } elif cdn == false {
-                doc.removeBalanced("\"cdn\": {", "{", "}")
-            }
-        }
-    }
-}
+archPrune()
 
 // -----------------------------------------------------------------------------
 // 5. DISPATCH TREE EXECUTION (Scoped Subdescriptors)

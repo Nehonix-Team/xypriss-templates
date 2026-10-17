@@ -1,8 +1,8 @@
 mod all
 use std
+use crypto
 use net as Net
 use fs as Fs
-use crypto
 
 // Règle 1 & 2 : Crypto est un module natif singleton (pas de @)
 // L'interpolation évalue dynamiquement les expressions et méthodes directement !
