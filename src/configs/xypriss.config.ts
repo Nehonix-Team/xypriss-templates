@@ -8,9 +8,9 @@ import { authServer } from "../servers/auth.server";
 import { mainServer } from "../servers/api.server";
 import { cdnServer } from "../servers/cdn.server";
 import { xemsConfig } from "./xemsConfigs";
-import { corsOrigins } from "const/corsOrigins";
-import { csrfConfig } from "const/csrfCfg";
-import { responseManipulationConfig } from "const/responseC";
+import { corsOrigins } from "../const/corsOrigins";
+import { csrfConfig } from "../const/csrfCfg";
+import { responseManipulationConfig } from "../const/responseC";
 
 export const serverConfigs: ServerOptions = {
   cluster: {

@@ -1,1 +1,8 @@
-{}
+{
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "[xru]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "nehonix.xru-syntax"
+  }
+}

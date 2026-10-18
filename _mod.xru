@@ -1,5 +1,4 @@
 map {
-    root -> "./"
+    root -> "./main.xru"
     dll -> "./scripts/"
-    services -> "./src/services/*"
 }

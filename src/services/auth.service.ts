@@ -1,4 +1,4 @@
-import { hashPassword, verifyPassword } from "helpers/crypto";
+import { hashPassword, verifyPassword } from "../utils/crypto";
 import { AppUser } from "../types/all";
 import { getRandomBytes, hash } from "xypriss-security";
 import { verify } from "node:crypto";

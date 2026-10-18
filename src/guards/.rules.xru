@@ -21,3 +21,4 @@ if mode == "minimal" {
         doc.removeLines("authenticated")
     }
 }
+

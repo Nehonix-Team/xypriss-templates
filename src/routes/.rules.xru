@@ -1,7 +1,5 @@
-use std
+from "dll" use gArgs::@map{mode, cdn}
 from "root" use main::prune
-from "root" use main::cdn
-from "root" use main::mode
 
 // =============================================================================
 // Module Descriptor: src/routes/.rules.xru

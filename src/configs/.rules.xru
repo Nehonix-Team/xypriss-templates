@@ -1,7 +1,5 @@
 use std
-from "root" use main::xems
-from "root" use main::mode
-from "root" use main::cdn
+from "dll" use gArgs::@map{author, xems, mode, cdn}
 
 // =============================================================================
 // Module Descriptor: src/configs/.rules.xru
@@ -23,7 +21,7 @@ if xems == false {
     file "xemsConfigs.ts", (doc, err) -> {
         if err != nil { return }
         doc.replaceFuzzy("enable: true,", "enable: false, // Disabled: XEMS session management is turned off via configuration")
-    }
+    } 
 }
 
 // -----------------------------------------------------------------------------

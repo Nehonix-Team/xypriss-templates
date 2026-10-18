@@ -6,7 +6,7 @@ use std
 use fs as Fs
 use cmd as Cmd
 use crypto as Crypto
-use net as Net
+use sys as Sys
 from "dll" use HM::HydratateMetaD
 
 // =============================================================================
@@ -23,27 +23,62 @@ from "dll" use gArgs::name
 from "dll" use gArgs::mode
 from "dll" use gArgs::install
 from "dll" use gArgs::cdn
-from "dll" use archPrune::archPrune
-from "dll" use XpackD::downloadRelease
+// from "dll" use XpackD::downloadRelease
+from "dll" use arch::archPrune
+from "dll" use gArgs::port
+from "dll" use gArgs::server_timeout
 
 
 
-std.println("<cyan>[XRU 2.0]</> Orchestrating template <bold>$f{name}</> (mode: <yellow>$f{mode}</>)")
+std.println("<cyan>[XRU]</> Orchestrating template <bold>$f{name}</> (mode: <yellow>$f{mode}</>)")
+const installMsg = if install -> "<green>Dependencies installation enabled</>" else "<yellow>Dependencies installation disabled</>"
 
-downloadRelease()
+std.println("<blue>[XRU]</> $f{installMsg}")
+
+// downloadRelease()
 
 
 
 // -----------------------------------------------------------------------------
 // 2. DYNAMIC CRYPTOGRAPHIC SECRET GENERATION (.env)
+// and .env config
 // -----------------------------------------------------------------------------
+// in "minimal" mode, we only have 
+// XYPRISS_SHIELD; PORT; SERVER_TIMEOUT and XEMS_SECRET
+interface EnvObj @map{
+    XYPRISS_SHIELD "silent"
+    PORT number
+    SERVER_TIMEOUT number
+    XEMS_SECRET string
+}
+
 const xemsSecret: string = Crypto.getRandomBytes(32)
+const CEnvObj: EnvObj = @map{
+    PORT: port
+    SERVER_TIMEOUT: server_timeout
+    XEMS_SECRET: xemsSecret
+    XYPRISS_SHIELD: "silent"
+}
+
 
 if Fs.exists(".env") {
     file ".env", (doc, err) -> {
         if err != nil { return }
-        doc.removeLines("XEMS_SECRET")
-        doc.append("\nXEMS_SECRET=\"$f{xemsSecret}\"\n")
+        if mode == "minimal" {
+            let envContent = ""
+            for key, val in CEnvObj {
+                if val.type() == "number" {
+                    envContent =: envContent + "$f{key}=$f{val}\n"
+                } else {
+                    envContent =: envContent + "$f{key}=\"$f{val}\"\n"
+                }
+            }
+            doc.setContent(envContent)
+        } else {
+            doc.removeLines("XEMS_SECRET")
+            doc.append("\n") // break line
+            doc.append(<<<XEMS_SECRET=$f{xemsSecret}>>>)
+        }
     }
 }
 
@@ -87,7 +122,9 @@ if mode == "minimal" {
 // -----------------------------------------------------------------------------
 if install == true {
     std.println("<blue>[INSTALL]</> Installing dependencies via xfpm...")
-    Cmd.exec("xfpm -C ./ install")
+    const cmd = "xfpm -C $f{Sys.cwd()} install"
+    std.println("<yellow>Executing: \"$f{cmd}\"</yellow>")
+    Cmd.exec(cmd)
 }
 
 Fs.remove("main.xru")

@@ -1,4 +1,6 @@
 use std
+from "dll" use gArgs::mode
+from "dll" use gArgs::cdn
 
 // =============================================================================
 // Module Descriptor: src/const/.rules.xru
@@ -7,8 +9,6 @@ use std
 // - In "minimal" mode or when CDN is disabled: Drops cdnPaths.ts.
 // =============================================================================
 
-arg mode: string = "default"
-arg cdn: bool = true
 
 if mode == "minimal" || cdn == false {
     drop(["cdnPaths.ts"])

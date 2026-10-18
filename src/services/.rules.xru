@@ -13,3 +13,6 @@ from "root" use main::cdn
 
 
 prune("service", mode, cdn)
+
+//Remove the test file
+drop(["test.ts"])

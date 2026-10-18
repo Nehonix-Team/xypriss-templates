@@ -12,7 +12,7 @@ from "root" use main::prune
 // =============================================================================
 
 if mode == "minimal" {
-    drop(["."])
+    drop(["."]) // Will remove the entire "servers" folder
 } else {
     prune("server", mode, cdn)
 }

@@ -1,4 +1,4 @@
-import { LoginOrRegisterRequestSchema } from "schemas/auth.schema";
+import { LoginOrRegisterRequestSchema } from "../schemas/auth.schema";
 import { XyPrisRequest } from "xypriss";
 
 export type LoginOrRegisterRequest = typeof LoginOrRegisterRequestSchema.types;

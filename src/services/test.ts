@@ -1,5 +1,5 @@
+import { hashPassword } from "../utils/crypto";
 import "xypriss";
-import { hashPassword } from "helpers/crypto";
 
 const p = "MySeCurePass";
 console.log("hash: ", await hashPassword(p));
