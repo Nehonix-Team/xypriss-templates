@@ -15,4 +15,3 @@ lib/
 bin/
 .test_sandbox/
 *.xpack
-out/
