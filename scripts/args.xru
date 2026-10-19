@@ -9,35 +9,35 @@
 mod gArgs
 
 /// Project name used in package.json, documentation headers, and log outputs.
-/// @cli --name=<string> (default: "my-xypriss-app")
-global arg name: string = "my-xypriss-app"
+/// @cli --name, -n=<string> (default: "my-xypriss-app")
+global arg name, n: string = "my-xypriss-app"
 
 /// Semantic version of the scaffolded application.
-/// @cli --version=<string> (default: "1.0.0")
-global arg version: string = "1.0.0"
+/// @cli --version, -v=<string> (default: "1.0.0")
+global arg version, v: string = "1.0.0"
 
 /// Short human-readable summary of the application service.
-/// @cli --description=<string>
-global arg description: string = "Enterprise-grade XyPriss backend service"
+/// @cli --description, -d=<string>
+global arg description, d: string = "Enterprise-grade XyPriss backend service"
 
 /// Author name or organization credited in package metadata.
-/// @cli --author=<string>
-global arg author: string = ""
+/// @cli --author, -a=<string>
+global arg author, a: string = ""
 
 /// Template architecture preset:
 /// - "default": Full enterprise multi-server setup (Auth, API, CDN, XEMS).
 /// - "minimal": Lightweight single-server setup with minimal .env configuration.
-/// @cli --mode=<"default"|"minimal"> (default: "default")
-global arg mode: string = "default"
+/// @cli --mode, -m=<"default"|"minimal"> (default: "default")
+global arg mode, m: string = "default"
 
 /// Enables XEMS (XyPriss Enterprise Microservices) inter-service clustering.
-/// @cli --xems=<bool> (default: true)
-global arg xems: bool = true
+/// @cli --xems, -x=<bool> (default: true)
+global arg xems, x: bool = true
 
 /// Enables dedicated Content Delivery Network (CDN) server node and routing.
 /// When set to false, CDN routes and service files are pruned.
-/// @cli --cdn=<bool> (default: true)
-global arg cdn: bool = true
+/// @cli --cdn, -c=<bool> (default: true)
+global arg cdn, c: bool = true
 
 /// Enables dynamic plugin loader and extension system scaffolding.
 /// @cli --plugin=<bool> (default: false)
@@ -45,13 +45,17 @@ global arg plugin: bool = false
 
 /// Automatically executes `xfpm install` upon completing template orchestration.
 /// Set to false to skip package download during setup.
-/// @cli --install=<bool> (default: true)
-global arg install: bool = true
+/// @cli --install, -i=<bool> (default: true)
+global arg install, i: bool = true
 
 /// Default TCP port assigned to the primary application server.
-/// @cli --port=<number> (default: 7182)
-global arg port: number = 7182
+/// @cli --port, -p=<number> (default: 7182)
+global arg port, p: number = 7182 
 
 /// Inactivity timeout threshold in milliseconds before connections are severed.
-/// @cli --server_timeout=<number> (default: 30000ms / 30s)
-global arg server_timeout: number = 30000
+/// @cli --server_timeout, -t=<number> (default: 30000ms / 30s)
+global arg server_timeout, t: number = 30000
+
+/// Overwrites existing directory if already present.
+/// @cli --force, -f=<bool> (default: false)
+global arg force, f: bool = false

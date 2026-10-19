@@ -1,29 +1,26 @@
-//----------------------------- THIS WILL DOWNLOAD THE LATEST VERSION OF TEMPLATE
-// this is the main script for xfpm when running "xfpm init"
+// =============================================================================
+// Template Bundle Downloader & Cache Resolver: scripts/xpackDownload.xru
+// =============================================================================
+// Handles GitHub release resolution, progress-tracked archive download, and
+// local cache management (~/.xfpm/cache/) for project.xpack.
+// =============================================================================
 
 mod XpackD
 
 use std
-use sys
 use net as Net
 use fs as Fs
 use json as Json
+use sys as Sys
 
-// 2. Mode auto-update (télécharge directement la release GitHub et relance le process)
-sys.require(">= 2.0.13", @map{
-   onMismatch: "auto-update"
-   mode: "log"
+Sys.require(">= 2.0.13", @map{
+    onMismatch: "auto-update",
+    mode: "log"
 });
 
-// =============================================================================
-// Unit: ReleaseDownloader
-// =============================================================================
-// Encapsulates release metadata querying, progress-tracked async download,
-// error reporting, and archive persistence.
-// =============================================================================
 unit ReleaseDownloader {
     declare private repo: string = "Nehonix-Team/xypriss-templates"
-    declare public archiveFileName: string = "xypriss-template-20260609.zip"
+    declare private cacheDir: string = ""
     declare public latestVersion: string = ""
 
     func printErr(err: string) -> void {
@@ -33,14 +30,13 @@ unit ReleaseDownloader {
 
     func fetchLatestMetadata() -> string {
         const url = "https://api.github.com/repos/$f{&repo}/releases/latest"
-        std.print("<yellow>[FETCHING]</> Querying latest release...")
+        std.print("<yellow>[FETCHING]</> Querying latest template release...")
 
         let downloadTask = with Net.fetch(url)
 
-        // Affichage du loader tant que la requête async est en cours
         while downloadTask.isDone() == false {
             std.print("<cyan>.</>")
-            std.sleep(140ms)
+            std.sleep(120ms)
         }
         std.println("")
 
@@ -58,13 +54,28 @@ unit ReleaseDownloader {
         return result
     }
 
-    func downloadArchive() -> void {
-        const downloadUrl = "https://github.com/$f{&repo}/releases/latest/download/$f{&archiveFileName}"
-        std.print("<blue>[DOWNLOADING]</> Fetching template archive")
+    func resolveBundle() -> string {
+        &cacheDir =: "$f{Sys.homeDir()}/.xfpm/cache"
+        Fs.ensureDir(&cacheDir)
+
+        &self::fetchLatestMetadata()
+
+        if !&latestVersion {
+            std.fatal("Failed to resolve latest template version from GitHub")
+        }
+
+        const targetBundle = "$f{&cacheDir}/project-$f{&latestVersion}.xpack"
+
+        if Fs.exists(targetBundle) {
+            std.println("<green>[CACHE]</> Using cached template bundle <bold>$f{&latestVersion}</>")
+            return targetBundle
+        }
+
+        const downloadUrl = "https://github.com/$f{&repo}/releases/download/$f{&latestVersion}/project.xpack"
+        std.print("<blue>[DOWNLOADING]</> Fetching template bundle <bold>$f{&latestVersion}</>...")
 
         let dTask = with Net.fetch(downloadUrl)
 
-        // Loader durant le téléchargement de l'archive
         while dTask.isDone() == false {
             std.print("<cyan>.</>")
             std.sleep(120ms)
@@ -73,45 +84,24 @@ unit ReleaseDownloader {
 
         const dResult = dTask.wait() catch dErr
         if dErr != nil {
-            &self::printErr("Failed to download archive: $f{dErr}")
+            &self::printErr("Failed to download project bundle: $f{dErr}")
         }
 
-       if Fs.exists(&archiveFileName) {
-            std.println("<yellow>[WARNING]</> Archive already exists, overwriting")
-            Fs.remove(&archiveFileName) catch e 
-            if e != nil {
-                &self::printErr("Failed to remove existing archive: $f{e}")
-            }
-            else {
-                std.println("<green>[SUCCESS]</> Removed existing archive")
-            }
-        }
-
-       Fs.write(&archiveFileName, dResult)
-            
-    }
-
-    func Exec() -> void {
-        &self::fetchLatestMetadata()
-
-        if !&latestVersion {
-            std.fatal("Failed to fetch latest version")
-        }
-
-        &self::downloadArchive()
-        std.println("<green>[SUCCESS]</> Fetched release info for version: <bold>$f{&latestVersion}</>")
-        std.println("<blue>[SAVED]</> Template archive written to '<bold>$f{&archiveFileName}</>'")
+        Fs.write(targetBundle, dResult)
+        std.println("<green>[SAVED]</> Template bundle cached at '<bold>$f{targetBundle}</>'")
+        return targetBundle
     }
 }
 
 // -----------------------------------------------------------------------------
-// Entrypoint exporté pour le runner/orchestrateur racine (main.xru)
+// Exported global entrypoint for init.xru
 // -----------------------------------------------------------------------------
+global func resolveBundle() -> string {
+    let downloader = @ReleaseDownloader()
+    return downloader.resolveBundle()
+}
+
 global func downloadRelease() {
     let downloader = @ReleaseDownloader()
-    downloader.Exec()
-    // std.println("<bold>archiveFileName: </bold>$f{downloader.archiveFileName}")
-    // if !downloader.latestVersion {std.println("<bold>latestVersion: </bold>$f{downloader.latestVersion}")}
+    downloader.resolveBundle()
 }
-
-::downloadRelease()

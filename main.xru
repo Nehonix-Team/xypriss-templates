@@ -20,13 +20,8 @@ from "dll" use HM::HydratateMetaD
 // 1. CLI ARGUMENTS & CONFIGURATION SCHEMA
 // -----------------------------------------------------------------------------
 from "dll" use gArgs::name 
-from "dll" use gArgs::mode
-from "dll" use gArgs::install
-from "dll" use gArgs::cdn
-// from "dll" use XpackD::downloadRelease
+from "dll" use gArgs::@map{install, port, server_timeout, mode, }
 from "dll" use arch::archPrune
-from "dll" use gArgs::port
-from "dll" use gArgs::server_timeout
 
 
 

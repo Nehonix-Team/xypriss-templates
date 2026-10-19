@@ -34,3 +34,7 @@ mods/*
 data/*.xems
 data/
 samples/
+out/
+init.xru
+my-xypriss-app/
+test-*/

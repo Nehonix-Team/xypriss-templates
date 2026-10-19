@@ -1,0 +1,97 @@
+// =============================================================================
+// Project Initializer Entrypoint: init.xru
+// =============================================================================
+// Serves as the primary bootstrapping script for `xfpm init`.
+// Resolves latest project bundle from GitHub / cache, unpacks template,
+// and invokes root main.xru with CLI flags.
+// =============================================================================
+
+mod init
+
+use std
+use fs as Fs
+use cmd as Cmd
+use sys as Sys
+use path as Path
+
+// -----------------------------------------------------------------------------
+// 1. REUSE GLOBAL CLI ARGUMENTS (FROM scripts/args.xru VIA dll)
+// -----------------------------------------------------------------------------
+from "dll" use gArgs::name
+from "dll" use gArgs::mode
+from "dll" use gArgs::port
+from "dll" use gArgs::version
+from "dll" use gArgs::description
+from "dll" use gArgs::author
+from "dll" use gArgs::xems
+from "dll" use gArgs::cdn
+from "dll" use gArgs::plugin
+from "dll" use gArgs::install
+from "dll" use gArgs::force
+from "dll" use gArgs::server_timeout
+
+// -----------------------------------------------------------------------------
+// 2. REUSE NETWORK BUNDLE RESOLVER (FROM scripts/xpackDownload.xru VIA dll)
+// -----------------------------------------------------------------------------
+from "dll" use XpackD::resolveBundle
+
+Sys.require(">= 2.0.13", @map{
+    onMismatch: "auto-update",
+    mode: "log"
+})
+
+// -----------------------------------------------------------------------------
+// 3. TARGET DIRECTORY RESOLUTION & VALIDATION
+// -----------------------------------------------------------------------------
+const targetDir = if name.startsWith("/") -> name else Path.Join(Sys.cwd(), name)
+
+if Fs.exists(targetDir) {
+    if force == false {
+        std.fatal("Destination directory '$f{targetDir}' already exists. Use --force to overwrite.")
+    }
+    std.println("<yellow>[CLEANUP]</> Overwriting existing directory '<bold>$f{targetDir}</>'...")
+    Fs.remove(targetDir)
+}
+
+// -----------------------------------------------------------------------------
+// 4. RESOLVE TEMPLATE XPACK (CACHED OR DOWNLOADED)
+// -----------------------------------------------------------------------------
+const xpackPath = resolveBundle()
+
+// -----------------------------------------------------------------------------
+// 5. UNPACK TEMPLATE INTO TARGET DIRECTORY
+// -----------------------------------------------------------------------------
+std.println("<cyan>[UNPACK]</> Extracting project into '<bold>$f{targetDir}</>'...")
+Cmd.exec("xru unpack \"$f{xpackPath}\" \"$f{targetDir}\"")
+
+// -----------------------------------------------------------------------------
+// 6. EXECUTE PROJECT ORCHESTRATOR (main.xru)
+// -----------------------------------------------------------------------------
+const mainScript = Path.Join(targetDir, "main.xru")
+if !Fs.exists(mainScript) {
+    std.fatal("Critical error: main.xru was not found in destination directory after unpack!")
+}
+
+let runCmd = "xru run \"$f{mainScript}\" --name=\"$f{name}\" --mode=\"$f{mode}\" --port=$f{port} --version=\"$f{version}\" --description=\"$f{description}\" --author=\"$f{author}\" --server_timeout=$f{server_timeout}"
+if xems == false {
+    runCmd =: runCmd + " --no-xems"
+}
+if cdn == false {
+    runCmd =: runCmd + " --no-cdn"
+}
+if plugin == true {
+    runCmd =: runCmd + " --plugin"
+}
+if install == false {
+    runCmd =: runCmd + " --no-install"
+}
+
+Cmd.exec(runCmd, targetDir)
+
+// -----------------------------------------------------------------------------
+// 7. READY INSTRUCTIONS
+// -----------------------------------------------------------------------------
+std.println("")
+std.println("<green>[READY]</> Project <bold>$f{name}</> initialized successfully!")
+std.println("<blue>→</> cd $f{name}")
+std.println("<blue>→</> xfpm run dev")
