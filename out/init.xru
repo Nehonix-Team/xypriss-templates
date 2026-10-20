@@ -20,7 +20,7 @@ global arg server_timeout, t as k: number = 30000;
 global arg force, f as l: bool = false;
 unit s{declare private m: string = "Nehonix-Team/xypriss-templates";declare private n: string = "";declare o: string = "";func p(ab){const ac = "Downloading error: $f{ab}";s1.fatal(ac)};func q(){const ad = "https://api.github.com/repos/$f{&m}/releases/latest";s1.print("<yellow>[FETCHING]</> Querying latest template release...");let ae = with s3.fetch(ad);while ae.isDone()==false{s1.print("<cyan>.</>");s1.sleep(120ms)};s1.println("");const af = ae.wait() catch ag;if ag!=nil{&self::p(ag)};const ah = s5.parse(af) catch ai;if ai!=nil{&self::p("Failed to parse metadata JSON: $f{ai}")};&o=:ah.tag_name;return af};func r(){&n=:"$f{s6.homeDir()}/.xfpm/cache";s4.ensureDir(&n);&self::q();if !&o{s1.fatal("Failed to resolve latest template version from GitHub")};const aj = "$f{&n}/project-$f{&o}.xpack";if s4.exists(aj){s1.println("<green>[CACHE]</> Using cached template bundle <bold>$f{&o}</>");return aj};const ak = "https://github.com/$f{&m}/releases/download/$f{&o}/project.xpack";s1.print("<blue>[DOWNLOADING]</> Fetching template bundle <bold>$f{&o}</>...");let al = with s3.fetch(ak);while al.isDone()==false{s1.print("<cyan>.</>");s1.sleep(120ms)};s1.println("");const am = al.wait() catch an;if an!=nil{&self::p("Failed to download project bundle: $f{an}")};s4.write(aj,am);s1.println("<green>[SAVED]</> Template bundle cached at '<bold>$f{aj}</>'");return aj}};
 func t(){let ao = @s();return ao.r()};
-s6.require(">= 2.1.1",@map{onMismatch:"auto-update",mode:"log"});
+s6.require(">= 2.1.2",@map{onMismatch:"auto-update",mode:"log"});
 let u = a;
 let v = e;
 let w = i;
