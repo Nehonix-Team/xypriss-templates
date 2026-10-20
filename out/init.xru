@@ -26,7 +26,7 @@ let v = e;
 let w = i;
 if s6.args().length()==0{s1.println("<cyan>╭───────────────────────────────────────────────────╮</>");s1.println("<cyan>│</>  <bold>XyPriss Project Initializer (Interactive Mode)</>      <cyan>│</>");s1.println("<cyan>╰───────────────────────────────────────────────────╯</>");s1.println("");s1::in{const ap = ::input("<cyan>?</> <bold>Project name or directory:</> (my-xypriss-app) ","my-xypriss-app");u=:ap;const aq = ::select("<cyan>?</> <bold>Select architecture preset:</>",["default (Enterprise multi-server: Auth, API, CDN, XEMS)","minimal (Lightweight single-server)"]);if aq.startsWith("minimal"){v=:"minimal"} else{v=:"default"};const ar = ::confirm("<cyan>?</> <bold>Install dependencies immediately with xfpm?</>",true);w=:ar};s1.println("")};
 const x = if u.startsWith("/") -> u else s8.Join(s6.cwd(),u);
-trap s2::@map{interrupt, terminate} as s{s1.println("\n<yellow>[ABORT]</> Process interrupted by <bold>$f{s}</>. Cleaning up...");if s4.exists(x){s4.remove(x);s1.println("<yellow>[CLEANUP]</> Removed incomplete directory '<bold>$f{x}</>'")}};
+trap s2::@map{interrupt, terminate} as s{s1.println("\n<red>[CRITICAL:ABORT]</> Process interrupted by <bold>$f{s}</>. Cleaning up...");if s4.exists(x){s4.remove(x);s1.println("<yellow>[CLEANUP]</> Removed incomplete directory '<bold>$f{x}</>'")}};
 if s4.exists(x){if l==false{s1.fatal("Destination directory '$f{x}' already exists. Use --force to overwrite.")};s1.println("<yellow>[CLEANUP]</> Overwriting existing directory '<bold>$f{x}</>'...");s4.remove(x)};
 const y = t();
 s1.println("<cyan>[UNPACK]</> Extracting project into '<bold>$f{x}</>'...");
