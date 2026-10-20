@@ -1,6 +1,6 @@
 use std
-from "root" use main::cdn
-from "root" use main::mode
+from "dll" use gArgs::cdn
+from "dll" use gArgs::mode
 from "root" use main::prune
 
 // =============================================================================

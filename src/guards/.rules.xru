@@ -1,5 +1,5 @@
 use std
-from "root" use main::mode
+from "dll" use gArgs::mode
 
 // =============================================================================
 // Module Descriptor: src/guards/.rules.xru
@@ -10,7 +10,7 @@ from "root" use main::mode
 //     2. Cleans up index.guard.ts to remove authentication guard references.
 // =============================================================================
 
-if mode == "minimal" {
+if mode == "minimal" { 
     // Drop dedicated authentication guard
     drop(["auth.guard.ts"])
 

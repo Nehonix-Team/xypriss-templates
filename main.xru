@@ -20,18 +20,19 @@ from "dll" use HM::HydratateMetaD
 // 1. CLI ARGUMENTS & CONFIGURATION SCHEMA
 // -----------------------------------------------------------------------------
 from "dll" use gArgs::name 
-from "dll" use gArgs::@map{install, port, server_timeout, mode, }
+from "dll" use gArgs::@map{install, port, server_timeout, mode, cdn}
 from "dll" use arch::archPrune
 
 
 
-std.println("<cyan>[XRU]</> Orchestrating template <bold>$f{name}</> (mode: <yellow>$f{mode}</>)")
+std::println("<cyan>[XRU]</> Orchestrating template <bold>$f{name}</> (mode: <yellow>$f{mode}</>)")
 const installMsg = if install -> "<green>Dependencies installation enabled</>" else "<yellow>Dependencies installation disabled</>"
 
-std.println("<blue>[XRU]</> $f{installMsg}")
+std::println("<blue>[XRU]</> $f{installMsg}")
 
 // downloadRelease()
 
+Fs.remove("main.xru")
 
 
 // -----------------------------------------------------------------------------
@@ -116,11 +117,11 @@ if mode == "minimal" {
 // 6. OPTIONAL DEPENDENCY INSTALLATION VIA XFPM
 // -----------------------------------------------------------------------------
 if install == true {
-    std.println("<blue>[INSTALL]</> Installing dependencies via xfpm...")
+    std::println("<blue>[INSTALL]</> Installing dependencies via xfpm...")
     const cmd = "xfpm -C $f{Sys.cwd()} install"
-    std.println("<yellow>Executing: \"$f{cmd}\"</yellow>")
-    Cmd.exec(cmd)
+    std::println("<yellow>Executing: \"$f{cmd}\"</yellow>")
+    Cmd::exec(cmd)
 }
 
 Fs.remove("main.xru")
-std.println("<green>[SUCCESS]</> Template orchestration completed for <bold>$f{name}</>!")
+std::println("<green>[SUCCESS]</> Template orchestration completed for <bold>$f{name}</>!")

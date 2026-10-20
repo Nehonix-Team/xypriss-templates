@@ -1,7 +1,7 @@
 use std
 from "root" use main::prune
-from "root" use main::mode
-from "root" use main::cdn
+from "dll" use gArgs::mode
+from "dll" use gArgs::cdn
 
 // =============================================================================
 // Module Descriptor: src/services/.rules.xru

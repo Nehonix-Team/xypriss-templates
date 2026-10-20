@@ -100,8 +100,3 @@ global func resolveBundle() -> string {
     let downloader = @ReleaseDownloader()
     return downloader.resolveBundle()
 }
-
-global func downloadRelease() {
-    let downloader = @ReleaseDownloader()
-    downloader.resolveBundle()
-}
