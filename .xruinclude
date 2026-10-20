@@ -1,0 +1,15 @@
+# XRU Packaging Allowlist (.xruinclude)
+# Only paths declared here are included in the generated .xpack bundle.
+# When this file is present, .xruignore is bypassed.
+
+.env
+.gitignore
+TARGET_README.md
+fileonix.config.json
+package.json
+scripts/meta.json
+src/
+tmp.ts
+tsconfig.json
+xfpm.resolve.lock
+xypriss.config.jsonc

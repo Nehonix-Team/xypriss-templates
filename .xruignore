@@ -38,3 +38,6 @@ out/
 init.xru
 my-xypriss-app/
 test-*/
+.vscode/
+release/
+scripts/
