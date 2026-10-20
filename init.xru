@@ -77,7 +77,7 @@ if Sys.args().length() == 0 {
 const targetDir = if projectName.startsWith("/") -> projectName else Path.Join(Sys.cwd(), projectName)
 
 trap sig::@map{interrupt, terminate} as s {
-    std.println("\n<yellow>[ABORT]</> Process interrupted by <bold>$f{s}</>. Cleaning up...")
+    std.println("\n<red>[CRITICAL:ABORT]</> Process interrupted by <bold>$f{s}</>. Cleaning up...")
     if Fs.exists(targetDir) {
         Fs.remove(targetDir)
         std.println("<yellow>[CLEANUP]</> Removed incomplete directory '<bold>$f{targetDir}</>'")
