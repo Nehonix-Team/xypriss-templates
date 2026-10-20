@@ -48,7 +48,7 @@ let shouldInstall = install
 // -----------------------------------------------------------------------------
 // 3. INTERACTIVE SETUP (IF NO CLI ARGUMENTS WERE PROVIDED)
 // -----------------------------------------------------------------------------
-if Sys.args().length() == 0 {
+if !Sys.hasArg() {
     std.println("<cyan>╭───────────────────────────────────────────────────╮</>")
     std.println("<cyan>│</>  <bold>XyPriss Project Initializer (Interactive Mode)</>      <cyan>│</>")
     std.println("<cyan>╰───────────────────────────────────────────────────╯</>")
