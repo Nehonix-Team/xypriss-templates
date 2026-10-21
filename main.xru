@@ -32,6 +32,8 @@ std::println("<blue>[XRU]</> $f{installMsg}")
 
 // downloadRelease()
 
+// We delete the file so xru will just continue with 
+// the cached main.xru file
 Fs.remove("main.xru")
 
 
@@ -123,5 +125,10 @@ if install == true {
     Cmd::exec(cmd)
 }
 
-Fs.remove("main.xru")
+const f = "main.xru"
+Fs.remove(f) catch err;
+if(err) {
+    std::println("<yellow> An error occurred while removing $f{f} but skipping deletion and continuing...</yellow>");
+}
+
 std::println("<green>[SUCCESS]</> Template orchestration completed for <bold>$f{name}</>!")
