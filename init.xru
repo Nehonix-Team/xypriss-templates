@@ -37,7 +37,7 @@ from "dmod" use xruV::xruMinVersion
 // 2. REUSE NETWORK BUNDLE RESOLVER (FROM scripts/xpackDownload.xru VIA dll)
 // -----------------------------------------------------------------------------
 from "dll" use XpackD::resolveBundle
-from "dll" use execMain::@map{exec, type IExecProps}
+from "dll" use orchestrator::@map{exec, type IExecProps}
 
 Sys.require(">= $f{xruMinVersion}", @map{
     onMismatch: "auto-update",
