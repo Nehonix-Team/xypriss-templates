@@ -1,35 +1,43 @@
 mod HM
 
 use std
+use sys as Sys
 use fs as Fs
 from "dll" use gArgs::@map{ author, description, version, name, plugin }
 
 
 global func HydratateMetaD() {
+    // Package.json meta data updates
     file "package.json", (doc, err) -> {
-    if err != nil {
-        std.error("Error opening package.json: $f{err}")
-        return
-    }
-    doc.setJson("name", name)
-    doc.setJson("version", version)
-    doc.setJson("description", description)
-    doc.setJson("author", author)
+        if err != nil {  
+            std.error("Error opening package.json: $f{err}")
+            return
+        }
+        doc.setJson("name", name)
+        doc.setJson("version", version)
+        doc.setJson("description", description)
+        doc.setJson("author", author)
 
-    if plugin == true {
-        doc.setJson("scripts.build", "xfpm exec tsc")
-        doc.setJson("scripts.prepublish", "xfpm run build")
-        doc.removeJson("peerDependencies")
+        if plugin == true {
+            doc.setJson("scripts.build", "xfpm exec tsc")
+            doc.setJson("scripts.prepublish", "xfpm run build")
+            doc.removeJson("peerDependencies")
+        }
     }
-}
 
-if Fs.exists("TARGET_README.md") {
-    file "TARGET_README.md", (doc, err) -> {
-        if err != nil { return }
-        doc.replaceFuzzy("{{SERVER_NAME}}", name)
-        doc.replaceFuzzy("{{DESCRIPTION}}", description)
+    if Fs.exists("TARGET_README.md") {
+        file "TARGET_README.md", (doc, err) -> {
+            if err != nil { return }
+            doc.replaceFuzzy("{{SERVER_NAME}}", name)
+            doc.replaceFuzzy("{{DESCRIPTION}}", description)
+        }
+        Fs.move("TARGET_README.md", "README.md")
     }
-    Fs.move("TARGET_README.md", "README.md")
-}
 
+    if Fs.exists("fileonix.config.json") {
+        file "fileonix.config.json", (doc, err) -> {
+            if err != nil { return }
+            doc.setJson("watch", [Sys.cwd()])
+        }
+    }
 }

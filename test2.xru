@@ -4,14 +4,19 @@ use sys as Sys
 // from "root" use main::name
 
 
-let ext = ""
+// let ext = ""
 
-std::in {
-    let a = ::input("your name : ")
-    ext =: a
-    std.println("hello $f{a}")
+// std::in {
+//     let a = ::input("your name : ")
+//     ext =: a
+//     std.println("hello $f{a}")
 
-    const sel = ::select(".... choose an image ....", ["img_01", "img_02", "img_03", "img_04"])
-}
+//     const sel = ::select(".... choose an image ....", ["img_01", "img_02", "img_03", "img_04"])
+// }
 
 // std::println("name : $f{a}") // devrait afficher erreur ce qui est juste
+
+file "fileonix.config.json", (doc, err) -> {
+    if err != nil { return }
+    doc.setJson("watch", [Sys.cwd()])
+}

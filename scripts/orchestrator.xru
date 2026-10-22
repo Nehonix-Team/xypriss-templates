@@ -26,6 +26,14 @@ global func exec(props: IExecProps) {
         std.fatal("Critical error: main.xru was not found in destination directory after unpack!")
     }
 
+    const fileonixCfg = Path.Join(targetDir, "fileonix.config.json")
+    if Fs.exists(fileonixCfg) {
+        file fileonixCfg, (doc, err) -> {
+            if err != nil { return }
+            doc.setJson("watch", [targetDir])
+        }
+    }
+
  let runCmd = "xru run \"$f{mainScript}\" --name=\"$f{projectName}\" --mode=\"$f{projectMode}\" --port=$f{port} --version=\"$f{version}\" --description=\"$f{description}\" --author=\"$f{author}\" --server_timeout=$f{server_timeout}"
     if xems == false {
         runCmd =: runCmd + " --no-xems"

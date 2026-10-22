@@ -1,7 +1,7 @@
 {
   "script": "",
   "watch": [
-    "/home/idevo/Documents/projects/XTemplates"
+    "."
   ],
   "ignore": [
     "node_modules",
