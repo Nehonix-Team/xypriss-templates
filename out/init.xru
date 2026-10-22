@@ -55,12 +55,12 @@ s1.println("\n<cyan><bold>◆ [3/4]</> Configuring project & running parallel or
 const ad = with s7.exec(ac,y);
 const ae = with s3.isPortBusy(j);
 const af = s8.Join(y,".git");
-if !s4.exists(af){const bb = with s7.exec("git init -b main 2>/dev/null || git init 2>/dev/null",y);bb.wait() catch nil;s1.println("  <green>✔</> Git repository initialized.")};
+if !s4.exists(af){const bb = "master";const bc = if d!="" -> "by $f{d}" else ".";const bd = if s6.os()=="windows" -> "2>nul" else "2>/dev/null";const be = "(git init -b $f{bb} $f{bd} || git init $f{bd}) && git add . && git commit -m \"Initial commit from xfpm init $f{bc}\"";const bf = with s7.exec(be,y);bf.wait() catch nil;s1.println("  <green>✔</> Git repository initialized.")};
 let ag = 0;
 const ah = if k>0 -> k else 120000;
 while !ad.isDone(){s1.sleep(500ms);ag=:ag+500;if ag>=ah{s1.println("\n<red>[TIMEOUT]</> Template orchestration exceeded timeout limit ($f{ah}ms).");ad.cancel();break}};
-ad.wait() catch bc;
-if bc!=nil{s1.fatal("Template orchestration failed: $f{bc}")};
+ad.wait() catch bg;
+if bg!=nil{s1.fatal("Template orchestration failed: $f{bg}")};
 s1.println("  <green>✔</> Environment & presets configured.");
 s1.println("\n<cyan><bold>◆ [4/4]</> Validating network environment...");
 const ai = ae.wait() catch or false;

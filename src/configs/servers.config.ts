@@ -12,12 +12,18 @@
  */
 
 import { obj } from "../utils/obj";
-import { __sys__ } from "xypriss";
+import { __sys__, Configs } from "xypriss";
 
 /**
  * Fluent object wrapper over configuration variables.
  */
 const S = obj.of(__sys__.vars.get("servers"));
+
+console.log("S: ", __sys__.vars.get("manifest"));
+
+if (!S) {
+  throw new Error("Servers configuration is not defined.");
+}
 
 /**
  * Resolved Multi-Server Topology Map.

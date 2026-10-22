@@ -157,7 +157,12 @@ const portCheckTask = with Net.isPortBusy(port)
 // Parallel Task 2: Initialize local git repository in background
 const gitDir = Path.Join(targetDir, ".git")
 if !Fs.exists(gitDir) {
-    const gitInitTask = with Cmd.exec("git init -b main 2>/dev/null || git init 2>/dev/null", targetDir)
+    const branch = "master"
+    const cText = if author != "" -> "by $f{author}" else "."
+    const devNull = if Sys.os() == "windows" -> "2>nul" else "2>/dev/null"
+    const gitCmd = "(git init -b $f{branch} $f{devNull} || git init $f{devNull}) && git add . && git commit -m \"Initial commit from xfpm init $f{cText}\""
+
+    const gitInitTask = with Cmd.exec(gitCmd, targetDir)
     gitInitTask.wait() catch nil
     std.println("  <green>✔</> Git repository initialized.")
 }

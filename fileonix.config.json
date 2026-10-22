@@ -1,6 +1,16 @@
 {
-  "watch": ["."],
-  "ignore": ["node_modules", "dist", ".git", ".next", "build", "coverage"],
+  "script": "",
+  "watch": [
+    "/home/idevo/Documents/projects/XTemplates"
+  ],
+  "ignore": [
+    "node_modules",
+    "dist",
+    ".git",
+    ".next",
+    "build",
+    "coverage"
+  ],
   "extensions": [
     ".ts",
     ".tsx",
@@ -12,10 +22,16 @@
     ".env",
     ".jsonc"
   ],
+  "runner": "xfpm",
+  "nodeArgs": null,
+  "envFile": "",
   "clearScreen": true,
   "batchMode": false,
+  "debounceMs": 100,
   "maxRestarts": -1,
   "useFileHash": true,
+  "gracefulMs": 3000,
   "silent": false,
-  "noSignals": false
+  "noSignals": false,
+  "targetFile": ""
 }
