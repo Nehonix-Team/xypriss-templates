@@ -1,4 +1,5 @@
 map {
     root -> "./main.xru"
     dll -> "./scripts/"
+    dmod -> "./scripts/const/"
 }

@@ -30,13 +30,14 @@ from "dll" use gArgs::plugin
 from "dll" use gArgs::install
 from "dll" use gArgs::force
 from "dll" use gArgs::server_timeout
+from "dmod" use xruV::xruMinVersion
 
 // -----------------------------------------------------------------------------
 // 2. REUSE NETWORK BUNDLE RESOLVER (FROM scripts/xpackDownload.xru VIA dll)
 // -----------------------------------------------------------------------------
 from "dll" use XpackD::resolveBundle
 
-Sys.require(">= 2.1.4", @map{
+Sys.require(">= $f{xruMinVersion}", @map{
     onMismatch: "auto-update",
     mode: "log"
 })
