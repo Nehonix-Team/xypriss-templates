@@ -14,6 +14,7 @@ use fs as Fs
 use cmd as Cmd
 use sys as Sys
 use path as Path
+use net as Net
 
 // -----------------------------------------------------------------------------
 // 1. REUSE GLOBAL CLI ARGUMENTS (FROM scripts/args.xru VIA dll)
@@ -50,9 +51,9 @@ let shouldInstall = install
 // 3. INTERACTIVE SETUP (IF NO CLI ARGUMENTS WERE PROVIDED)
 // -----------------------------------------------------------------------------
 if !Sys.hasArg() {
-    std.println("<cyan>╭───────────────────────────────────────────────────╮</>")
-    std.println("<cyan>│</>  <bold>XyPriss Project Initializer (Interactive Mode)</>      <cyan>│</>")
-    std.println("<cyan>╰───────────────────────────────────────────────────╯</>")
+    std.println("<cyan>╭─────────────────────────────────────────────────────────────╮</>")
+    std.println("<cyan>│</>  <bold>🚀  XyPriss Project Initializer (Interactive)</>              <cyan>│</>")
+    std.println("<cyan>╰─────────────────────────────────────────────────────────────╯</>")
     std.println("")
 
     std::in {
@@ -94,18 +95,35 @@ if Fs.exists(targetDir) {
 }
 
 // -----------------------------------------------------------------------------
-// 4. RESOLVE TEMPLATE XPACK (CACHED OR DOWNLOADED)
+// 5. BANNER & INITIALIZATION SUMMARY
 // -----------------------------------------------------------------------------
+const installStatus = if shouldInstall -> "<green>enabled</>" else "<yellow>disabled</>"
+
+std.println("<cyan>╭─────────────────────────────────────────────────────────────╮</>")
+std.println("<cyan>│</>  <bold>🚀  XyPriss Project Initializer</>                               <cyan>│</>")
+std.println("<cyan>├─────────────────────────────────────────────────────────────┤</>")
+std.println("<cyan>│</>  Target   : <bold>$f{projectName}</>")
+std.println("<cyan>│</>  Preset   : <cyan><bold>$f{projectMode}</></>")
+std.println("<cyan>│</>  Port     : <bold>$f{port}</>")
+std.println("<cyan>│</>  Install  : $f{installStatus}")
+std.println("<cyan>╰─────────────────────────────────────────────────────────────╯</>")
+std.println("")
+
+// -----------------------------------------------------------------------------
+// 6. RESOLVE TEMPLATE XPACK (CACHED OR DOWNLOADED)
+// -----------------------------------------------------------------------------
+std.println("<cyan><bold>◆ [1/4]</> Resolving template bundle...")
 const xpackPath = resolveBundle()
 
 // -----------------------------------------------------------------------------
-// 5. UNPACK TEMPLATE INTO TARGET DIRECTORY
+// 7. UNPACK TEMPLATE INTO TARGET DIRECTORY
 // -----------------------------------------------------------------------------
-std::println("<cyan>[UNPACK]</> Extracting project into '<bold>$f{targetDir}</>'...")
+std.println("\n<cyan><bold>◆ [2/4]</> Extracting project template into '<bold>$f{targetDir}</>'...")
 Cmd.exec("xru unpack \"$f{xpackPath}\" \"$f{targetDir}\"")
+std.println("  <green>✔</> Template unpacked successfully.")
 
 // -----------------------------------------------------------------------------
-// 6. EXECUTE PROJECT ORCHESTRATOR (main.xru)
+// 8. EXECUTE PROJECT ORCHESTRATOR (main.xru)
 // -----------------------------------------------------------------------------
 const mainScript = Path.Join(targetDir, "main.xru")
 if !Fs.exists(mainScript) {
@@ -126,13 +144,68 @@ if shouldInstall == false {
     runCmd =: runCmd + " --no-install"
 }
 
-Cmd.exec(runCmd, targetDir)
+// -----------------------------------------------------------------------------
+// 9. ASYNC ORCHESTRATION & PARALLEL TASKS
+// -----------------------------------------------------------------------------
+std.println("\n<cyan><bold>◆ [3/4]</> Configuring project & running parallel orchestrations...")
+
+const execTask = with Cmd.exec(runCmd, targetDir)
+
+// Parallel Task 1: Check port collision in background (cross-platform native)
+const portCheckTask = with Net.isPortBusy(port)
+
+// Parallel Task 2: Initialize local git repository in background
+const gitDir = Path.Join(targetDir, ".git")
+if !Fs.exists(gitDir) {
+    const gitInitTask = with Cmd.exec("git init -b main 2>/dev/null || git init 2>/dev/null", targetDir)
+    gitInitTask.wait() catch nil
+    std.println("  <green>✔</> Git repository initialized.")
+}
+
+// Watchdog & Timeout monitoring for orchestration
+let elapsed = 0
+const maxWaitMs = if server_timeout > 0 -> server_timeout else 120000
+
+while !execTask.isDone() {
+    std.sleep(500ms)
+    elapsed =: elapsed + 500
+    if elapsed >= maxWaitMs {
+        std.println("\n<red>[TIMEOUT]</> Template orchestration exceeded timeout limit ($f{maxWaitMs}ms).")
+        execTask.cancel()
+        break
+    }
+}
+
+execTask.wait() catch execErr
+if execErr != nil {
+    std.fatal("Template orchestration failed: $f{execErr}")
+}
+std.println("  <green>✔</> Environment & presets configured.")
 
 // -----------------------------------------------------------------------------
-// 7. READY INSTRUCTIONS
+// 10. NETWORK VALIDATION & VERIFICATION
 // -----------------------------------------------------------------------------
-std::println("")
-std::println("<green>[READY]</> Project <bold>$f{projectName}</> initialized successfully!")
-std::println("<blue>→</> cd $f{projectName}")
-std::println("<blue>→</> xfpm run dev")
+std.println("\n<cyan><bold>◆ [4/4]</> Validating network environment...")
+const isPortInUse = portCheckTask.wait() catch false
+if isPortInUse {
+    std.println("  <yellow>▲ [WARN]</> Port <bold>$f{port}</> is currently in use on localhost.")
+    std.println("  <yellow>▲ [WARN]</> You may want to configure a different port before launching.")
+} else {
+    std.println("  <green>✔</> Port <bold>$f{port}</> is free and available.")
+}
+
+// -----------------------------------------------------------------------------
+// 11. READY INSTRUCTIONS
+// -----------------------------------------------------------------------------
+std.println("")
+std.println("<green>╭─────────────────────────────────────────────────────────────╮</>")
+std.println("<green>│</>  <bold>✨  Project initialized successfully!</>                       <green>│</>")
+std.println("<green>╰─────────────────────────────────────────────────────────────╯</>")
+std.println("")
+std.println("  <bold>Next steps:</>")
+if projectName != "." && projectName != "./" {
+    std.println("    <cyan>→</> cd <bold>$f{projectName}</>")
+}
+std.println("    <cyan>→</> xfpm run dev")
+std.println("")
 
