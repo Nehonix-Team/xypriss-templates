@@ -37,6 +37,7 @@ from "dmod" use xruV::xruMinVersion
 // 2. REUSE NETWORK BUNDLE RESOLVER (FROM scripts/xpackDownload.xru VIA dll)
 // -----------------------------------------------------------------------------
 from "dll" use XpackD::resolveBundle
+from "dll" use execMain::@map{exec, type IExecProps}
 
 Sys.require(">= $f{xruMinVersion}", @map{
     onMismatch: "auto-update",
@@ -46,6 +47,7 @@ Sys.require(">= $f{xruMinVersion}", @map{
 let projectName = name
 let projectMode = mode
 let shouldInstall = install
+
 
 // -----------------------------------------------------------------------------
 // 3. INTERACTIVE SETUP (IF NO CLI ARGUMENTS WERE PROVIDED)
@@ -125,79 +127,14 @@ std.println("  <green>✔</> Template unpacked successfully.")
 // -----------------------------------------------------------------------------
 // 8. EXECUTE PROJECT ORCHESTRATOR (main.xru)
 // -----------------------------------------------------------------------------
-const mainScript = Path.Join(targetDir, "main.xru")
-if !Fs.exists(mainScript) {
-    std.fatal("Critical error: main.xru was not found in destination directory after unpack!")
+const cfg: IExecProps= @map{
+   targetDir: targetDir,
+   projectMode: projectMode,
+   projectName: projectName,
+   shouldInstall: shouldInstall
 }
 
-let runCmd = "xru run \"$f{mainScript}\" --name=\"$f{projectName}\" --mode=\"$f{projectMode}\" --port=$f{port} --version=\"$f{version}\" --description=\"$f{description}\" --author=\"$f{author}\" --server_timeout=$f{server_timeout}"
-if xems == false {
-    runCmd =: runCmd + " --no-xems"
-}
-if cdn == false {
-    runCmd =: runCmd + " --no-cdn"
-}
-if plugin == true {
-    runCmd =: runCmd + " --plugin"
-}
-if shouldInstall == false {
-    runCmd =: runCmd + " --no-install"
-}
-
-// -----------------------------------------------------------------------------
-// 9. ASYNC ORCHESTRATION & PARALLEL TASKS
-// -----------------------------------------------------------------------------
-std.println("\n<cyan><bold>◆ [3/4]</> Configuring project & running parallel orchestrations...")
-
-const execTask = with Cmd.exec(runCmd, targetDir)
-
-// Parallel Task 1: Check port collision in background (cross-platform native)
-const portCheckTask = with Net.isPortBusy(port)
-
-// Parallel Task 2: Initialize local git repository in background
-const gitDir = Path.Join(targetDir, ".git")
-if !Fs.exists(gitDir) {
-    const branch = "master"
-    const cText = if author != "" -> "by $f{author}" else "."
-    const devNull = if Sys.os() == "windows" -> "2>nul" else "2>/dev/null"
-    const gitCmd = "(git init -b $f{branch} $f{devNull} || git init $f{devNull}) && git add . && git commit -m \"Initial commit from xfpm init $f{cText}\""
-
-    const gitInitTask = with Cmd.exec(gitCmd, targetDir)
-    gitInitTask.wait() catch nil
-    std.println("  <green>✔</> Git repository initialized.")
-}
-
-// Watchdog & Timeout monitoring for orchestration
-let elapsed = 0
-const maxWaitMs = if server_timeout > 0 -> server_timeout else 120000
-
-while !execTask.isDone() {
-    std.sleep(500ms)
-    elapsed =: elapsed + 500
-    if elapsed >= maxWaitMs {
-        std.println("\n<red>[TIMEOUT]</> Template orchestration exceeded timeout limit ($f{maxWaitMs}ms).")
-        execTask.cancel()
-        break
-    }
-}
-
-execTask.wait() catch execErr
-if execErr != nil {
-    std.fatal("Template orchestration failed: $f{execErr}")
-}
-std.println("  <green>✔</> Environment & presets configured.")
-
-// -----------------------------------------------------------------------------
-// 10. NETWORK VALIDATION & VERIFICATION
-// -----------------------------------------------------------------------------
-std.println("\n<cyan><bold>◆ [4/4]</> Validating network environment...")
-const isPortInUse = portCheckTask.wait() catch false
-if isPortInUse {
-    std.println("  <yellow>▲ [WARN]</> Port <bold>$f{port}</> is currently in use on localhost.")
-    std.println("  <yellow>▲ [WARN]</> You may want to configure a different port before launching.")
-} else {
-    std.println("  <green>✔</> Port <bold>$f{port}</> is free and available.")
-}
+exec(cfg)
 
 // -----------------------------------------------------------------------------
 // 11. READY INSTRUCTIONS
