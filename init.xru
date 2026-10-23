@@ -154,7 +154,6 @@ if !start_server {
     std.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>")
 } else {
     const normalizedPath = Path.join(targetDir)  // removed the second "projectName" param since "targetDir" is already pointed to "projectName"
-    // std::println("normalizedPath: $f{normalizedPath}")
     std::println("  <bold>Starting dev server...</>")
     Cmd::exec("cd $f{normalizedPath}")
     Cmd::exec("dev")
