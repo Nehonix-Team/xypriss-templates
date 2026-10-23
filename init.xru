@@ -32,7 +32,7 @@ from "dll" use gArgs::install
 from "dll" use gArgs::force
 from "dll" use gArgs::server_timeout
 from "dmod" use xruV::xruMinVersion
-from "dmod" use os::isWin
+from "dmod" use syos::isWin
 
 // -----------------------------------------------------------------------------
 // 2. REUSE NETWORK BUNDLE RESOLVER (FROM scripts/xpackDownload.xru VIA dll)
@@ -156,8 +156,7 @@ if !start_server {
 } else {
     const normalizedPath = Path.join(targetDir)  // removed the second "projectName" param since "targetDir" is already pointed to "projectName"    
     std::println("  <bold>Starting dev server...</>")
-    Cmd::exec("cd $f{isWin ? '/d' : ''} $f{normalizedPath}")
-    Cmd::exec("dev")
+    Cmd::exec(if isWin -> "xfpm run dev" else "dev", normalizedPath)
 }
 
 std.println("")

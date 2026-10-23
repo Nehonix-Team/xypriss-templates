@@ -1,4 +1,4 @@
-mod os
+mod syos
 use sys as Sys
 
 // Detect Windows vs Unix-like systems
