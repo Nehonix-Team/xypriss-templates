@@ -1,0 +1,8 @@
+mod os
+use sys as Sys
+
+// Detect Windows vs Unix-like systems
+global const isWin = Sys.os() == "windows"
+global const isLinux = Sys.os() == "linux"
+global const isMac = Sys.os() == "macos" 
+global const isPosix = Sys.os() == "posix"
