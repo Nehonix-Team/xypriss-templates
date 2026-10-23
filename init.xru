@@ -38,6 +38,7 @@ from "dmod" use xruV::xruMinVersion
 // -----------------------------------------------------------------------------
 from "dll" use XpackD::resolveBundle
 from "dll" use orchestrator::@map{exec, type IExecProps}
+arg start_server, st: bool = false
 
 Sys.require(">= $f{xruMinVersion}", @map{
     onMismatch: "auto-update",
@@ -144,10 +145,19 @@ std.println("<green>╭───────────────────
 std.println("<green>│</>  <bold>✨  Project initialized successfully!</>                       <green>│</>")
 std.println("<green>╰─────────────────────────────────────────────────────────────╯</>")
 std.println("")
-std.println("  <bold>Next steps:</>")
-if projectName != "." && projectName != "./" {
-    std.println("    <cyan>→</> cd <bold>$f{projectName}</>")
+
+if !start_server {
+    std.println("  <bold>Next steps:</>")
+    if projectName != "." && projectName != "./" {
+        std.println("    <cyan>→</> cd <bold>$f{projectName}</>")
+    }
+    std.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>")
+} else {
+    const normalizedPath = Path.join(targetDir, projectName)
+    std.println("  <bold>Starting dev server...</>")
+    Cmd.exec("cd $f{normalizedPath}")
+    Cmd.exec("dev")
 }
-std.println("    <cyan>→</> xfpm run dev")
+
 std.println("")
 
