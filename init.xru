@@ -82,11 +82,15 @@ if !Sys.hasArg() {
 // -----------------------------------------------------------------------------
 const targetDir = if projectName.startsWith("/") -> projectName else Path.Join(Sys.cwd(), projectName)
 
+let isInitComplete = false
+
 trap sig::@map{interrupt, terminate} as s {
-    std.println("\n<red>[CRITICAL:ABORT]</> Process interrupted by <bold>$f{s}</>. Cleaning up...")
-    if Fs.exists(targetDir) {
-        Fs.remove(targetDir)
-        std.println("<yellow>[CLEANUP]</> Removed incomplete directory '<bold>$f{targetDir}</>'")
+    if !isInitComplete {
+        std.println("\n<red>[CRITICAL:ABORT]</> Process interrupted by <bold>$f{s}</>. Cleaning up...")
+        if Fs.exists(targetDir) {
+            Fs.remove(targetDir)
+            std.println("<yellow>[CLEANUP]</> Removed incomplete directory '<bold>$f{targetDir}</>'")
+        }
     }
 }
 
@@ -137,6 +141,7 @@ const cfg: IExecProps= @map{
 }
 
 exec(cfg)
+isInitComplete =: true
 
 // -----------------------------------------------------------------------------
 // 11. READY INSTRUCTIONS
