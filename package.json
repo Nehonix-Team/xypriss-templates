@@ -20,6 +20,6 @@
     "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "xypriss": ">=9.14.13"
+    "xypriss": "^9.14.14"
   }
 }
