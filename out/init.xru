@@ -239,8 +239,7 @@ if !m {
     }
     s1.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>");
 } else {
-    const bq = s7.join(aa, x);
-    s1.println("normalizedPath: $f{bq}");
+    const bq = s7.join(aa);
     s1.println("  <bold>Starting dev server...</>");
     s8.exec("cd $f{bq}");
     s8.exec("dev");
