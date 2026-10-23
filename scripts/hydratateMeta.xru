@@ -7,7 +7,6 @@ from "dll" use gArgs::@map{ description, version, name, plugin }
 from "dmod" use dAuthor::projectAuthor
 
 
-
 global func HydratateMetaD() {
     // Package.json meta data updates
     file "package.json", (doc, err) -> {

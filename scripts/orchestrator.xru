@@ -59,19 +59,6 @@ global func exec(props: IExecProps) {
     // Parallel Task 1: Check port collision in background (cross-platform native)
     const portCheckTask = with Net.isPortBusy(port)
 
-    // Parallel Task 2: Initialize local git repository in background
-    const gitDir = Path.Join(targetDir, ".git")
-    if !Fs.exists(gitDir) {
-        const branch = "master"
-        const cText = if author != "" -> "by $f{author}" else "."
-        const devNull = if Sys.os() == "windows" -> "2>nul" else "2>/dev/null"
-        const gitCmd = "(git init -b $f{branch} $f{devNull} || git init $f{devNull}) && git add . && git commit -m \"Initial commit from xfpm init $f{cText}\""
-
-        const gitInitTask = with Cmd.exec(gitCmd, targetDir)
-        gitInitTask.wait() catch nil
-        std.println("  <green>✔</> Git repository initialized.")
-    }
-
     // Watchdog & Timeout monitoring for orchestration
     let elapsed = 0
     const maxWaitMs = if server_timeout > 0 -> server_timeout else 120000
@@ -91,6 +78,20 @@ global func exec(props: IExecProps) {
         std.fatal("Template orchestration failed: $f{execErr}")
     }
     std.println("  <green>✔</> Environment & presets configured.")
+
+    // Initialize local git repository (cross-platform without shell chaining)
+    const gitDir = Path.Join(targetDir, ".git")
+    if !Fs.exists(gitDir) {
+        const branch = "master"
+        const cText = if author != "" -> "by $f{author}" else "."
+        const initRes = Cmd.exec("git init", targetDir) catch nil
+        if initRes != nil {
+            Cmd.exec("git add .", targetDir) catch nil
+            Cmd.exec("git commit -m \"Initial commit from xfpm init $f{cText}\"", targetDir) catch nil
+            Cmd.exec("git branch -M $f{branch}", targetDir) catch nil
+            std.println("  <green>✔</> Git repository initialized.")
+        }
+    }
 
     // -----------------------------------------------------------------------------
     // 10. NETWORK VALIDATION & VERIFICATION
