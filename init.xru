@@ -92,7 +92,7 @@ trap sig::@map{interrupt, terminate} as s {
             std.println("<yellow>[CLEANUP]</> Removed incomplete directory '<bold>$f{targetDir}</>'")
         }
     }
-}
+} 
 
 if Fs.exists(targetDir) {
     if force == false {
