@@ -1,0 +1,5 @@
+mod dAuthor
+
+from "dll" use gArgs::author
+
+global const projectAuthor = if author != nil -> author else "NEHONIX"

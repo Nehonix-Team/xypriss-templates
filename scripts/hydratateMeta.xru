@@ -3,7 +3,9 @@ mod HM
 use std
 use sys as Sys
 use fs as Fs
-from "dll" use gArgs::@map{ author, description, version, name, plugin }
+from "dll" use gArgs::@map{ description, version, name, plugin }
+from "dmod" use dAuthor::projectAuthor
+
 
 
 global func HydratateMetaD() {
@@ -16,7 +18,7 @@ global func HydratateMetaD() {
         doc.setJson("name", name)
         doc.setJson("version", version)
         doc.setJson("description", description)
-        doc.setJson("author", author)
+        doc.setJson("author", projectAuthor)
 
         if plugin == true {
             doc.setJson("scripts.build", "xfpm exec tsc")
@@ -30,6 +32,7 @@ global func HydratateMetaD() {
             if err != nil { return }
             doc.replaceFuzzy("{{SERVER_NAME}}", name)
             doc.replaceFuzzy("{{DESCRIPTION}}", description)
+            doc.replaceFuzzy("{{AUTHOR}}", projectAuthor)
         }
         Fs.move("TARGET_README.md", "README.md")
     }
@@ -41,3 +44,5 @@ global func HydratateMetaD() {
         }
     }
 }
+
+global::HydratateMetaD()
