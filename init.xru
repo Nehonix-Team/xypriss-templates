@@ -152,19 +152,28 @@ std.println("<green>│</>  <bold>✨  Project initialized successfully!</>     
 std.println("<green>╰─────────────────────────────────────────────────────────────╯</>")
 std.println("")
 
-if !start_server {
+func showInstallWarn (){
+     if !shouldInstall {
+        std.println("  <yellow>[WARNING]</> Dependencies are not installed. Run <cyan>'xfpm install'</> before starting the dev server.")
+        return
+    }
+}
+
+func showNextSteps() {
     std.println("  <bold>Next steps:</>")
     if projectName != "." && projectName != "./" {
         std.println("    <cyan>→</> cd <bold>$f{projectName}</>")
     }
+    showInstallWarn()
     std.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>")
+}
+
+if !start_server {
+    showNextSteps(projectName)
 } else {
     const normalizedPath = Path.join(targetDir)  // removed the second "projectName" param since "targetDir" is already pointed to "projectName"    
-    if !shouldInstall {
-        std.println("  <yellow>[WARNING]</> Dependencies are not installed. Run <cyan>'xfpm install'</> before starting the dev server.")
-        return
-    }
-
+   
+    showInstallWarn()
     std.println("  <bold>Starting dev server...</>")
     Cmd::exec(if isWin -> "xfpm run dev" else "dev", normalizedPath)
 
