@@ -155,15 +155,19 @@ func aa(ay) {
         const bp = if d != "" -> "by $f{d}" else ".";
         const bq = s8.exec("git init", az) catch nil;
         if bq != nil {
-            s8.exec("git add .", az) catch nil;
-            s8.exec("git commit -m \"Initial commit from xfpm init $f{bp}\"", az) catch nil;
-            s8.exec("git branch -M $f{bo}", az) catch nil;
-            s1.println("  <green>✔</> Git repository initialized.");
+            const br = s8.exec("git add .", az) catch nil;
+            const bs = s8.exec("git commit -m \"Initial commit from xfpm init $f{bp}\"", az) catch nil;
+            const bt = s8.exec("git branch -M $f{bo}", az) catch nil;
+            if br != nil && bs != nil && bt != nil {
+                s1.println("  <green>✔</> Git repository initialized.");
+            } else {
+                s1.println("  <yellow>[WARN]</> Git repository could not be initialized.");
+            }
         }
     }
     s1.println("\n<cyan><bold>◆ [4/4]</> Validating network environment...");
-    const br = bj.wait() catch or false;
-    if br {
+    const bu = bj.wait() catch or false;
+    if bu {
         s1.println("  <yellow>▲ [WARN]</> Port <bold>$f{j}</> is currently in use on localhost.");
         s1.println("  <yellow>▲ [WARN]</> You may want to configure a different port before launching.");
     } else {
@@ -184,16 +188,16 @@ if !s3.hasArg() {
     s1.println("<cyan>╰─────────────────────────────────────────────────────────────╯</>");
     s1.println("");
     s1::in {
-        const bs = ::input("<cyan>?</> <bold>Project name or directory:</> (my-xypriss-app) ", "my-xypriss-app");
-        ab =: bs;
-        const bt = ::select("<cyan>?</> <bold>Select architecture preset:</>", ["default (Enterprise multi-server: Auth, API, CDN, XEMS)", "minimal (Lightweight single-server)"]);
-        if bt.startsWith("minimal") {
+        const bv = ::input("<cyan>?</> <bold>Project name or directory:</> (my-xypriss-app) ", "my-xypriss-app");
+        ab =: bv;
+        const bw = ::select("<cyan>?</> <bold>Select architecture preset:</>", ["default (Enterprise multi-server: Auth, API, CDN, XEMS)", "minimal (Lightweight single-server)"]);
+        if bw.startsWith("minimal") {
             ac =: "minimal";
         } else {
             ac =: "default";
         };
-        const bu = ::confirm("<cyan>?</> <bold>Install dependencies immediately with xfpm?</>", true);
-        ad =: bu;
+        const bx = ::confirm("<cyan>?</> <bold>Install dependencies immediately with xfpm?</>", true);
+        ad =: bx;
     }
     s1.println("");
 }
@@ -250,12 +254,12 @@ if !m {
     }
     s1.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>");
 } else {
-    const bv = s7.join(ae);
+    const bz = s7.join(ae);
     if !ad {
         s1.println("  <yellow>[WARNING]</> Dependencies are not installed. Run <cyan>'xfpm install'</> before starting the dev server.");
         return;
     }
     s1.println("  <bold>Starting dev server...</>");
-    s8.exec(if v -> "xfpm run dev" else "dev", bv)
+    s8.exec(if v -> "xfpm run dev" else "dev", bz)
 };
 s1.println("");
