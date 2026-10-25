@@ -82,18 +82,22 @@ global func exec(props: IExecProps) {
     // Initialize local git repository (cross-platform without shell chaining)
     const gitDir = Path.Join(targetDir, ".git")
     if !Fs.exists(gitDir) {
+        file ".gitignore", (doc, err) -> {
+            doc.append(".env.local\n")
+            doc.append(".env.remote\n")
+            doc.append(".storage.xems\n")
+            doc.append(".env")
+        }
         const branch = "master"
         const cText = if author != "" -> "by $f{author}" else "."
-        const initRes = Cmd.exec("git init", targetDir) catch nil
-        if initRes != nil {
-           const cout1 = Cmd.exec("git add .", targetDir) catch nil
-           const cout2 = Cmd.exec("git commit -m \"Initial commit from xfpm init $f{cText}\"", targetDir) catch nil
-           const cout3 =  Cmd.exec("git branch -M $f{branch}", targetDir) catch nil
-           if cout1 != nil && cout2 != nil && cout3 != nil {
-                std.println("  <green>✔</> Git repository initialized.")
-           } else {
-               std.println("  <yellow>[WARN]</> Git repository could not be initialized.")
-           }
+        cout Cmd::@map{dir: targetDir, out, err} as c {
+            ::exec("git init")
+            ::exec("git add .")
+            ::exec("git commit -m \"Initial commit from xfpm init $f{cText}\"")
+            ::exec("git branch -M $f{branch}")
+        }
+        if c.ok {
+            std.println("  <green>✔</> Git repository initialized.")
         }
     }
 
