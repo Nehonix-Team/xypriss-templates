@@ -161,7 +161,7 @@ if !start_server {
 } else {
     const normalizedPath = Path.join(targetDir)  // removed the second "projectName" param since "targetDir" is already pointed to "projectName"    
     if install == false {
-    std::println("  <bold>Run</>")   
+    std::println("  <bold>Run <cyan>'xfpm install'</> before running dev server.</>")   
     }
     std::println("  <bold>Starting dev server...</>")
     Cmd::exec(if isWin -> "xfpm run dev" else "dev", normalizedPath)

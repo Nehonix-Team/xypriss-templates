@@ -249,7 +249,7 @@ if !m {
 } else {
     const bv = s7.join(ae);
     if i == false {
-        s1.println("  <bold>Run</>");
+        s1.println("  <bold>Run <cyan>'xfpm install'</> before running dev server.</>");
     }
     s1.println("  <bold>Starting dev server...</>");
     s8.exec(if v -> "xfpm run dev" else "dev", bv)
