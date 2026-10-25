@@ -23,14 +23,22 @@ import { cdnServer } from "./servers/cdn.server";
 const r = Router();
 
 // ============================== MAIN API SERVER ==============================
-/** Primary REST API gateway handling business logic and core services. */
+/**
+ * Primary REST API gateway handling business logic and core services.
+ *
+ * Mapped to `mainServer.id` with dual prefix capability `["/api", "/"]`.
+ * - If `mainServer.routePrefix: "/api"` is active in `api.server.ts`,
+ *   only `/api` requests reach this group (`/` yields 404).
+ * - If `mainServer.routePrefix` is commented out / omitted,
+ *   both `/api` and `/` resolve to `apiRouter`.
+ */
 r.group({ prefix: ["/api", "/"], serverId: mainServer.id }, (api) => {
   api.use("/", apiRouter);
 });
 
 // ============================== AUTH SERVER ==============================
 /** Dedicated authentication server handling login, registration, and tokens. */
-r.group({ prefix: ["/auth", "api"], serverId: authServer.id }, (auth) => {
+r.group({ prefix: ["/auth", "/api"], serverId: authServer.id }, (auth) => {
   auth.use("/", authRouter);
 });
 

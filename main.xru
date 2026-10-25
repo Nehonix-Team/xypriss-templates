@@ -21,7 +21,7 @@ from "dll" use HM::HydratateMetaD
 // -----------------------------------------------------------------------------
 from "dll" use gArgs::name 
 from "dll" use gArgs::@map{install, port, server_timeout, mode, cdn}
-from "dll" use arch::archPrune
+from "dll" use prune::arch
 
 
 
@@ -99,7 +99,7 @@ HydratateMetaD()
 // -----------------------------------------------------------------------------
 // 5. ARCHITECTURE PRUNING (src/server.ts & src/router.ts)
 // -----------------------------------------------------------------------------
-archPrune()
+arch()
 
 // -----------------------------------------------------------------------------
 // 5. DISPATCH TREE EXECUTION (Scoped Subdescriptors)

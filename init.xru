@@ -92,7 +92,7 @@ trap sig::@map{interrupt, terminate} as s {
             std.println("<yellow>[CLEANUP]</> Removed incomplete directory '<bold>$f{targetDir}</>'")
         }
     }
-} 
+}
 
 if Fs.exists(targetDir) {
     if force == false {
@@ -160,6 +160,9 @@ if !start_server {
     std.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>")
 } else {
     const normalizedPath = Path.join(targetDir)  // removed the second "projectName" param since "targetDir" is already pointed to "projectName"    
+    if install == false {
+    std::println("  <bold>Run</>")   
+    }
     std::println("  <bold>Starting dev server...</>")
     Cmd::exec(if isWin -> "xfpm run dev" else "dev", normalizedPath)
 }

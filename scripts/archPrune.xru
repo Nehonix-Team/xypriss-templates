@@ -7,66 +7,80 @@
 // Uses XRU Document surgical APIs (`removeBetween`, `replaceFuzzy`, `removeBalanced`).
 // =============================================================================
 
-mod arch
+mod prune
 
 from "dll" use gArgs::cdn
 from "dll" use gArgs::mode
 use fs as Fs
 
 /// Surgically prunes CDN and Multi-Server nodes from server, router, and configs.
-global func archPrune() {
+global func arch() {
     if mode == "minimal" || cdn == false {
         file "src/server.ts", (doc, err) -> {
             if err != nil { return }
-            // Supprime l'import des chemins CDN
-            doc.removeBetween("import {\n  permanentCdnPath", "} from \"./const/cdnPaths\";")
+            // Remove CDN paths import
+            doc.removeBetween("import {\n  permanentCdnPath", "} from \"./const/cdnPaths\";", true, true)
 
-            if mode == "minimal" {
-                // Mode minimal : retrait de XStatic et sandboxing d'assets
-                doc.replaceFuzzy(<<<import { createServer, XStatic } 
-                from "xypriss";>>>, <<<import { createServer } from "xypriss";>>>)
-                doc.removeBetween("// 3. Configure secure static asset sandboxing with XStatic", "// 4. Start the server lifecycle", false)
-                doc.removeLines("// 3. Configure secure static asset sandboxing with XStatic")
-            } elif cdn == false {
-                // Mode avec CDN désactivé : retrait des uploads temporaires
-                doc.removeBetween("// Sandboxed temporary uploads", "});")
-            }
-        }
- 
-    file "src/router.ts", (doc, err) -> {
-        if err != nil { return }
-        if mode == "minimal" {
-            // Mode minimal : suppression des groupes auth et cdn basée sur le code
-            doc.removeBetween(<<<r.group({ prefix: ["/auth", "api"]>>>, "});", true, true)
-            doc.removeBetween(<<<r.group({ prefix: "/cdn">>>, "});", true, true)
-            doc.removeLines("AUTH SERVER", true)
-            doc.removeLines("CDN SERVER", true)
-            doc.removeLines("// ==============================", true)
-            doc.replaceFuzzy(<<<r.group({ prefix: ["/api", "/"], serverId: mainServer.id }, (api) => {>>>, 
-            <<<r.group({ prefix: ["/api", "/"] }, (api) => {>>>)
-            doc.removeLines(<<<auth.route>>>, true)
-            doc.removeLines("api.server", true)
-            doc.removeLines("auth.server", true)
-        } elif cdn == false {
-            // CDN désactivé : suppression du groupe cdn basée sur le code
-            doc.removeBetween(<<<r.group({ prefix: "/cdn">>>, "});", true, true)
-            doc.removeLines("CDN SERVER", true)
-        }
-        // Imports CDN communs retirés dans les deux cas
-        doc.removeLines("cdn.route", true)
-        doc.removeLines("cdn.server", true)
-        doc.cleanGaps()
-    }
+            // Remove XStatic from xypriss import
+            doc.replaceFuzzy(<<<import { createServer, XStatic } from "xypriss";>>>, <<<import { createServer } from "xypriss";>>>)
 
-    if Fs.exists("xypriss.config.jsonc") {
-        file "xypriss.config.jsonc", (doc, err) -> {
+            // Remove entire XStatic setup block while preserving app.start()
+            doc.removeBetween("// 3. Configure secure static asset sandboxing with XStatic", "// 4. Start the server listener and event loop", true, false)
+            doc.removeLines("Establishing sandboxed static asset delivery routes", true)
+            doc.cleanGaps()
+        }
+
+        file "src/router.ts", (doc, err) -> {
             if err != nil { return }
             if mode == "minimal" {
-                doc.removeBalanced(<<<"servers": {>>>, "{", "}")
+                // Mode minimal: strip auth and cdn router groups and servers
+                doc.removeBetween(<<<r.group({ prefix: ["/auth", "/api"]>>>, "});", true, true)
+                doc.removeBetween(<<<r.group({ prefix: "/cdn">>>, "});", true, true)
+                doc.removeLines("AUTH SERVER", true)
+                doc.removeLines("CDN SERVER", true)
+                doc.removeLines("Dedicated authentication server", true)
+                doc.removeLines("Content Delivery Network", true)
+                doc.removeLines("// ==============================", true)
+                doc.replaceFuzzy(<<<r.group({ prefix: ["/api", "/"], serverId: mainServer.id }, (api) => {>>>, 
+                <<<r.group({ prefix: ["/api", "/"] }, (api) => {>>>)
+                doc.replaceFuzzy(<<</**
+ * Primary REST API gateway handling business logic and core services.
+ *
+ * Mapped to `mainServer.id` with dual prefix capability `["/api", "/"]`.
+ * - If `mainServer.routePrefix: "/api"` is active in `api.server.ts`,
+ *   only `/api` requests reach this group (`/` yields 404).
+ * - If `mainServer.routePrefix` is commented out / omitted,
+ *   both `/api` and `/` resolve to `apiRouter`.
+ */>>>, <<</**
+ * Primary REST API gateway handling business logic and core services.
+ */>>>)
+                doc.removeLines("auth.route", true)
+                doc.removeLines("authRouter", true)
+                doc.removeLines("api.server", true)
+                doc.removeLines("auth.server", true)
             } elif cdn == false {
-                doc.removeBalanced(<<<"cdn": {>>>, "{", "}")
+                // CDN disabled: strip cdn router group
+                doc.removeBetween(<<<r.group({ prefix: "/cdn">>>, "});", true, true)
+                doc.removeLines("CDN SERVER", true)
+                doc.removeLines("Content Delivery Network", true)
+            }
+            // Remove common CDN imports
+            doc.removeLines("cdn.route", true)
+            doc.removeLines("cdnRouter", true)
+            doc.removeLines("cdn.server", true)
+            doc.removeLines("cdnServer", true)
+            doc.cleanGaps()
+        }
+
+        if Fs.exists("xypriss.config.jsonc") {
+            file "xypriss.config.jsonc", (doc, err) -> {
+                if err != nil { return }
+                if mode == "minimal" {
+                    doc.removeBalanced(<<<"servers": {>>>, "{", "}")
+                } elif cdn == false {
+                    doc.removeBalanced(<<<"cdn": {>>>, "{", "}")
+                }
             }
         }
     }
-}
 }

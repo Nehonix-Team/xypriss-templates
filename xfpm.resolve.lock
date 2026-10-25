@@ -540,6 +540,29 @@
         "xypriss-compression": "xypriss-compression",
         "xypriss-security": "xypriss-security"
       }
+    },
+    "xypriss@9.14.18": {
+      "version": "9.14.18",
+      "integrity": "sha512-rGny0qKXtKSFtYlUNP3Dk5GUpk+6gCSJYMe+lvgWhf8qTmBa514b4Ym0kJniqKdz3UJReYytkN6nlPrWDa5cow==",
+      "tarball": "https://registry.npmjs.org/xypriss/-/xypriss-9.14.18.tgz",
+      "resolved_dependencies": {
+        "ioredis": "5.11.1",
+        "nehoid": "2.2.2",
+        "redis": "5.12.1",
+        "reliant-type": "2.1.5",
+        "strulink": "1.3.1",
+        "xypriss-compression": "1.0.6",
+        "xypriss-security": "2.1.23"
+      },
+      "dependency_real_names": {
+        "ioredis": "ioredis",
+        "nehoid": "nehoid",
+        "redis": "redis",
+        "reliant-type": "reliant-type",
+        "strulink": "strulink",
+        "xypriss-compression": "xypriss-compression",
+        "xypriss-security": "xypriss-security"
+      }
     }
   },
   "root_versions": {
@@ -547,7 +570,7 @@
     "fileonix": "1.0.5",
     "tslib": "2.8.1",
     "typescript": "5.9.3",
-    "xypriss": "9.14.13",
+    "xypriss": "9.14.18",
     "xypriss-security": "2.1.23"
   }
 }

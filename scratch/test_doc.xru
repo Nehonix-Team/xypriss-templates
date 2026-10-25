@@ -1,0 +1,22 @@
+use fs as Fs
+use std
+
+const code = "app.use(\"/\", router);\n\n// 3. Configure secure static asset sandboxing with XStatic\nconst xs = new XStatic(app, __sys__);\n\n// 4. Start the server listener and event loop\napp.start();\n"
+
+Fs.write("scratch/test_code.ts", code)
+
+file "scratch/test_code.ts", (doc, err) -> {
+    doc.removeBetween("// 3. Configure secure static asset sandboxing with XStatic", "app.start();", false, false)
+}
+
+std.println("--- RESULT WITHOUT CLEANGAP ---")
+std.println(Fs.read("scratch/test_code.ts"))
+
+Fs.write("scratch/test_code.ts", code)
+
+file "scratch/test_code.ts", (doc, err) -> {
+    doc.removeBetween("// 3. Configure secure static asset sandboxing with XStatic", "app.start();", false, true)
+}
+
+std.println("--- RESULT WITH CLEANGAP ---")
+std.println(Fs.read("scratch/test_code.ts"))

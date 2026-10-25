@@ -19,7 +19,7 @@ import { __sys__, Configs } from "xypriss";
  */
 const S = obj.of(__sys__.vars.get("servers"));
 
-console.log("S: ", __sys__.vars.get("manifest"));
+// console.log("S: ", __sys__.vars.get("manifest"));
 
 if (!S) {
   throw new Error("Servers configuration is not defined.");
