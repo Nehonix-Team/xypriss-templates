@@ -86,10 +86,14 @@ global func exec(props: IExecProps) {
         const cText = if author != "" -> "by $f{author}" else "."
         const initRes = Cmd.exec("git init", targetDir) catch nil
         if initRes != nil {
-            Cmd.exec("git add .", targetDir) catch nil
-            Cmd.exec("git commit -m \"Initial commit from xfpm init $f{cText}\"", targetDir) catch nil
-            Cmd.exec("git branch -M $f{branch}", targetDir) catch nil
-            std.println("  <green>✔</> Git repository initialized.")
+           const cout1 = Cmd.exec("git add .", targetDir) catch nil
+           const cout2 = Cmd.exec("git commit -m \"Initial commit from xfpm init $f{cText}\"", targetDir) catch nil
+           const cout3 =  Cmd.exec("git branch -M $f{branch}", targetDir) catch nil
+           if cout1 != nil && cout2 != nil && cout3 != nil {
+                std.println("  <green>✔</> Git repository initialized.")
+           } else {
+               std.println("  <yellow>[WARN]</> Git repository could not be initialized.")
+           }
         }
     }
 
