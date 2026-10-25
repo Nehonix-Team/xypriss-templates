@@ -248,7 +248,7 @@ if !m {
     s1.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>");
 } else {
     const bv = s7.join(ae);
-    if !i {
+    if !ad {
         s1.println("  <yellow>[WARNING]</> Dependencies are not installed. Run <cyan>'xfpm install'</> before starting the dev server.");
         return;
     }
