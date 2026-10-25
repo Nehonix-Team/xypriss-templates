@@ -248,8 +248,9 @@ if !m {
     s1.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>");
 } else {
     const bv = s7.join(ae);
-    if i == false {
-        s1.println("  <bold>Run <cyan>'xfpm install'</> before running dev server.</>");
+    if !i {
+        s1.println("  <yellow>[WARNING]</> Dependencies are not installed. Run <cyan>'xfpm install'</> before starting the dev server.");
+        return;
     }
     s1.println("  <bold>Starting dev server...</>");
     s8.exec(if v -> "xfpm run dev" else "dev", bv)
