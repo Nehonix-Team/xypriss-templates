@@ -1,0 +1,9 @@
+use std
+
+let a = "hello"
+
+func test() {
+    std.println(a)
+}
+
+test()

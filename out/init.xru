@@ -245,6 +245,9 @@ if !m {
     if ab != "." && ab != "./" {
         s1.println("    <cyan>→</> cd <bold>$f{ab}</>");
     }
+    if !ad {
+        s1.println("    <cyan>→</> 'xfpm install'</>");
+    }
     s1.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>");
 } else {
     const bv = s7.join(ae);
