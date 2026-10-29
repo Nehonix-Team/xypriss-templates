@@ -1,8 +1,9 @@
 // =============================================================================
 // Template Bundle Downloader & Cache Resolver: scripts/xpackDownload.xru
 // =============================================================================
-// Handles GitHub release resolution, progress-tracked archive download, and
-// local cache management (~/.xfpm/cache/) for project.xpack.
+// Handles GitHub release resolution, progress-tracked archive download,
+// cryptographic SHA-256 checksum verification, and local cache management (~/.xfpm/cache/)
+// for project.xpack.
 // =============================================================================
 
 mod XpackD
@@ -12,6 +13,7 @@ use net as Net
 use fs as Fs
 use json as Json
 use sys as Sys
+use crypto as Crypto
 
 Sys.require(">= 2.0.13", @map{
     onMismatch: "auto-update",
@@ -21,6 +23,8 @@ Sys.require(">= 2.0.13", @map{
 unit ReleaseDownloader {
     declare private repo: string = "Nehonix-Team/xypriss-templates"
     declare private cacheDir: string = ""
+    declare private releaseMetadata: string = ""
+    declare private expectedChecksum: string = ""
     declare public latestVersion: string = ""
 
     func printErr(err: string) -> void {
@@ -50,8 +54,87 @@ unit ReleaseDownloader {
             &self::printErr("Failed to parse metadata JSON: $f{err}")
         }
 
+        &releaseMetadata =: result
         &latestVersion =: parsedResult.tag_name
         return result
+    }
+
+    func fetchExpectedChecksum() -> string {
+        // 1. Attempt to fetch remote sidecar checksum project.xpack.sha256 from release
+        const checksumUrl = "https://github.com/$f{&repo}/releases/download/$f{&latestVersion}/project.xpack.sha256"
+        let csTask = with Net.fetch(checksumUrl)
+        while csTask.isDone() == false {
+            std.sleep(40ms)
+        }
+        const csResult = csTask.wait() catch err
+        if err == nil && csResult != "" {
+            let hashVal = csResult.trim()
+            if hashVal.contains(" ") {
+                let parts = hashVal.split(" ")
+                hashVal =: parts.get(0).trim()
+            }
+            if hashVal.len() >= 64 {
+                &expectedChecksum =: hashVal.slice(0, 64)
+                return &expectedChecksum
+            }
+        }
+
+        // 2. Fallback: Parse release notes body for SHA-256 fingerprint if present
+        if &releaseMetadata != "" {
+            const meta = Json.parse(&releaseMetadata) catch nil
+            if meta != nil && meta.body != nil {
+                let bodyText = meta.body
+                if bodyText.contains("sha256") || bodyText.contains("SHA256") {
+                    let lines = bodyText.split("\n")
+                    for line in lines {
+                        let trimmed = line.trim()
+                        if trimmed.toLower().contains("sha256") && trimmed.contains(":") {
+                            let parts = trimmed.split(":")
+                            if parts.len() >= 2 {
+                                let cand = parts.get(1).trim()
+                                if cand.len() >= 64 {
+                                    &expectedChecksum =: cand.slice(0, 64)
+                                    return &expectedChecksum
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return ""
+    }
+
+    func verifyBundleIntegrity(bundlePath: string, expectedHash: string) -> bool {
+        if !Fs.exists(bundlePath) {
+            return false
+        }
+
+        const actualHash = Crypto.fileSha256(bundlePath) catch err
+        if err != nil || actualHash == "" {
+            std.println("<red>[SECURITY:ERROR]</> Failed to compute SHA-256 for '$f{bundlePath}'")
+            return false
+        }
+
+        if expectedHash != "" {
+            const isValid = Crypto.verify(actualHash, expectedHash)
+            if !isValid {
+                std.println("<red>[INTEGRITY:ERROR]</> Checksum mismatch for template bundle!")
+                std.println("  Expected : <yellow>$f{expectedHash}</>")
+                std.println("  Received : <red>$f{actualHash}</>")
+                Fs.remove(bundlePath)
+                return false
+            }
+            std.println("<green>[VERIFIED]</> Checksum verified successfully (SHA-256: <bold>$f{actualHash.slice(0, 16)}...</>)")
+        } else {
+            std.println("<cyan>[INTEGRITY]</> Template bundle SHA-256: <bold>$f{actualHash}</>")
+        }
+
+        // Cache local sidecar checksum for future offline verification
+        const sidecarPath = "$f{bundlePath}.sha256"
+        Fs.write(sidecarPath, actualHash)
+        return true
     }
 
     func resolveBundle() -> string {
@@ -64,13 +147,36 @@ unit ReleaseDownloader {
             std.fatal("Failed to resolve latest template version from GitHub")
         }
 
-        const targetBundle = "$f{&cacheDir}/project-$f{&latestVersion}.xpack"
+        &self::fetchExpectedChecksum()
 
+        const targetBundle = "$f{&cacheDir}/project-$f{&latestVersion}.xpack"
+        const sidecarPath = "$f{targetBundle}.sha256"
+
+        // 1. Check if valid cached bundle exists
         if Fs.exists(targetBundle) {
-            std.println("<green>[CACHE]</> Using cached template bundle <bold>$f{&latestVersion}</>")
-            return targetBundle
+            let cachedExpected = &expectedChecksum
+            if cachedExpected == "" && Fs.exists(sidecarPath) {
+                cachedExpected =: Fs.read(sidecarPath).trim()
+            }
+
+            if cachedExpected != "" {
+                const isCacheValid = Crypto.verifyFile(targetBundle, cachedExpected)
+                if isCacheValid {
+                    std.println("<green>[CACHE]</> Using verified cached template bundle <bold>$f{&latestVersion}</>")
+                    return targetBundle
+                }
+                std.println("<yellow>[WARN]</> Cached template bundle failed integrity verification. Purging corrupt cache...")
+                Fs.remove(targetBundle)
+                if Fs.exists(sidecarPath) {
+                    Fs.remove(sidecarPath)
+                }
+            } else {
+                std.println("<green>[CACHE]</> Using cached template bundle <bold>$f{&latestVersion}</>")
+                return targetBundle
+            }
         }
 
+        // 2. Download bundle from GitHub release
         const downloadUrl = "https://github.com/$f{&repo}/releases/download/$f{&latestVersion}/project.xpack"
         std.print("<blue>[DOWNLOADING]</> Fetching template bundle <bold>$f{&latestVersion}</>...")
 
@@ -88,6 +194,13 @@ unit ReleaseDownloader {
         }
 
         Fs.write(targetBundle, dResult)
+
+        // 3. Cryptographic integrity check on downloaded payload
+        const isVerified = &self::verifyBundleIntegrity(targetBundle, &expectedChecksum)
+        if !isVerified && &expectedChecksum != "" {
+            std.fatal("Aborting initialization: Downloaded template bundle is corrupted or compromised.")
+        }
+
         std.println("<green>[SAVED]</> Template bundle cached at '<bold>$f{targetBundle}</>'")
         return targetBundle
     }
@@ -100,3 +213,4 @@ global func resolveBundle() -> string {
     let downloader = @ReleaseDownloader()
     return downloader.resolveBundle()
 }
+
