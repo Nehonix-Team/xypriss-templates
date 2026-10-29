@@ -45,8 +45,8 @@ global arg plugin: bool = false
 
 /// Automatically executes `xfpm install` upon completing template orchestration.
 /// Set to false to skip package download during setup.
-/// @cli --install, -i=<bool> (default: true)
-global arg install, i: bool = true
+/// @cli --install, -i=<bool> (default: false)
+global arg install, i: bool = false
 
 /// Default TCP port assigned to the primary application server.
 /// @cli --port, -p=<number> (default: 7182)
