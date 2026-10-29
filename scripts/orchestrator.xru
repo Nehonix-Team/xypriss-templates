@@ -82,17 +82,17 @@ global func exec(props: IExecProps) {
     // Initialize local git repository (cross-platform without shell chaining)
     const gitDir = Path.Join(targetDir, ".git")
     if !Fs.exists(gitDir) {
-        file ".gitignore", (doc, err) -> {
-            doc.append(".env.local\n")
-            doc.append(".env.remote\n")
-            doc.append(".storage.xems\n")
-            doc.append(".env")
+        const targetGitignore = Path.Join(targetDir, ".gitignore")
+        file targetGitignore, (doc, err) -> {
+            if err != nil { return }
+            doc.append("\n# Environment variables & secrets\n.env\n.env.*\n.env.local\n.env.remote\n.storage.xems\n")
         }
         const branch = "master"
         const cText = if author != "" -> "by $f{author}" else "."
         cout Cmd::@map{dir: targetDir, out, err} as c {
             ::exec("git init")
             ::exec("git add .")
+            ::exec("git reset HEAD .env")
             ::exec("git commit -m \"Initial commit from xfpm init $f{cText}\"")
             ::exec("git branch -M $f{branch}")
         }

@@ -77,6 +77,13 @@ if Fs.exists(".env") {
     }
 }
 
+if Fs.exists(".gitignore") {
+    file ".gitignore", (doc, err) -> {
+        if err != nil { return }
+        doc.append("\n# Environment variables & secrets\n.env\n.env.*\n.env.local\n.env.remote\n.storage.xems\n")
+    }
+}
+
 // Download "xpack" archive from github
 // const res = Net.fetch("") catch err
 
