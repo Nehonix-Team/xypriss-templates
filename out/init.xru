@@ -20,24 +20,306 @@ global arg port, p as j: number = 7182;
 global arg server_timeout, t as k: number = 30000;
 global arg force, f as l: bool = false;
 arg start_server, st as m: bool = false;
-interface orchestrator__IExecProps @map{targetDir string;projectName string;projectMode string;shouldInstall bool};
-unit x{declare private n: string = "Nehonix-Team/xypriss-templates";declare private o: string = "";declare private p: string = "";declare private q: string = "";declare r: string = "";func s(an){const ao = "Downloading error: $f{an}";s1.fatal(ao)};func t(){const ap = "https://api.github.com/repos/$f{&n}/releases/latest";s1.print("<yellow>[FETCHING]</> Querying latest template release...");let aq = with s4.fetch(ap);while aq.isDone()==false{s1.print("<cyan>.</>");s1.sleep(120ms)};s1.println("");const ar = aq.wait() catch at;if at!=nil{&self::s(at)};const au = s6.parse(ar) catch av;if av!=nil{&self::s("Failed to parse metadata JSON: $f{av}")};&p=:ar;&r=:au.tag_name;return ar};func u(){const aw = "https://github.com/$f{&n}/releases/download/$f{&r}/project.xpack.sha256";let ax = with s4.fetch(aw);while ax.isDone()==false{s1.sleep(40ms)};const ay = ax.wait() catch az;if az==nil&&ay!=""{let ba = ay.trim();if ba.contains(" "){let bb = ba.split(" ");ba=:bb.get(0).trim()};if ba.len()>=64{&q=:ba.slice(0,64);return &q}};if &p!=""{const bc = s6.parse(&p) catch nil;if bc!=nil&&bc.body!=nil{let bd = bc.body;if bd.contains("sha256")||bd.contains("SHA256"){let be = bd.split("\n");for bf in be{let bg = bf.trim();if bg.toLower().contains("sha256")&&bg.contains(":"){let bh = bg.split(":");if bh.len()>=2{let bi = bh.get(1).trim();if bi.len()>=64{&q=:bi.slice(0,64);return &q}}}}}}};return ""};func v(bj,bk){if !s5.exists(bj){return false};const bl = s7.fileSha256(bj) catch bm;if bm!=nil||bl==""{s1.println("<red>[SECURITY:ERROR]</> Failed to compute SHA-256 for '$f{bj}'");return false};if bk!=""{const bn = s7.verify(bl,bk);if !bn{s1.println("<red>[INTEGRITY:ERROR]</> Checksum mismatch for template bundle!");s1.println("  Expected : <yellow>$f{bk}</>");s1.println("  Received : <red>$f{bl}</>");s5.remove(bj);return false};s1.println("<green>[VERIFIED]</> Checksum verified successfully (SHA-256: <bold>$f{bl.slice(0, 16)}...</>)")} else{s1.println("<cyan>[INTEGRITY]</> Template bundle SHA-256: <bold>$f{bl}</>")};const bo = "$f{bj}.sha256";s5.write(bo,bl);return true};func w(){&o=:"$f{s3.homeDir()}/.xfpm/cache";s5.ensureDir(&o);&self::t();if !&r{s1.fatal("Failed to resolve latest template version from GitHub")};&self::u();const bp = "$f{&o}/project-$f{&r}.xpack";const bq = "$f{bp}.sha256";if s5.exists(bp){let br = &q;if br==""&&s5.exists(bq){br=:s5.read(bq).trim()};if br!=""{const bs = s7.verifyFile(bp,br);if bs{s1.println("<green>[CACHE]</> Using verified cached template bundle <bold>$f{&r}</>");return bp};s1.println("<yellow>[WARN]</> Cached template bundle failed integrity verification. Purging corrupt cache...");s5.remove(bp);if s5.exists(bq){s5.remove(bq)}} else{s1.println("<green>[CACHE]</> Using cached template bundle <bold>$f{&r}</>");return bp}};const bt = "https://github.com/$f{&n}/releases/download/$f{&r}/project.xpack";s1.print("<blue>[DOWNLOADING]</> Fetching template bundle <bold>$f{&r}</>...");let bu = with s4.fetch(bt);while bu.isDone()==false{s1.print("<cyan>.</>");s1.sleep(120ms)};s1.println("");const bv = bu.wait() catch bw;if bw!=nil{&self::s("Failed to download project bundle: $f{bw}")};s5.write(bp,bv);const bx = &self::v(bp,&q);if !bx&&&q!=""{s1.fatal("Aborting initialization: Downloaded template bundle is corrupted or compromised.")};s1.println("<green>[SAVED]</> Template bundle cached at '<bold>$f{bp}</>'");return bp}};
-const y = "2.1.8";
-const z = s3.os()=="windows";
-const aa = s3.os()=="linux";
-const ab = s3.os()=="macos";
-const ac = s3.os()=="posix";
-func ad(){let bz = @x();return bz.w()};
-func ae(ca){const cb = ca.targetDir;const cc = ca.projectName;const cd = ca.projectMode;const ce = ca.shouldInstall;const cf = s8.Join(cb,"main.xru");if !s5.exists(cf){s1.fatal("Critical error: main.xru was not found in destination directory after unpack!")};const cg = s8.Join(cb,"fileonix.config.json");if s5.exists(cg){file cg,(ch,ci)->{if ci!=nil{return};ch.setJson("watch",[cb])}};let cj = "xru run \"$f{cf}\" --name=\"$f{cc}\" --mode=\"$f{cd}\" --port=$f{j} --version=\"$f{b}\" --description=\"$f{c}\" --author=\"$f{d}\" --server_timeout=$f{k}";if f==false{cj=:cj+" --no-xems"};if g==false{cj=:cj+" --no-cdn"};if h==true{cj=:cj+" --plugin"};if ce==false{cj=:cj+" --no-install"};s1.println("\n<cyan><bold>◆ [3/4]</> Configuring project & running parallel orchestrations...");const ck = with s9.exec(cj,cb);const cl = with s4.isPortBusy(j);let cm = 0;const cn = if k>0 -> k else 120000;while !ck.isDone(){s1.sleep(500ms);cm=:cm+500;if cm>=cn{s1.println("\n<red>[TIMEOUT]</> Template orchestration exceeded timeout limit ($f{cn}ms).");ck.cancel();break}};ck.wait() catch co;if co!=nil{s1.fatal("Template orchestration failed: $f{co}")};s1.println("  <green>✔</> Environment & presets configured.");const cp = s8.Join(cb,".git");if !s5.exists(cp){file ".gitignore",(cq,cr)->{cq.append(".env.local\n");cq.append(".env.remote\n");cq.append(".storage.xems\n");cq.append(".env")};const cs = "master";const ct = if d!="" -> "by $f{d}" else ".";cout s9::@map{dir:cb,out,err} as c{::exec("git init");::exec("git add .");::exec("git commit -m \"Initial commit from xfpm init $f{ct}\"");::exec("git branch -M $f{cs}")};if c.ok{s1.println("  <green>✔</> Git repository initialized.")}};s1.println("\n<cyan><bold>◆ [4/4]</> Validating network environment...");const cu = cl.wait() catch or false;if cu{s1.println("  <yellow>▲ [WARN]</> Port <bold>$f{j}</> is currently in use on localhost.");s1.println("  <yellow>▲ [WARN]</> You may want to configure a different port before launching.")} else{s1.println("  <green>✔</> Port <bold>$f{j}</> is free and available.")}};
-s3.require(">= 2.1.8",@map{onMismatch:"auto-update",mode:"log"});
+
+interface orchestrator__IExecProps @map {
+    targetDir string;
+    projectName string;
+    projectMode string;
+    shouldInstall bool;
+}
+
+unit x {
+    declare private n: string = "Nehonix-Team/xypriss-templates";
+    declare private o: string = "";
+    declare private p: string = "";
+    declare private q: string = "";
+    declare r: string = "";
+
+    func s(an) {
+        const ao = "Downloading error: $f{an}";
+        s1.fatal(ao);
+    }
+
+    func t() {
+        const ap = "https://api.github.com/repos/$f{&n}/releases/latest";
+        s1.print("<yellow>[FETCHING]</> Querying latest template release...");
+        let aq = with s4.fetch(ap);
+        while aq.isDone() == false {
+            s1.print("<cyan>.</>");
+            s1.sleep(120ms);
+        }
+        s1.println("");
+        const ar = aq.wait() catch at;
+        if at != nil {
+            &self::s(at);
+        }
+        const au = s6.parse(ar) catch av;
+        if av != nil {
+            &self::s("Failed to parse metadata JSON: $f{av}");
+        }
+        &p =: ar;
+        &r =: au.tag_name;
+        return ar;
+    }
+
+    func u() {
+        const aw = "https://github.com/$f{&n}/releases/download/$f{&r}/project.xpack.sha256";
+        let ax = with s4.fetch(aw);
+        while ax.isDone() == false {
+            s1.sleep(40ms);
+        }
+        const ay = ax.wait() catch az;
+        if az == nil && ay != "" {
+            let ba = ay.trim();
+            if ba.contains(" ") {
+                let bb = ba.split(" ");
+                ba =: bb.get(0).trim();
+            }
+            if ba.len() >= 64 {
+                &q =: ba.slice(0, 64);
+                return&q;
+            }
+        }
+        if&p != "" {
+            const bc = s6.parse(&p) catch nil;
+            if bc != nil && bc.body != nil {
+                let bd = bc.body;
+                if bd.contains("sha256") || bd.contains("SHA256") {
+                    let be = bd.split("\n");
+                    for bf in be {
+                        let bg = bf.trim();
+                        if bg.toLower().contains("sha256") && bg.contains(":") {
+                            let bh = bg.split(":");
+                            if bh.len() >= 2 {
+                                let bi = bh.get(1).trim();
+                                if bi.len() >= 64 {
+                                    &q =: bi.slice(0, 64);
+                                    return&q;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+    func v(bj, bk) {
+        if !s5.exists(bj) {
+            return false;
+        }
+        const bl = s7.fileSha256(bj) catch bm;
+        if bm != nil || bl == "" {
+            s1.println("<red>[SECURITY:ERROR]</> Failed to compute SHA-256 for '$f{bj}'");
+            return false;
+        }
+        if bk != "" {
+            const bn = s7.verify(bl, bk);
+            if !bn {
+                s1.println("<red>[INTEGRITY:ERROR]</> Checksum mismatch for template bundle!");
+                s1.println("  Expected : <yellow>$f{bk}</>");
+                s1.println("  Received : <red>$f{bl}</>");
+                s5.remove(bj);
+                return false;
+            }
+            s1.println("<green>[VERIFIED]</> Checksum verified successfully (SHA-256: <bold>$f{bl.slice(0, 16)}...</>)");
+        } else {
+            s1.println("<cyan>[INTEGRITY]</> Template bundle SHA-256: <bold>$f{bl}</>");
+        };
+        const bo = "$f{bj}.sha256";
+        s5.write(bo, bl);
+        return true;
+    }
+
+    func w() {
+        &o =: "$f{s3.homeDir()}/.xfpm/cache";
+        s5.ensureDir(&o);
+        &self::t();
+        if !&r {
+            s1.fatal("Failed to resolve latest template version from GitHub");
+        }
+        &self::u();
+        const bp = "$f{&o}/project-$f{&r}.xpack";
+        const bq = "$f{bp}.sha256";
+        if s5.exists(bp) {
+            let br = &q;
+            if br == "" && s5.exists(bq) {
+                br =: s5.read(bq).trim();
+            }
+            if br != "" {
+                const bs = s7.verifyFile(bp, br);
+                if bs {
+                    s1.println("<green>[CACHE]</> Using verified cached template bundle <bold>$f{&r}</>");
+                    return bp;
+                }
+                s1.println("<yellow>[WARN]</> Cached template bundle failed integrity verification. Purging corrupt cache...");
+                s5.remove(bp);
+                if s5.exists(bq) {
+                    s5.remove(bq);
+                }
+            } else {
+                s1.println("<green>[CACHE]</> Using cached template bundle <bold>$f{&r}</>");
+                return bp;
+            }
+        }
+        const bt = "https://github.com/$f{&n}/releases/download/$f{&r}/project.xpack";
+        s1.print("<blue>[DOWNLOADING]</> Fetching template bundle <bold>$f{&r}</>...");
+        let bu = with s4.fetch(bt);
+        while bu.isDone() == false {
+            s1.print("<cyan>.</>");
+            s1.sleep(120ms);
+        }
+        s1.println("");
+        const bv = bu.wait() catch bw;
+        if bw != nil {
+            &self::s("Failed to download project bundle: $f{bw}");
+        }
+        s5.write(bp, bv);
+        const bx = &self::v(bp, &q);
+        if !bx && &q != "" {
+            s1.fatal("Aborting initialization: Downloaded template bundle is corrupted or compromised.");
+        }
+        s1.println("<green>[SAVED]</> Template bundle cached at '<bold>$f{bp}</>'");
+        return bp;
+    }
+}
+
+const y = "2.1.9";
+const z = s3.os() == "windows";
+const aa = s3.os() == "linux";
+const ab = s3.os() == "macos";
+const ac = s3.os() == "posix";
+
+func ad() {
+    let bz = @x();
+    return bz.w();
+}
+
+func ae(ca) {
+    const cb = ca.targetDir;
+    const cc = ca.projectName;
+    const cd = ca.projectMode;
+    const ce = ca.shouldInstall;
+    const cf = s8.Join(cb, "main.xru");
+    if !s5.exists(cf) {
+        s1.fatal("Critical error: main.xru was not found in destination directory after unpack!");
+    }
+    const cg = s8.Join(cb, "fileonix.config.json");
+    if s5.exists(cg) {
+        file cg, (ch, ci) -> {
+            if ci != nil {
+                return;
+            }
+            ch.setJson("watch", [cb]);
+        }
+    }
+    let cj = "xru run \"$f{cf}\" --name=\"$f{cc}\" --mode=\"$f{cd}\" --port=$f{j} --version=\"$f{b}\" --description=\"$f{c}\" --author=\"$f{d}\" --server_timeout=$f{k}";
+    if f == false {
+        cj =: cj + " --no-xems";
+    }
+    if g == false {
+        cj =: cj + " --no-cdn";
+    }
+    if h == true {
+        cj =: cj + " --plugin";
+    }
+    if ce == false {
+        cj =: cj + " --no-install";
+    }
+    s1.println("\n<cyan><bold>◆ [3/4]</> Configuring project & running parallel orchestrations...");
+    const ck = with s9.exec(cj, cb);
+    const cl = with s4.isPortBusy(j);
+    let cm = 0;
+    const cn = if k > 0 -> k else 120000;
+    while !ck.isDone() {
+        s1.sleep(500ms);
+        cm =: cm + 500;
+        if cm >= cn {
+            s1.println("\n<red>[TIMEOUT]</> Template orchestration exceeded timeout limit ($f{cn}ms).");
+            ck.cancel();
+            break
+        }
+    }
+    ck.wait() catch co;
+    if co != nil {
+        s1.fatal("Template orchestration failed: $f{co}");
+    }
+    s1.println("  <green>✔</> Environment & presets configured.");
+    const cp = s8.Join(cb, ".git");
+    if !s5.exists(cp) {
+        file ".gitignore", (cq, cr) -> {
+            cq.append(".env.local\n");
+            cq.append(".env.remote\n");
+            cq.append(".storage.xems\n");
+            cq.append(".env");
+        }
+        const cs = "master";
+        const ct = if d != "" -> "by $f{d}" else ".";
+        cout s9::@map{dir : cb, out, err} as c {
+            ::exec("git init");
+            ::exec("git add .");
+            ::exec("git commit -m \"Initial commit from xfpm init $f{ct}\"");
+            ::exec("git branch -M $f{cs}");
+        }
+        if c.ok {
+            s1.println("  <green>✔</> Git repository initialized.");
+        }
+    }
+    s1.println("\n<cyan><bold>◆ [4/4]</> Validating network environment...");
+    const cu = cl.wait() catch or false;
+    if cu {
+        s1.println("  <yellow>▲ [WARN]</> Port <bold>$f{j}</> is currently in use on localhost.");
+        s1.println("  <yellow>▲ [WARN]</> You may want to configure a different port before launching.");
+    } else {
+        s1.println("  <green>✔</> Port <bold>$f{j}</> is free and available.");
+    }
+}
+
+s3.require(">= 2.1.9", @map {
+    onMismatch: "auto-update", mode: "log"
+}
+);
 let af = a;
 let ag = e;
 let ah = i;
-if !s3.hasArg(){s1.println("<cyan>╭─────────────────────────────────────────────────────────────╮</>");s1.println("<cyan>│</>  <bold>🚀  XyPriss Project Initializer (Interactive)</>              <cyan>│</>");s1.println("<cyan>╰─────────────────────────────────────────────────────────────╯</>");s1.println("");s1::in{const cv = ::input("<cyan>?</> <bold>Project name or directory:</> (my-xypriss-app) ","my-xypriss-app");af=:cv;const cw = ::select("<cyan>?</> <bold>Select architecture preset:</>",["default (Enterprise multi-server: Auth, API, CDN, XEMS)","minimal (Lightweight single-server)"]);if cw.startsWith("minimal"){ag=:"minimal"} else{ag=:"default"};const cx = ::confirm("<cyan>?</> <bold>Install dependencies immediately with xfpm?</>",true);ah=:cx};s1.println("")};
-const ai = if af.startsWith("/") -> af else s8.Join(s3.cwd(),af);
+if !s3.hasArg() {
+    s1.println("<cyan>╭─────────────────────────────────────────────────────────────╮</>");
+    s1.println("<cyan>│</>  <bold>🚀  XyPriss Project Initializer (Interactive)</>              <cyan>│</>");
+    s1.println("<cyan>╰─────────────────────────────────────────────────────────────╯</>");
+    s1.println("");
+    s1::in {
+        const cv = ::input("<cyan>?</> <bold>Project name or directory:</> (my-xypriss-app) ", "my-xypriss-app");
+        af =: cv;
+        const cw = ::select("<cyan>?</> <bold>Select architecture preset:</>", ["default (Enterprise multi-server: Auth, API, CDN, XEMS)", "minimal (Lightweight single-server)"]);
+        if cw.startsWith("minimal") {
+            ag =: "minimal";
+        } else {
+            ag =: "default";
+        };
+        const cx = ::confirm("<cyan>?</> <bold>Install dependencies immediately with xfpm?</>", true);
+        ah =: cx;
+    }
+    s1.println("");
+}
+const ai = if af.startsWith("/") -> af else s8.Join(s3.cwd(), af);
 let aj = false;
-trap s2::@map{interrupt, terminate} as s{if !aj{s1.println("\n<red>[CRITICAL:ABORT]</> Process interrupted by <bold>$f{s}</>. Cleaning up...");if s5.exists(ai){s5.remove(ai);s1.println("<yellow>[CLEANUP]</> Removed incomplete directory '<bold>$f{ai}</>'")}}};
-if s5.exists(ai){if l==false{s1.fatal("Destination directory '$f{ai}' already exists. Use --force to overwrite.")};s1.println("<yellow>[CLEANUP]</> Overwriting existing directory '<bold>$f{ai}</>'...");s5.remove(ai)};
+trap s2::@map{interrupt, terminate} as s {
+    if !aj {
+        s1.println("\n<red>[CRITICAL:ABORT]</> Process interrupted by <bold>$f{s}</>. Cleaning up...");
+        if s5.exists(ai) {
+            s5.remove(ai);
+            s1.println("<yellow>[CLEANUP]</> Removed incomplete directory '<bold>$f{ai}</>'");
+        }
+    }
+}
+if s5.exists(ai) {
+    if l == false {
+        s1.fatal("Destination directory '$f{ai}' already exists. Use --force to overwrite.");
+    }
+    s1.println("<yellow>[CLEANUP]</> Overwriting existing directory '<bold>$f{ai}</>'...");
+    s5.remove(ai);
+}
 const ak = if ah -> "<green>enabled</>" else "<yellow>disabled</>";
 s1.println("<cyan>╭─────────────────────────────────────────────────────────────╮</>");
 s1.println("<cyan>│</>  <bold>🚀  XyPriss Project Initializer</>                               <cyan>│</>");
@@ -53,13 +335,32 @@ const al = ad();
 s1.println("\n<cyan><bold>◆ [2/4]</> Extracting project template into '<bold>$f{ai}</>'...");
 s9.exec("xru unpack \"$f{al}\" \"$f{ai}\"");
 s1.println("  <green>✔</> Template unpacked successfully.");
-const am = @map{targetDir:ai,projectMode:ag,projectName:af,shouldInstall:ah};
+const am = @map {
+    targetDir: ai, projectMode: ag, projectName: af, shouldInstall: ah
+};
 ae(am);
-aj=:true;
+aj =: true;
 s1.println("");
 s1.println("<green>╭─────────────────────────────────────────────────────────────╮</>");
 s1.println("<green>│</>  <bold>✨  Project initialized successfully!</>                       <green>│</>");
 s1.println("<green>╰─────────────────────────────────────────────────────────────╯</>");
 s1.println("");
-if !m{s1.println("  <bold>Next steps:</>");if af!="."&&af!="./"{s1.println("    <cyan>→</> cd <bold>$f{af}</>")};if !ah{s1.println("    <cyan>→</> 'xfpm install'</>")};s1.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>")} else{const cy = s8.join(ai);if !ah{s1.println("  <yellow>[WARNING]</> Dependencies are not installed. Run <cyan>'xfpm install'</> before starting the dev server.");return};s1.println("  <bold>Starting dev server...</>");s9.exec(if z -> "xfpm run dev" else "dev",cy)};
+if !m {
+    s1.println("  <bold>Next steps:</>");
+    if af != "." && af != "./" {
+        s1.println("    <cyan>→</> cd <bold>$f{af}</>");
+    }
+    if !ah {
+        s1.println("    <cyan>→</> 'xfpm install'</>");
+    }
+    s1.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>");
+} else {
+    const cy = s8.join(ai);
+    if !ah {
+        s1.println("  <yellow>[WARNING]</> Dependencies are not installed. Run <cyan>'xfpm install'</> before starting the dev server.");
+        return;
+    }
+    s1.println("  <bold>Starting dev server...</>");
+    s9.exec(if z -> "xfpm run dev" else "dev", cy)
+};
 s1.println("");

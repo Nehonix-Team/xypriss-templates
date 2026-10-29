@@ -1,3 +1,3 @@
 mod xruV
 
-global const xruMinVersion = "2.1.8"
+global const xruMinVersion = "2.1.9"
