@@ -14,8 +14,9 @@ use fs as Fs
 use json as Json
 use sys as Sys
 use crypto as Crypto
+from "dmod" use xruV::xruMinVersion
 
-Sys.require(">= 2.0.13", @map{
+Sys.require(xruMinVersion, @map{
     onMismatch: "auto-update",
     mode: "log"
 });
