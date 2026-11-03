@@ -205,72 +205,76 @@ func ae(ca) {
     if !s5.exists(cf) {
         s1.fatal("Critical error: main.xru was not found in destination directory after unpack!");
     }
-    const cg = s8.Join(cb, "fileonix.config.json");
+    const cg = s8.Join(cb, "xfpm.resolve.lock");
     if s5.exists(cg) {
-        file cg, (ch, ci) -> {
-            if ci != nil {
+        s5.remove(cg);
+    }
+    const ch = s8.Join(cb, "fileonix.config.json");
+    if s5.exists(ch) {
+        file ch, (ci, cj) -> {
+            if cj != nil {
                 return;
             }
-            ch.setJson("watch", [cb]);
+            ci.setJson("watch", [cb]);
         }
     }
-    let cj = "xru run \"$f{cf}\" --name=\"$f{cc}\" --mode=\"$f{cd}\" --port=$f{j} --version=\"$f{b}\" --description=\"$f{c}\" --author=\"$f{d}\" --server_timeout=$f{k}";
+    let ck = "xru run \"$f{cf}\" --name=\"$f{cc}\" --mode=\"$f{cd}\" --port=$f{j} --version=\"$f{b}\" --description=\"$f{c}\" --author=\"$f{d}\" --server_timeout=$f{k}";
     if f == false {
-        cj =: cj + " --no-xems";
+        ck =: ck + " --no-xems";
     }
     if g == false {
-        cj =: cj + " --no-cdn";
+        ck =: ck + " --no-cdn";
     }
     if h == true {
-        cj =: cj + " --plugin";
+        ck =: ck + " --plugin";
     }
     if ce == false {
-        cj =: cj + " --no-install";
+        ck =: ck + " --no-install";
     }
     s1.println("\n<cyan><bold>◆ [3/4]</> Configuring project & running parallel orchestrations...");
-    const ck = with s9.exec(cj, cb);
-    const cl = with s4.isPortBusy(j);
-    let cm = 0;
-    const cn = if k > 0 -> k else 120000;
-    while !ck.isDone() {
+    const cl = with s9.exec(ck, cb);
+    const cm = with s4.isPortBusy(j);
+    let cn = 0;
+    const co = if k > 0 -> k else 120000;
+    while !cl.isDone() {
         s1.sleep(500ms);
-        cm =: cm + 500;
-        if cm >= cn {
-            s1.println("\n<red>[TIMEOUT]</> Template orchestration exceeded timeout limit ($f{cn}ms).");
-            ck.cancel();
+        cn =: cn + 500;
+        if cn >= co {
+            s1.println("\n<red>[TIMEOUT]</> Template orchestration exceeded timeout limit ($f{co}ms).");
+            cl.cancel();
             break
         }
     }
-    ck.wait() catch co;
-    if co != nil {
-        s1.fatal("Template orchestration failed: $f{co}");
+    cl.wait() catch cp;
+    if cp != nil {
+        s1.fatal("Template orchestration failed: $f{cp}");
     }
     s1.println("  <green>✔</> Environment & presets configured.");
-    const cp = s8.Join(cb, ".git");
-    if !s5.exists(cp) {
-        const cq = s8.Join(cb, ".gitignore");
-        file cq, (cr, cs) -> {
-            if cs != nil {
+    const cq = s8.Join(cb, ".git");
+    if !s5.exists(cq) {
+        const cr = s8.Join(cb, ".gitignore");
+        file cr, (cs, ct) -> {
+            if ct != nil {
                 return;
             }
-            cr.append("\n# Environment variables & secrets\n.env\n.env.*\n.env.local\n.env.remote\n.storage.xems\n");
+            cs.append("\n# Environment variables & secrets\n.env\n.env.*\n.env.local\n.env.remote\n.storage.xems\n");
         }
-        const ct = "master";
-        const cu = if d != "" -> "by $f{d}" else ".";
+        const cu = "master";
+        const cv = if d != "" -> "by $f{d}" else ".";
         cout s9::@map{dir : cb, out, err} as c {
             ::exec("git init");
             ::exec("git add .");
             ::exec("git reset HEAD .env");
-            ::exec("git commit -m \"Initial commit from xfpm init $f{cu}\"");
-            ::exec("git branch -M $f{ct}");
+            ::exec("git commit -m \"Initial commit from xfpm init $f{cv}\"");
+            ::exec("git branch -M $f{cu}");
         }
         if c.ok {
             s1.println("  <green>✔</> Git repository initialized.");
         }
     }
     s1.println("\n<cyan><bold>◆ [4/4]</> Validating network environment...");
-    const cv = cl.wait() catch or false;
-    if cv {
+    const cw = cm.wait() catch or false;
+    if cw {
         s1.println("  <yellow>▲ [WARN]</> Port <bold>$f{j}</> is currently in use on localhost.");
         s1.println("  <yellow>▲ [WARN]</> You may want to configure a different port before launching.");
     } else {
@@ -291,16 +295,16 @@ if !s3.hasArg() {
     s1.println("<cyan>╰─────────────────────────────────────────────────────────────╯</>");
     s1.println("");
     s1::in {
-        const cw = ::input("<cyan>?</> <bold>Project name or directory:</> (my-xypriss-app) ", "my-xypriss-app");
-        af =: cw;
-        const cx = ::select("<cyan>?</> <bold>Select architecture preset:</>", ["default (Enterprise multi-server: Auth, API, CDN, XEMS)", "minimal (Lightweight single-server)"]);
-        if cx.startsWith("minimal") {
+        const cx = ::input("<cyan>?</> <bold>Project name or directory:</> (my-xypriss-app) ", "my-xypriss-app");
+        af =: cx;
+        const cy = ::select("<cyan>?</> <bold>Select architecture preset:</>", ["default (Enterprise multi-server: Auth, API, CDN, XEMS)", "minimal (Lightweight single-server)"]);
+        if cy.startsWith("minimal") {
             ag =: "minimal";
         } else {
             ag =: "default";
         };
-        const cy = ::confirm("<cyan>?</> <bold>Install dependencies immediately with xfpm?</>", true);
-        ah =: cy;
+        const cz = ::confirm("<cyan>?</> <bold>Install dependencies immediately with xfpm?</>", true);
+        ah =: cz;
     }
     s1.println("");
 }
@@ -357,12 +361,12 @@ if !m {
     }
     s1.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>");
 } else {
-    const cz = s8.join(ai);
+    const da = s8.join(ai);
     if !ah {
         s1.println("  <yellow>[WARNING]</> Dependencies are not installed. Run <cyan>'xfpm install'</> before starting the dev server.");
         return;
     }
     s1.println("  <bold>Starting dev server...</>");
-    s9.exec(if z -> "xfpm run dev" else "dev", cz)
+    s9.exec(if z -> "xfpm run dev" else "dev", da)
 };
 s1.println("");

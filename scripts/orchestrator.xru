@@ -21,9 +21,14 @@ global func exec(props: IExecProps) {
     const projectName = props.projectName
     const projectMode = props.projectMode
     const shouldInstall = props.shouldInstall
-   const mainScript = Path.Join(targetDir, "main.xru")
+    const mainScript = Path.Join(targetDir, "main.xru")
     if !Fs.exists(mainScript) {
         std.fatal("Critical error: main.xru was not found in destination directory after unpack!")
+    }
+
+    const staleLock = Path.Join(targetDir, "xfpm.resolve.lock")
+    if Fs.exists(staleLock) {
+        Fs.remove(staleLock)
     }
 
     const fileonixCfg = Path.Join(targetDir, "fileonix.config.json")

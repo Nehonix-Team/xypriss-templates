@@ -9,5 +9,5 @@ fileonix.config.json
 package.json
 src/
 tsconfig.json
-xfpm.resolve.lock
 xypriss.config.jsonc
+xfpm.resolve.lock
