@@ -124,9 +124,9 @@ if mode == "minimal" {
 // -----------------------------------------------------------------------------
 if install == true {
     std::println("<blue>[INSTALL]</> Installing dependencies via xfpm...")
-    const cmd = "xfpm -C $f{Sys.cwd()} install"
-    std::println("<yellow>Executing: \"$f{cmd}\"</yellow>")
-    Cmd::exec(cmd)
+    const lcmd = "xfpm -C $f{Sys.cwd()} install"
+    std::println("<yellow>Executing: \"$f{lcmd}\"</yellow>")
+    Cmd::exec(lcmd)
 }
 
 const scriptFile = "main.xru"

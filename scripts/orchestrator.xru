@@ -49,7 +49,9 @@ global func exec(props: IExecProps) {
     if plugin == true {
         runCmd =: runCmd + " --plugin"
     }
-    if shouldInstall == false {
+    if shouldInstall == true {
+        runCmd =: runCmd + " --install"
+    } else {
         runCmd =: runCmd + " --no-install"
     }
 
