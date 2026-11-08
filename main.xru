@@ -188,12 +188,14 @@ if dbChoice == "none" {
 // -----------------------------------------------------------------------------
 if install == true {
     std::println("<blue>[INSTALL]</> Installing dependencies via xfpm...")
-    const lcmd = "xfpm -C $f{Sys.cwd()} install"
-    std::println("<yellow>Executing: \"$f{lcmd}\"</yellow>")
-    Cmd::exec(lcmd)
+    Cmd::exec("xfpm install")
     if dbChoice == "prisma" {
         std::println("<cyan>[PRISMA]</> Generating Prisma Client...")
-        Cmd::exec("xfpm -C $f{Sys.cwd()} run db:generate")
+        Cmd::exec("xfpm run db:generate") catch err;
+        if err != nil {
+            std::println("<yellow>[WARNING]</> Failed to auto-generate Prisma Client: $f{err}")
+            std::println("<yellow>[HINT]</> You can run 'xfpm run db:generate' manually.")
+        }
     }
 }
 
