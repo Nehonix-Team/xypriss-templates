@@ -175,6 +175,10 @@ if dbChoice == "none" {
     if Fs.exists("drizzle.config.ts") {
         Fs.remove("drizzle.config.ts")
     }
+    file "prisma.config.ts", (doc, err) -> {
+        if err != nil { return }
+        doc.replaceFuzzy("my_xypriss_app", name)
+    }
     file "package.json", (doc, err) -> {
         if err != nil { return }
         for key, val in prismaDbMap {
