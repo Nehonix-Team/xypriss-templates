@@ -191,7 +191,7 @@ unit y {
     }
 }
 
-const z = "2.1.9";
+const z = "2.1.10";
 const aa = s3.os() == "windows";
 const ab = s3.os() == "linux";
 const ac = s3.os() == "macos";
@@ -295,7 +295,7 @@ func af(cc) {
     }
 }
 
-s3.require(">= 2.1.9", @map {
+s3.require(">= 2.1.10", @map {
     onMismatch: "auto-update", mode: "log"
 }
 );
