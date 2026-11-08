@@ -28,7 +28,7 @@ global arg author, a: string = ""
 /// - "default": Full enterprise multi-server setup (Auth, API, CDN, XEMS).
 /// - "minimal": Lightweight single-server setup with minimal .env configuration.
 /// @cli --mode, -m=<"default"|"minimal"> (default: "default")
-global arg mode, m: string = "default"
+global arg mode, m: "default" or "minimal" = "default"
 
 /// Enables XEMS (XyPriss Enterprise Microservices) inter-service clustering.
 /// @cli --xems, -x=<bool> (default: true)
@@ -59,3 +59,10 @@ global arg server_timeout, t: number = 30000
 /// Overwrites existing directory if already present.
 /// @cli --force, -f=<bool> (default: false)
 global arg force, f: bool = false
+
+/// Database / ORM provider integration:
+/// - "none": No database or ORM configured (default).
+/// - "prisma": Prisma ORM configured with PostgreSQL.
+/// - "drizzle": Drizzle ORM configured with PostgreSQL.
+/// @cli --database, --db=<"none"|"prisma"|"drizzle"|"postgresql"> (default: "none")
+global arg database, db: "none" or "prisma" or "drizzle" or "postgresql" = "none"

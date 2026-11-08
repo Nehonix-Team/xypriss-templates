@@ -1,0 +1,50 @@
+mod dbCleanup
+
+// =============================================================================
+// Database Cleanup Constants
+// =============================================================================
+// Keys to strip from package.json when no database provider is selected.
+// Used by main.xru when dbChoice == "none".
+// =============================================================================
+
+/// All package.json keys that belong to any ORM/DB provider.
+/// When database = "none", every entry in this list is removed.
+global const noneDbKeys: list[string] = [
+    "dependencies.@prisma/client",
+    "dependencies.@prisma/adapter-pg",
+    "dependencies.pg",
+    "dependencies.prisma",
+    "dependencies.drizzle-orm",
+    "devDependencies.prisma",
+    "devDependencies.@types/pg",
+    "devDependencies.drizzle-kit",
+    "scripts.db:generate",
+    "scripts.db:push",
+    "scripts.db:migrate",
+    "scripts.db:studio"
+]
+
+/// Prisma ORM package.json entries (deps + devDeps + scripts).
+global const prismaDbMap: @map = @map{
+    "dependencies.@prisma/client":      "^6.4.1",
+    "dependencies.@prisma/adapter-pg":  "^6.4.1",
+    "dependencies.pg":                  "^8.13.3",
+    "devDependencies.prisma":           "^6.4.1",
+    "devDependencies.@types/pg":        "^8.11.11",
+    "scripts.db:generate":              "xfpmx prisma generate",
+    "scripts.db:push":                  "xfpmx prisma db push",
+    "scripts.db:migrate":               "xfpmx prisma migrate dev",
+    "scripts.db:studio":                "xfpmx prisma studio"
+}
+
+/// Drizzle ORM package.json entries (deps + devDeps + scripts).
+global const drizzleDbMap: @map = @map{
+    "dependencies.drizzle-orm":         "^0.39.3",
+    "dependencies.pg":                  "^8.13.3",
+    "devDependencies.drizzle-kit":      "^0.30.4",
+    "devDependencies.@types/pg":        "^8.11.11",
+    "scripts.db:generate":              "xfpmx drizzle-kit generate",
+    "scripts.db:push":                  "xfpmx drizzle-kit push",
+    "scripts.db:studio":                "xfpmx drizzle-kit studio"
+}
+

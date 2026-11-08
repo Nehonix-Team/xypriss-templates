@@ -20,12 +20,16 @@ from "dll" use HM::HydratateMetaD
 // 1. CLI ARGUMENTS & CONFIGURATION SCHEMA
 // -----------------------------------------------------------------------------
 from "dll" use gArgs::name 
-from "dll" use gArgs::@map{install, port, server_timeout, mode, cdn}
+from "dll" use gArgs::@map{install, port, server_timeout, mode, cdn, database}
 from "dll" use prune::arch
+from "dll" use dbCleanup::@map{noneDbKeys, prismaDbMap, drizzleDbMap}
 
+let dbChoice = database
+if dbChoice == "postgresql" {
+    dbChoice =: "prisma"
+}
 
-
-std::println("<cyan>[XRU]</> Orchestrating template <bold>$f{name}</> (mode: <yellow>$f{mode}</>)")
+std::println("<cyan>[XRU]</> Orchestrating template <bold>$f{name}</> (mode: <yellow>$f{mode}</>, db: <magenta>$f{dbChoice}</>)")
 const installMsg = if install -> "<green>Dependencies installation enabled</>" else "<yellow>Dependencies installation disabled</>"
 
 std::println("<blue>[XRU]</> $f{installMsg}")
@@ -68,11 +72,21 @@ if Fs.exists(".env") {
                     envContent =: envContent + "$f{key}=\"$f{val}\"\n"
                 }
             }
+            if dbChoice == "prisma" {
+                envContent =: envContent + "DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/$f{name}?schema=public\"\n"
+            } elif dbChoice == "drizzle" {
+                envContent =: envContent + "DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/$f{name}\"\n"
+            }
             doc.setContent(envContent)
         } else {
             doc.removeLines("XEMS_SECRET")
             doc.append("\n") // break line
             doc.append(<<<XEMS_SECRET=$f{xemsSecret}>>>)
+            if dbChoice == "prisma" {
+                doc.append("\n\n# PostgreSQL Database Connection (Prisma)\nDATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/$f{name}?schema=public\"\n")
+            } elif dbChoice == "drizzle" {
+                doc.append("\n\n# PostgreSQL Database Connection (Drizzle)\nDATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/$f{name}\"\n")
+            }
         }
     }
 }
@@ -116,6 +130,117 @@ dispatch "./src"
 if mode == "minimal" {
     if Fs.exists("src/servers") {
         Fs.remove("src/servers")
+    }
+}
+
+// -----------------------------------------------------------------------------
+// 5b. DATABASE & ORM SCAFFOLDING
+// -----------------------------------------------------------------------------
+if dbChoice == "none" {
+    if Fs.exists("prisma") {
+        Fs.remove("prisma")
+    }
+    if Fs.exists("src/configs/db.ts") {
+        Fs.remove("src/configs/db.ts")
+    }
+    if Fs.exists("src/prisma.config.ts") {
+        Fs.remove("src/prisma.config.ts")
+    }
+    file "package.json", (doc, err) -> {
+        if err != nil { return }
+        for key in noneDbKeys {
+            doc.removeJson(key)
+        }
+    }
+} elif dbChoice == "prisma" {
+    std::println("<cyan>[DATABASE]</> Configuring <bold>Prisma ORM</> with PostgreSQL...")
+    if Fs.exists("src/prisma.config.ts") {
+        Fs.remove("src/prisma.config.ts")
+    }
+    file "package.json", (doc, err) -> {
+        if err != nil { return }
+        for key, val in prismaDbMap {
+            doc.setJson(key, val)
+        }
+    }
+} elif dbChoice == "drizzle" {
+    std::println("<cyan>[DATABASE]</> Configuring <bold>Drizzle ORM</> with PostgreSQL...")
+    if Fs.exists("prisma") {
+        Fs.remove("prisma")
+    }
+    if Fs.exists("src/prisma.config.ts") {
+        Fs.remove("src/prisma.config.ts")
+    }
+
+    const drizzleCfg = <<<import { defineConfig } from "drizzle-kit";
+
+export default defineConfig({
+  schema: "./src/db/schema.ts",
+  out: "./drizzle",
+  dialect: "postgresql",
+  dbCredentials: {
+    url: process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/$f{name}",
+  },
+});
+>>>
+    Fs.write("drizzle.config.ts", drizzleCfg)
+
+    const drizzleSchema = <<<import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+
+export const users = pgTable("users", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  email: text("email").notNull().unique(),
+  name: text("name"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+>>>
+    Fs.write("src/db/schema.ts", drizzleSchema)
+
+    const drizzleDb = <<<import { drizzle } from "drizzle-orm/node-postgres";
+import pg from "pg";
+import * as schema from "../db/schema";
+
+const { Pool } = pg;
+
+if (typeof __sys__ !== "undefined" && __sys__.__env__?.configureShield) {
+  __sys__.__env__.configureShield({
+    whitelist: [
+      "DATABASE_URL",
+      "PGPORT",
+      "PGBINARY",
+      "PGOPTIONS",
+      "PGUSER",
+      "PGDATABASE",
+      "PGHOST",
+      "PGPASSWORD",
+    ],
+  });
+}
+
+const connectionString =
+  (typeof __sys__ !== "undefined" && __sys__.__env__?.get("DATABASE_URL")) ||
+  process.env.DATABASE_URL ||
+  "postgresql://postgres:postgres@localhost:5432/$f{name}";
+
+const pool = new Pool({
+  connectionString,
+  max: 15,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 15000,
+  keepAlive: true,
+});
+
+export const db = drizzle(pool, { schema });
+export default db;
+>>>
+    Fs.write("src/configs/db.ts", drizzleDb)
+
+    file "package.json", (doc, err) -> {
+        if err != nil { return }
+        for key, val in drizzleDbMap {
+            doc.setJson(key, val)
+        }
     }
 }
 

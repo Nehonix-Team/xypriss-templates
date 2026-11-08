@@ -21,7 +21,6 @@ import {
   publicCdnPath,
   publicCdnTmpPath,
 } from "./const/cdnPaths";
-import { hashPassword } from "./utils/crypto";
 
 /**
  * Global XyPriss Server Instance configured with multi-server topology.

@@ -33,6 +33,7 @@ from "dll" use gArgs::force
 from "dll" use gArgs::server_timeout
 from "dmod" use xruV::xruMinVersion
 from "dmod" use syos::isWin
+from "dll" use gArgs::database
 
 // -----------------------------------------------------------------------------
 // 2. REUSE NETWORK BUNDLE RESOLVER (FROM scripts/xpackDownload.xru VIA dll)
@@ -47,9 +48,9 @@ Sys.require(">= $f{xruMinVersion}", @map{
 })
 
 let projectName = name
-let projectMode = mode
+let projectMode: typeof mode = mode
+let projectDb = database
 let shouldInstall = install
-
 
 // -----------------------------------------------------------------------------
 // 3. INTERACTIVE SETUP (IF NO CLI ARGUMENTS WERE PROVIDED)
@@ -69,6 +70,19 @@ if !Sys.hasArg() {
             projectMode =: "minimal"
         } else {
             projectMode =: "default"
+        }
+
+        const chosenDb = ::select("<cyan>?</> <bold>Select database / ORM provider:</>", [
+            "none (No database - default)",
+            "prisma (Prisma ORM with PostgreSQL)",
+            "drizzle (Drizzle ORM with PostgreSQL)"
+        ])
+        if chosenDb.startsWith("prisma") {
+            projectDb =: "prisma"
+        } elif chosenDb.startsWith("drizzle") {
+            projectDb =: "drizzle"
+        } else {
+            projectDb =: "none"
         }
 
         const askInstall = ::confirm("<cyan>?</> <bold>Install dependencies immediately with xfpm?</>", true)
@@ -112,6 +126,7 @@ std.println("<cyan>│</>  <bold>🚀  XyPriss Project Initializer</>           
 std.println("<cyan>├─────────────────────────────────────────────────────────────┤</>")
 std.println("<cyan>│</>  Target   : <bold>$f{projectName}</>")
 std.println("<cyan>│</>  Preset   : <cyan><bold>$f{projectMode}</></>")
+std.println("<cyan>│</>  Database : <yellow><bold>$f{projectDb}</></>")
 std.println("<cyan>│</>  Port     : <bold>$f{port}</>")
 std.println("<cyan>│</>  Install  : $f{installStatus}")
 std.println("<cyan>╰─────────────────────────────────────────────────────────────╯</>")
@@ -133,11 +148,12 @@ std.println("  <green>✔</> Template unpacked successfully.")
 // -----------------------------------------------------------------------------
 // 8. EXECUTE PROJECT ORCHESTRATOR (main.xru)
 // -----------------------------------------------------------------------------
-const cfg: IExecProps= @map{
+const cfg: IExecProps = @map{
    targetDir: targetDir,
    projectMode: projectMode,
    projectName: projectName,
-   shouldInstall: shouldInstall
+   shouldInstall: shouldInstall,
+   projectDb: projectDb
 }
 
 exec(cfg)
@@ -159,6 +175,11 @@ if !start_server {
     }
     if !shouldInstall {
         std.println("    <cyan>→</> 'xfpm install'</>")
+    }
+    if projectDb == "prisma" {
+        std.println("    <cyan>→</> 'xfpmx prisma db push' <bold>(sync schema to database)</>")
+    } elif projectDb == "drizzle" {
+        std.println("    <cyan>→</> 'xfpmx drizzle-kit push' <bold>(sync schema to database)</>")
     }
     std.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>")
 } else {

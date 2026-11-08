@@ -139,6 +139,11 @@ unit ReleaseDownloader {
     }
 
     func resolveBundle() -> string {
+        if Fs.exists("out/project.xpack") {
+            std.println("<green>[LOCAL]</> Using local template bundle <bold>out/project.xpack</>")
+            return "out/project.xpack"
+        }
+
         &cacheDir =: "$f{Sys.homeDir()}/.xfpm/cache"
         Fs.ensureDir(&cacheDir)
 
@@ -211,6 +216,10 @@ unit ReleaseDownloader {
 // Exported global entrypoint for init.xru
 // -----------------------------------------------------------------------------
 global func resolveBundle() -> string {
+    if Fs.exists("out/project.xpack") {
+        std.println("<green>[LOCAL]</> Using local template bundle <bold>out/project.xpack</>")
+        return "out/project.xpack"
+    }
     let downloader = @ReleaseDownloader()
     return downloader.resolveBundle()
 }

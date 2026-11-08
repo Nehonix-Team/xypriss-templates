@@ -1,6 +1,7 @@
 use std
 use net
 use sys as Sys
+from "dll" use gArgs::namxipf
 // from "root" use main::name
 
 
@@ -16,7 +17,15 @@ use sys as Sys
 
 // std::println("name : $f{a}") // devrait afficher erreur ce qui est juste
 
-file "fileonix.config.json", (doc, err) -> {
-    if err != nil { return }
-    doc.setJson("watch", [Sys.cwd()])
-}
+// file "fileonix.config.json", (doc, err) -> {
+//     if err != nil { return }
+//     doc.setJson("watch", [Sys.cwd()])
+// }
+
+const spnam = namxipf.split(" ")
+const fsp = spnam.get(0)
+
+std::println("first element : $f{fsp}")
+std::println("splited count : $f{spnam.len()}")
+// Ou si vous voulez la longueur de la 1ère chaîne :
+std::println("first item len: $f{spnam.get(0).len()}")
