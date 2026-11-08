@@ -62,7 +62,7 @@ global arg force, f: bool = false
 
 /// Database / ORM provider integration:
 /// - "none": No database or ORM configured (default).
-/// - "prisma": Prisma ORM configured with PostgreSQL.
-/// - "drizzle": Drizzle ORM configured with PostgreSQL.
-/// @cli --database, --db=<"none"|"prisma"|"drizzle"|"postgresql"> (default: "none")
-global arg database, db: "none" or "prisma" or "drizzle" or "postgresql" = "none"
+/// - "drizzle": Drizzle ORM configured with PostgreSQL (Recommended).
+/// - "prisma": Prisma ORM v7 configured with PostgreSQL.
+/// @cli --database, --db=<"none"|"drizzle"|"prisma"|"postgresql"> (default: "none")
+global arg database, db: "none" or "drizzle" or "prisma" or "postgresql" = "none"

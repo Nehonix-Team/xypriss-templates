@@ -51,11 +51,21 @@ let projectName = name
 let projectMode: typeof mode = mode
 let projectDb = database
 let shouldInstall = install
+let shouldForce = force
 
 // -----------------------------------------------------------------------------
-// 3. INTERACTIVE SETUP (IF NO CLI ARGUMENTS WERE PROVIDED)
+// 3. INTERACTIVE SETUP (IF NO IMPORTANT CLI ARGUMENTS WERE PROVIDED)
 // -----------------------------------------------------------------------------
-if !Sys.hasArg() {
+let hasImportantArgs = false
+for a in Sys.args() {
+    const clean = a.trim()
+    if clean != "-f" && clean != "--force" && !clean.startsWith("-f=") && !clean.startsWith("--force=") {
+        hasImportantArgs =: true
+        break
+    }
+}
+
+if !hasImportantArgs {
     std.println("<cyan>╭─────────────────────────────────────────────────────────────╮</>")
     std.println("<cyan>│</>  <bold>🚀  XyPriss Project Initializer (Interactive)</>              <cyan>│</>")
     std.println("<cyan>╰─────────────────────────────────────────────────────────────╯</>")
@@ -64,6 +74,16 @@ if !Sys.hasArg() {
     std::in {
         const inputName = ::input("<cyan>?</> <bold>Project name or directory:</> (my-xypriss-app) ", "my-xypriss-app")
         projectName =: inputName
+
+        const checkTarget = if inputName.startsWith("/") -> inputName else Path.Join(Sys.cwd(), inputName)
+        if Fs.exists(checkTarget) && !shouldForce {
+            const confirmOverwrite = ::confirm("<yellow>?</> <bold>Target directory '$f{inputName}' already exists. Overwrite?</>", false)
+            if !confirmOverwrite {
+                std.println("<red>[ABORT]</> Destination directory already exists. Setup aborted.")
+                Sys.exit(1)
+            }
+            shouldForce =: true
+        }
 
         const chosenMode = ::select("<cyan>?</> <bold>Select architecture preset:</>", ["default (Enterprise multi-server: Auth, API, CDN, XEMS)", "minimal (Lightweight single-server)"])
         if chosenMode.startsWith("minimal") {
@@ -74,13 +94,13 @@ if !Sys.hasArg() {
 
         const chosenDb = ::select("<cyan>?</> <bold>Select database / ORM provider:</>", [
             "none (No database - default)",
-            "prisma (Prisma ORM with PostgreSQL)",
-            "drizzle (Drizzle ORM with PostgreSQL)"
+            "drizzle (Drizzle ORM with PostgreSQL - Recommended)",
+            "prisma (Prisma ORM v7 with PostgreSQL)"
         ])
-        if chosenDb.startsWith("prisma") {
-            projectDb =: "prisma"
-        } elif chosenDb.startsWith("drizzle") {
+        if chosenDb.startsWith("drizzle") {
             projectDb =: "drizzle"
+        } elif chosenDb.startsWith("prisma") {
+            projectDb =: "prisma"
         } else {
             projectDb =: "none"
         }
@@ -109,7 +129,7 @@ trap sig::@map{interrupt, terminate} as s {
 }
 
 if Fs.exists(targetDir) {
-    if force == false {
+    if shouldForce == false {
         std.fatal("Destination directory '$f{targetDir}' already exists. Use --force to overwrite.")
     }
     std.println("<yellow>[CLEANUP]</> Overwriting existing directory '<bold>$f{targetDir}</>'...")

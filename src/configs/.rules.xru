@@ -1,5 +1,6 @@
 use std
-from "dll" use gArgs::@map{author, xems, mode, cdn}
+use fs as Fs
+from "dll" use gArgs::@map{author, xems, mode, cdn, database}
 
 // =============================================================================
 // Module Descriptor: src/configs/.rules.xru
@@ -10,6 +11,10 @@ from "dll" use gArgs::@map{author, xems, mode, cdn}
 // 2. Server Cluster Topology (xypriss.config.ts & servers.config.ts):
 //    - In "minimal" mode: Strips multi-server topology, drops servers.config.ts, and isolates single-app runtime.
 //    - When CDN is disabled: Removes CDN server reference from the cluster array.
+// 3. Database & ORM Client (db.ts & db.prisma.ts):
+//    - "none": Drops all db client files.
+//    - "drizzle": Retains native Drizzle client (db.ts) and drops db.prisma.ts.
+//    - "prisma": Drops Drizzle client (db.ts) and promotes db.prisma.ts to db.ts.
 // =============================================================================
 
 
@@ -46,4 +51,16 @@ if mode == "minimal" {
         doc.replaceFuzzy("servers: [authServer, mainServer, cdnServer],", "servers: [authServer, mainServer],")
         doc.removeLines("cdn.server")
     }
+}
+
+// -----------------------------------------------------------------------------
+// 3. Database & ORM Client Configuration (db.ts)
+// -----------------------------------------------------------------------------
+if database == "none" {
+    drop(["db.ts", "db.prisma.ts"])
+} elif database == "drizzle" || database == "postgresql" {
+    drop(["db.prisma.ts"])
+} elif database == "prisma" {
+    drop(["db.ts"])
+    Fs.move("db.prisma.ts", "db.ts")
 }

@@ -8,6 +8,8 @@ TARGET_README.md
 fileonix.config.json
 package.json
 prisma/
+prisma.config.ts
+drizzle.config.ts
 src/
 tsconfig.json
 xypriss.config.jsonc

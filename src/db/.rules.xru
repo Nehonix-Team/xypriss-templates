@@ -1,0 +1,12 @@
+from "dll" use gArgs::database
+
+// =============================================================================
+// Module Descriptor: src/db/.rules.xru
+// =============================================================================
+// Orchestrates Drizzle ORM schema pruning:
+// - If database is not "drizzle", drops the entire src/db directory.
+// =============================================================================
+
+if database != "drizzle" && database != "postgresql" {
+    drop(["."])
+}

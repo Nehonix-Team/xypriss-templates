@@ -1,15 +1,28 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
+import * as schema from "../db/schema";
 
 const { Pool } = pg;
 
-// Configure environment shield for PostgreSQL connection variables
+// =============================================================================
+// Database Configuration & Connection Pool (Drizzle ORM)
+// =============================================================================
+// In XyPriss, direct access to `process.env` is restricted and blocked at the
+// OS/runtime level by libXESS (Bipolar Zero-Trust Confinement).
+//
+// 1. Driver connection variables (`DATABASE_URL`, `PG*`, etc.) must be declared
+//    in the environment shield whitelist via `__sys__.__env__.configureShield`
+//    to allow the underlying `pg` driver to read its internal options securely.
+// 2. Application code must always retrieve variables through `__sys__.__env__.get()`.
+// 3. Fallback to `process.env` is strictly reserved for external CLI tooling
+//    (e.g., `drizzle-kit push / generate`) running outside the XyPriss sandbox.
+// =============================================================================
+// @see https://xypriss.nehonix.com/docs/security/environment-shield
+
 if (typeof __sys__ !== "undefined" && __sys__.__env__?.configureShield) {
   __sys__.__env__.configureShield({
     whitelist: [
       "DATABASE_URL",
-      "DIRECT_URL",
       "PGPORT",
       "PGBINARY",
       "PGOPTIONS",
@@ -18,23 +31,23 @@ if (typeof __sys__ !== "undefined" && __sys__.__env__?.configureShield) {
       "PGREPLICATION",
       "PGAPPNAME",
       "PGCONNECT_TIMEOUT",
-      "PRISMA_CLIENT_GET_TIME",
       "PGUSER",
       "PGDATABASE",
       "PGHOST",
       "PGPASSWORD",
       "PGSSLMODE",
+      "NODE_ENV",
     ],
   });
 }
 
 const connectionString =
-  (typeof __sys__ !== "undefined" && __sys__.__env__?.get("DATABASE_URL")) ||
-  process.env.DATABASE_URL ||
-  "postgresql://postgres:postgres@localhost:5432/my_xypriss_app?schema=public";
+  typeof __sys__ !== "undefined" && __sys__.__env__
+    ? __sys__.__env__.get("DATABASE_URL") ||
+      __sys__.__env__.getStrict("DATABASE_URL") // which will throw an error if the variable is not found
+    : process.env.DATABASE_URL;
 
-// Initialize PostgreSQL driver adapter with connection pooling
-const pool = new Pool({
+export const pool = new Pool({
   connectionString,
   max: 15,
   idleTimeoutMillis: 30000,
@@ -46,29 +59,5 @@ pool.on("error", (err) => {
   console.warn("PostgreSQL pool warning (idle disconnect):", err.message);
 });
 
-const adapter = new PrismaPg(pool);
-
-const globalForPrisma = globalThis as typeof globalThis & {
-  prisma?: PrismaClient;
-};
-
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    adapter,
-    log:
-      (typeof __sys__ !== "undefined" && __sys__.__env__?.isDevelopment()) ||
-      process.env.NODE_ENV === "development"
-        ? ["error", "warn"]
-        : ["error"],
-  });
-
-if (
-  (typeof __sys__ !== "undefined" && __sys__.__env__?.isDevelopment()) ||
-  process.env.NODE_ENV !== "production"
-) {
-  globalForPrisma.prisma = prisma;
-}
-
-export { prisma as db };
-export default prisma;
+export const db = drizzle(pool, { schema });
+export default db;
