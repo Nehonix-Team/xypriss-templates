@@ -114,7 +114,7 @@ if !hasImportantArgs {
 // -----------------------------------------------------------------------------
 // 4. TARGET DIRECTORY RESOLUTION & VALIDATION
 // -----------------------------------------------------------------------------
-const targetDir = if projectName.startsWith("/") -> projectName else Path.Join(Sys.cwd(), projectName)
+const targetDir = if Path.IsAbs(projectName) -> projectName else Path.Join(Sys.cwd(), projectName)
 
 let isInitComplete = false
 
