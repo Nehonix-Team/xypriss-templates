@@ -20,7 +20,7 @@ from "dll" use HM::HydratateMetaD
 // 1. CLI ARGUMENTS & CONFIGURATION SCHEMA
 // -----------------------------------------------------------------------------
 from "dll" use gArgs::name 
-from "dll" use gArgs::@map{install, port, server_timeout, mode, cdn, database}
+from "dll" use gArgs::@map{install, port, server_timeout, mode, cdn, database, yes}
 from "dll" use prune::arch
 from "dll" use dbCleanup::@map{noneDbKeys, prismaDbMap, drizzleDbMap}
 
@@ -192,7 +192,7 @@ if dbChoice == "none" {
 // -----------------------------------------------------------------------------
 if install == true {
     std::println("<blue>[INSTALL]</> Installing dependencies via xfpm...")
-    Cmd::exec("xfpm install")
+    Cmd::exec("xfpm install -n")
     if dbChoice == "prisma" {
         std::println("<cyan>[PRISMA]</> Generating Prisma Client...")
         Cmd::exec("xfpm run db:generate") catch err;

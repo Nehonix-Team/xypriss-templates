@@ -30,6 +30,7 @@ from "dll" use gArgs::cdn
 from "dll" use gArgs::plugin
 from "dll" use gArgs::install
 from "dll" use gArgs::force
+from "dll" use gArgs::yes
 from "dll" use gArgs::server_timeout
 from "dmod" use xruV::xruMinVersion
 from "dmod" use syos::isWin
@@ -52,6 +53,7 @@ let projectMode: typeof mode = mode
 let projectDb = database
 let shouldInstall = install
 let shouldForce = force
+let shouldYes = yes
 
 // -----------------------------------------------------------------------------
 // 3. INTERACTIVE SETUP (IF NO IMPORTANT CLI ARGUMENTS WERE PROVIDED)
@@ -59,13 +61,18 @@ let shouldForce = force
 let hasImportantArgs = false
 for a in Sys.args() {
     const clean = a.trim()
-    if clean != "-f" && clean != "--force" && !clean.startsWith("-f=") && !clean.startsWith("--force=") {
+    if clean != "-f" && clean != "--force" && !clean.startsWith("-f=") && !clean.startsWith("--force=") &&
+       clean != "-y" && clean != "--yes" && !clean.startsWith("-y=") && !clean.startsWith("--yes=") {
         hasImportantArgs =: true
         break
     }
 }
 
-if !hasImportantArgs {
+if shouldYes {
+    shouldForce =: true
+}
+
+if !hasImportantArgs && !shouldYes {
     std.println("<cyan>╭─────────────────────────────────────────────────────────────╮</>")
     std.println("<cyan>│</>  <bold>🚀  XyPriss Project Initializer (Interactive)</>              <cyan>│</>")
     std.println("<cyan>╰─────────────────────────────────────────────────────────────╯</>")
@@ -111,6 +118,37 @@ if !hasImportantArgs {
     std.println("")
 }
 
+func isBunInstalled() -> bool {
+    const isWindows = Sys.os() == "windows"
+    const bunBin = if isWindows -> "bun.exe" else "bun"
+
+    // 1. Direct check in XFPM bin
+    const xfpmBunPath = Path.Join(Sys.homeDir(), ".xfpm", "bin", bunBin)
+    if Fs.exists(xfpmBunPath) {
+        return true
+    }
+
+    // 2. Direct check in ~/.bun/bin
+    const userBunPath = Path.Join(Sys.homeDir(), ".bun", "bin", bunBin)
+    if Fs.exists(userBunPath) {
+        return true
+    }
+
+    // 3. Execution check (bun --version)
+    const ver = Cmd.exec("bun --version") catch e1
+    if ver != nil && ver.trim() != "" {
+        return true
+    }
+
+    // 4. xfpm global list check
+    const listOut = Cmd.exec("xfpm list -g bun") catch e2
+    if listOut != nil && listOut.contains("[PACKAGE] bun") {
+        return true
+    }
+
+    return false
+}
+
 // -----------------------------------------------------------------------------
 // 4. TARGET DIRECTORY RESOLUTION & VALIDATION
 // -----------------------------------------------------------------------------
@@ -152,6 +190,32 @@ std.println("<cyan>│</>  Install  : $f{installStatus}")
 std.println("<cyan>╰─────────────────────────────────────────────────────────────╯</>")
 std.println("")
 
+if shouldInstall == true && !isBunInstalled() {
+    std.println("<yellow>[RUNTIME]</> XyPriss requires the <bold>Bun runtime</> to execute scripts and servers.")
+    let installBunNow = false
+    if shouldYes {
+        installBunNow =: true
+    } else {
+        std::in {
+            installBunNow =: ::confirm("<cyan>?</> <bold>Would you like to install Bun globally now with 'xfpm i -g bun'?</>", true)
+        }
+    }
+
+    if installBunNow {
+        std.println("<cyan>[RUNTIME]</> Bootstrapping Bun runtime via <bold>xfpm i -g bun</>...")
+        Cmd.exec("xfpm i -g bun") catch bunErr
+        if bunErr != nil {
+            std.println("<yellow>[WARNING]</> Failed to auto-install Bun: $f{bunErr}")
+            std.println("<yellow>[HINT]</> You can install it later with 'xfpm i -g bun'.")
+        } else {
+            std.println("  <green>✔</> Bun runtime integrated successfully.")
+        }
+    } else {
+        std.println("<yellow>[WARNING]</> Bun runtime installation skipped. Run 'xfpm i -g bun' manually if needed.")
+    }
+    std.println("")
+}
+
 // -----------------------------------------------------------------------------
 // 6. RESOLVE TEMPLATE XPACK (CACHED OR DOWNLOADED)
 // -----------------------------------------------------------------------------
@@ -173,7 +237,8 @@ const cfg: IExecProps = @map{
    projectMode: projectMode,
    projectName: projectName,
    shouldInstall: shouldInstall,
-   projectDb: projectDb
+   projectDb: projectDb,
+   yes: shouldYes
 }
 
 exec(cfg)

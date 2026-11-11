@@ -60,6 +60,10 @@ global arg server_timeout, t: number = 30000
 /// @cli --force, -f=<bool> (default: false)
 global arg force, f: bool = false
 
+/// Automatically answer yes to all prompts and execute in non-interactive mode.
+/// @cli --yes, -y=<bool> (default: false)
+global arg yes, y: bool = false
+
 /// Database / ORM provider integration:
 /// - "none": No database or ORM configured (default).
 /// - "drizzle": Drizzle ORM configured with PostgreSQL (Recommended).

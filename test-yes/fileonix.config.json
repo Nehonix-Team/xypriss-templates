@@ -1,0 +1,37 @@
+{
+  "batchMode": false,
+  "clearScreen": true,
+  "debounceMs": 100,
+  "envFile": "",
+  "extensions": [
+    ".ts",
+    ".tsx",
+    ".js",
+    ".jsx",
+    ".mjs",
+    ".cjs",
+    ".json",
+    ".env",
+    ".jsonc"
+  ],
+  "gracefulMs": 3000,
+  "ignore": [
+    "node_modules",
+    "dist",
+    ".git",
+    ".next",
+    "build",
+    "coverage"
+  ],
+  "maxRestarts": -1,
+  "noSignals": false,
+  "nodeArgs": null,
+  "runner": "xfpm",
+  "script": "",
+  "silent": false,
+  "targetFile": "",
+  "useFileHash": true,
+  "watch": [
+    "/home/idevo/Documents/projects/XTemplates/test-yes"
+  ]
+}

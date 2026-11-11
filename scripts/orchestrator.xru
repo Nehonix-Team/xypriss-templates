@@ -12,7 +12,8 @@ global interface IExecProps @map{
     projectName string,
     projectMode string,
     shouldInstall bool,
-    projectDb string
+    projectDb string,
+    yes bool
 }
 
 
@@ -66,6 +67,9 @@ global func exec(props: IExecProps) {
     } else {
         runCmd =: runCmd + " --no-install"
     }
+    if props.yes == true {
+        runCmd =: runCmd + " --yes"
+    }
 
     
 // -----------------------------------------------------------------------------
@@ -80,7 +84,8 @@ global func exec(props: IExecProps) {
 
     // Watchdog & Timeout monitoring for orchestration
     let elapsed = 0
-    const maxWaitMs = if server_timeout > 0 -> server_timeout else 120000
+    const defaultTimeout = if shouldInstall -> 300000 else 60000
+    const maxWaitMs = if server_timeout > 30000 -> server_timeout else defaultTimeout
 
     while !execTask.isDone() {
         std.sleep(500ms)

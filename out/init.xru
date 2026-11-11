@@ -19,8 +19,9 @@ global arg install, i as i: bool = false;
 global arg port, p as j: number = 7182;
 global arg server_timeout, t as k: number = 30000;
 global arg force, f as l: bool = false;
-global arg database, db as m: "none" or "drizzle" or "prisma" or "postgresql" = "none";
-arg start_server, st as n: bool = false;
+global arg yes, y as m: bool = false;
+global arg database, db as n: "none" or "drizzle" or "prisma" or "postgresql" = "none";
+arg start_server, st as o: bool = false;
 
 interface orchestrator__IExecProps @map {
     targetDir string;
@@ -28,75 +29,76 @@ interface orchestrator__IExecProps @map {
     projectMode string;
     shouldInstall bool;
     projectDb string;
+    yes bool;
 }
 
-unit y {
-    declare private o: string = "Nehonix-Team/xypriss-templates";
-    declare private p: string = "";
+unit z {
+    declare private p: string = "Nehonix-Team/xypriss-templates";
     declare private q: string = "";
     declare private r: string = "";
-    declare s: string = "";
+    declare private s: string = "";
+    declare t: string = "";
 
-    func t(ar) {
-        const at = "Downloading error: $f{ar}";
-        s1.fatal(at);
+    func u(av) {
+        const aw = "Downloading error: $f{av}";
+        s1.fatal(aw);
     }
 
-    func u() {
-        const au = "https://api.github.com/repos/$f{&o}/releases/latest";
+    func v() {
+        const ax = "https://api.github.com/repos/$f{&p}/releases/latest";
         s1.print("<yellow>[FETCHING]</> Querying latest template release...");
-        let av = with s4.fetch(au);
-        while av.isDone() == false {
+        let ay = with s4.fetch(ax);
+        while ay.isDone() == false {
             s1.print("<cyan>.</>");
             s1.sleep(120ms);
         }
         s1.println("");
-        const aw = av.wait() catch ax;
-        if ax != nil {
-            &self::t(ax);
+        const az = ay.wait() catch ba;
+        if ba != nil {
+            &self::u(ba);
         }
-        const ay = s6.parse(aw) catch az;
-        if az != nil {
-            &self::t("Failed to parse metadata JSON: $f{az}");
+        const bb = s6.parse(az) catch bc;
+        if bc != nil {
+            &self::u("Failed to parse metadata JSON: $f{bc}");
         }
-        &q =: aw;
-        &s =: ay.tag_name;
-        return aw;
+        &r =: az;
+        &t =: bb.tag_name;
+        return az;
     }
 
-    func v() {
-        const ba = "https://github.com/$f{&o}/releases/download/$f{&s}/project.xpack.sha256";
-        let bb = with s4.fetch(ba);
-        while bb.isDone() == false {
+    func w() {
+        const bd = "https://github.com/$f{&p}/releases/download/$f{&t}/project.xpack.sha256";
+        let be = with s4.fetch(bd);
+        while be.isDone() == false {
             s1.sleep(40ms);
         }
-        const bc = bb.wait() catch bd;
-        if bd == nil && bc != "" {
-            let be = bc.trim();
-            if be.contains(" ") {
-                let bf = be.split(" ");
-                be =: bf.get(0).trim();
+        const bf = be.wait() catch bg;
+        if bg == nil && bf != "" {
+            let bh = bf.trim();
+            if bh.contains(" ") {
+                let bi = bh.split(" ");
+                bh =: bi.get(0).trim();
             }
-            if be.len() >= 64 {
-                &r =: be.slice(0, 64);
-                return&r;
+            if bh.len() >= 64 {
+                &s =: bh.slice(0, 64);
+                return&s;
             }
         }
-        if&q != "" {
-            const bg = s6.parse(&q) catch nil;
-            if bg != nil && bg.body != nil {
-                let bh = bg.body;
-                if bh.contains("sha256") || bh.contains("SHA256") {
-                    let bi = bh.split("\n");
-                    for bj in bi {
-                        let bk = bj.trim();
-                        if bk.toLower().contains("sha256") && bk.contains(":") {
-                            let bl = bk.split(":");
-                            if bl.len() >= 2 {
-                                let bm = bl.get(1).trim();
-                                if bm.len() >= 64 {
-                                    &r =: bm.slice(0, 64);
-                                    return&r;
+        if&r != "" {
+            const bj = s6.parse(&r) catch nil;
+            if bj != nil && bj.body != nil {
+                let bk = bj.body;
+                if bk.contains("sha256") || bk.contains("SHA256") {
+                    let bl = bk.split("\n");
+                    for bm in bl {
+                        let bn = bm.trim();
+                        if bn.toLower().contains("sha256") && bn.contains(":") {
+                            let bo = bn.split(":");
+                            if bo.len() >= 2 {
+                                let bp = bo.get(1).trim();
+                                if bp.len() >= 64 {
+                                    &s =: bp.slice(0, 64);
+                                    return&s;
                                 }
                             }
                         }
@@ -107,197 +109,201 @@ unit y {
         return "";
     }
 
-    func w(bn, bo) {
-        if !s5.exists(bn) {
+    func x(bq, br) {
+        if !s5.exists(bq) {
             return false;
         }
-        const bp = s7.fileSha256(bn) catch bq;
-        if bq != nil || bp == "" {
-            s1.println("<red>[SECURITY:ERROR]</> Failed to compute SHA-256 for '$f{bn}'");
+        const bs = s7.fileSha256(bq) catch bt;
+        if bt != nil || bs == "" {
+            s1.println("<red>[SECURITY:ERROR]</> Failed to compute SHA-256 for '$f{bq}'");
             return false;
         }
-        if bo != "" {
-            const br = s7.verify(bp, bo);
-            if !br {
+        if br != "" {
+            const bu = s7.verify(bs, br);
+            if !bu {
                 s1.println("<red>[INTEGRITY:ERROR]</> Checksum mismatch for template bundle!");
-                s1.println("  Expected : <yellow>$f{bo}</>");
-                s1.println("  Received : <red>$f{bp}</>");
-                s5.remove(bn);
+                s1.println("  Expected : <yellow>$f{br}</>");
+                s1.println("  Received : <red>$f{bs}</>");
+                s5.remove(bq);
                 return false;
             }
-            s1.println("<green>[VERIFIED]</> Checksum verified successfully (SHA-256: <bold>$f{bp.slice(0, 16)}...</>)");
+            s1.println("<green>[VERIFIED]</> Checksum verified successfully (SHA-256: <bold>$f{bs.slice(0, 16)}...</>)");
         } else {
-            s1.println("<cyan>[INTEGRITY]</> Template bundle SHA-256: <bold>$f{bp}</>");
+            s1.println("<cyan>[INTEGRITY]</> Template bundle SHA-256: <bold>$f{bs}</>");
         };
-        const bs = "$f{bn}.sha256";
-        s5.write(bs, bp);
+        const bv = "$f{bq}.sha256";
+        s5.write(bv, bs);
         return true;
     }
 
-    func x() {
+    func y() {
         if s5.exists("out/project.xpack") {
             s1.println("<green>[LOCAL]</> Using local template bundle <bold>out/project.xpack</>");
             return "out/project.xpack";
         }
-        &p =: s8.Join(s3.homeDir(), ".xfpm", "cache");
-        s5.ensureDir(&p);
-        &self::u();
-        if !&s {
+        &q =: s8.Join(s3.homeDir(), ".xfpm", "cache");
+        s5.ensureDir(&q);
+        &self::v();
+        if !&t {
             s1.fatal("Failed to resolve latest template version from GitHub");
         }
-        &self::v();
-        const bt = s8.Join(&p, "project-$f{&s}.xpack");
-        const bu = "$f{bt}.sha256";
-        if s5.exists(bt) {
-            let bv = &r;
-            if bv == "" && s5.exists(bu) {
-                bv =: s5.read(bu).trim();
+        &self::w();
+        const bw = s8.Join(&q, "project-$f{&t}.xpack");
+        const bx = "$f{bw}.sha256";
+        if s5.exists(bw) {
+            let bz = &s;
+            if bz == "" && s5.exists(bx) {
+                bz =: s5.read(bx).trim();
             }
-            if bv != "" {
-                const bw = s7.verifyFile(bt, bv);
-                if bw {
-                    s1.println("<green>[CACHE]</> Using verified cached template bundle <bold>$f{&s}</>");
-                    return bt;
+            if bz != "" {
+                const ca = s7.verifyFile(bw, bz);
+                if ca {
+                    s1.println("<green>[CACHE]</> Using verified cached template bundle <bold>$f{&t}</>");
+                    return bw;
                 }
                 s1.println("<yellow>[WARN]</> Cached template bundle failed integrity verification. Purging corrupt cache...");
-                s5.remove(bt);
-                if s5.exists(bu) {
-                    s5.remove(bu);
+                s5.remove(bw);
+                if s5.exists(bx) {
+                    s5.remove(bx);
                 }
             } else {
-                s1.println("<green>[CACHE]</> Using cached template bundle <bold>$f{&s}</>");
-                return bt;
+                s1.println("<green>[CACHE]</> Using cached template bundle <bold>$f{&t}</>");
+                return bw;
             }
         }
-        const bx = "https://github.com/$f{&o}/releases/download/$f{&s}/project.xpack";
-        s1.print("<blue>[DOWNLOADING]</> Fetching template bundle <bold>$f{&s}</>...");
-        let bz = with s4.fetch(bx);
-        while bz.isDone() == false {
+        const cb = "https://github.com/$f{&p}/releases/download/$f{&t}/project.xpack";
+        s1.print("<blue>[DOWNLOADING]</> Fetching template bundle <bold>$f{&t}</>...");
+        let cc = with s4.fetch(cb);
+        while cc.isDone() == false {
             s1.print("<cyan>.</>");
             s1.sleep(120ms);
         }
         s1.println("");
-        const ca = bz.wait() catch cb;
-        if cb != nil {
-            &self::t("Failed to download project bundle: $f{cb}");
+        const cd = cc.wait() catch ce;
+        if ce != nil {
+            &self::u("Failed to download project bundle: $f{ce}");
         }
-        s5.write(bt, ca);
-        const cc = &self::w(bt, &r);
-        if !cc && &r != "" {
+        s5.write(bw, cd);
+        const cf = &self::x(bw, &s);
+        if !cf && &s != "" {
             s1.fatal("Aborting initialization: Downloaded template bundle is corrupted or compromised.");
         }
-        s1.println("<green>[SAVED]</> Template bundle cached at '<bold>$f{bt}</>'");
-        return bt;
+        s1.println("<green>[SAVED]</> Template bundle cached at '<bold>$f{bw}</>'");
+        return bw;
     }
 }
 
-const z = "2.1.13";
-const aa = s3.os() == "windows";
-const ab = s3.os() == "linux";
-const ac = s3.os() == "macos";
-const ad = s3.os() == "posix";
+const aa = "2.1.13";
+const ab = s3.os() == "windows";
+const ac = s3.os() == "linux";
+const ad = s3.os() == "macos";
+const ae = s3.os() == "posix";
 
-func ae() {
+func af() {
     if s5.exists("out/project.xpack") {
         s1.println("<green>[LOCAL]</> Using local template bundle <bold>out/project.xpack</>");
         return "out/project.xpack";
     }
-    let cd = @y();
-    return cd.x();
+    let cg = @z();
+    return cg.y();
 }
 
-func af(ce) {
-    const cf = ce.targetDir;
-    const cg = ce.projectName;
-    const ch = ce.projectMode;
-    const ci = ce.shouldInstall;
-    const cj = ce.projectDb;
-    const ck = s8.Join(cf, "main.xru");
-    if !s5.exists(ck) {
+func ag(ch) {
+    const ci = ch.targetDir;
+    const cj = ch.projectName;
+    const ck = ch.projectMode;
+    const cl = ch.shouldInstall;
+    const cm = ch.projectDb;
+    const cn = s8.Join(ci, "main.xru");
+    if !s5.exists(cn) {
         s1.fatal("Critical error: main.xru was not found in destination directory after unpack!");
     }
-    const cl = s8.Join(cf, "xfpm.resolve.lock");
-    if s5.exists(cl) {
-        s5.remove(cl);
+    const co = s8.Join(ci, "xfpm.resolve.lock");
+    if s5.exists(co) {
+        s5.remove(co);
     }
-    const cm = s8.Join(cf, "fileonix.config.json");
-    if s5.exists(cm) {
-        file cm, (cn, co) -> {
-            if co != nil {
+    const cp = s8.Join(ci, "fileonix.config.json");
+    if s5.exists(cp) {
+        file cp, (cq, cr) -> {
+            if cr != nil {
                 return;
             }
-            cn.setJson("watch", [cf]);
+            cq.setJson("watch", [ci]);
         }
     }
-    let cp = "xru run \"$f{ck}\" --name=\"$f{cg}\" --mode=\"$f{ch}\" --port=$f{j} --version=\"$f{b}\" --server_timeout=$f{k} --database=\"$f{cj}\"";
+    let cs = "xru run \"$f{cn}\" --name=\"$f{cj}\" --mode=\"$f{ck}\" --port=$f{j} --version=\"$f{b}\" --server_timeout=$f{k} --database=\"$f{cm}\"";
     if c != "" && c != "Enterprise-grade XyPriss backend service" {
-        cp =: cp + " --description=\"$f{c}\"";
+        cs =: cs + " --description=\"$f{c}\"";
     }
     if d != "" {
-        cp =: cp + " --author=\"$f{d}\"";
+        cs =: cs + " --author=\"$f{d}\"";
     }
     if f == true {
-        cp =: cp + " --xems";
+        cs =: cs + " --xems";
     } else {
-        cp =: cp + " --no-xems";
+        cs =: cs + " --no-xems";
     };
     if g == true {
-        cp =: cp + " --cdn";
+        cs =: cs + " --cdn";
     } else {
-        cp =: cp + " --no-cdn";
+        cs =: cs + " --no-cdn";
     };
     if h == true {
-        cp =: cp + " --plugin";
+        cs =: cs + " --plugin";
     }
-    if ci == true {
-        cp =: cp + " --install";
+    if cl == true {
+        cs =: cs + " --install";
     } else {
-        cp =: cp + " --no-install";
+        cs =: cs + " --no-install";
     };
+    if ch.yes == true {
+        cs =: cs + " --yes";
+    }
     s1.println("\n<cyan><bold>◆ [3/4]</> Configuring project & running parallel orchestrations...");
-    const cq = with s9.exec(cp, cf);
-    const cr = with s4.isPortBusy(j);
-    let cs = 0;
-    const ct = if k > 0 -> k else 120000;
-    while !cq.isDone() {
+    const ct = with s9.exec(cs, ci);
+    const cu = with s4.isPortBusy(j);
+    let cv = 0;
+    const cw = if cl -> 300000 else 60000;
+    const cx = if k > 30000 -> k else cw;
+    while !ct.isDone() {
         s1.sleep(500ms);
-        cs =: cs + 500;
-        if cs >= ct {
-            s1.println("\n<red>[TIMEOUT]</> Template orchestration exceeded timeout limit ($f{ct}ms).");
-            cq.cancel();
+        cv =: cv + 500;
+        if cv >= cx {
+            s1.println("\n<red>[TIMEOUT]</> Template orchestration exceeded timeout limit ($f{cx}ms).");
+            ct.cancel();
             break
         }
     }
-    cq.wait() catch cu;
-    if cu != nil {
-        s1.fatal("Template orchestration failed: $f{cu}");
+    ct.wait() catch cy;
+    if cy != nil {
+        s1.fatal("Template orchestration failed: $f{cy}");
     }
     s1.println("  <green>✔</> Environment & presets configured.");
-    const cv = s8.Join(cf, ".git");
-    if !s5.exists(cv) {
-        const cw = s8.Join(cf, ".gitignore");
-        file cw, (cx, cy) -> {
-            if cy != nil {
+    const cz = s8.Join(ci, ".git");
+    if !s5.exists(cz) {
+        const da = s8.Join(ci, ".gitignore");
+        file da, (db, dc) -> {
+            if dc != nil {
                 return;
             }
-            cx.append("\n# Environment variables & secrets\n.env\n.env.*\n.env.local\n.env.remote\n.storage.xems\n");
+            db.append("\n# Environment variables & secrets\n.env\n.env.*\n.env.local\n.env.remote\n.storage.xems\n");
         }
-        const cz = "master";
-        const da = if d != "" -> "by $f{d}" else ".";
-        cout s9::@map{dir : cf, out, err} as c {
+        const dd = "master";
+        const de = if d != "" -> "by $f{d}" else ".";
+        cout s9::@map{dir : ci, out, err} as c {
             ::exec("git init");
             ::exec("git add .");
             ::exec("git reset HEAD .env");
-            ::exec("git commit -m \"Initial commit from xfpm init $f{da}\"");
-            ::exec("git branch -M $f{cz}");
+            ::exec("git commit -m \"Initial commit from xfpm init $f{de}\"");
+            ::exec("git branch -M $f{dd}");
         }
         if c.ok {
             s1.println("  <green>✔</> Git repository initialized.");
         }
     }
     s1.println("\n<cyan><bold>◆ [4/4]</> Validating network environment...");
-    const db = cr.wait() catch or false;
-    if db {
+    const df = cu.wait() catch or false;
+    if df {
         s1.println("  <yellow>▲ [WARN]</> Port <bold>$f{j}</> is currently in use on localhost.");
         s1.println("  <yellow>▲ [WARN]</> You may want to configure a different port before launching.");
     } else {
@@ -305,124 +311,174 @@ func af(ce) {
     }
 }
 
+func ah() {
+    const dg = s3.os() == "windows";
+    const dh = if dg -> "bun.exe" else "bun";
+    const di = s8.Join(s3.homeDir(), ".xfpm", "bin", dh);
+    if s5.exists(di) {
+        return true;
+    }
+    const dj = s8.Join(s3.homeDir(), ".bun", "bin", dh);
+    if s5.exists(dj) {
+        return true;
+    }
+    const dk = s9.exec("bun --version") catch dl;
+    if dk != nil && dk.trim() != "" {
+        return true;
+    }
+    const dm = s9.exec("xfpm list -g bun") catch dn;
+    if dm != nil && dm.contains("[PACKAGE] bun") {
+        return true;
+    }
+    return false;
+}
+
 s3.require(">= 2.1.13", @map {
     onMismatch: "auto-update", mode: "log"
 }
 );
-let ag = a;
-let ah = e;
-let ai = m;
-let aj = i;
-let ak = l;
-let al = false;
-for dc in s3.args() {
-    const dd = dc.trim();
-    if dd != "-f" && dd != "--force" && !dd.startsWith("-f=") && !dd.startsWith("--force=") {
-        al =: true;
+let ai = a;
+let aj = e;
+let ak = n;
+let al = i;
+let am = l;
+let an = m;
+let ao = false;
+for do in s3.args() {
+    const dp = do.trim();
+    if dp != "-f" && dp != "--force" && !dp.startsWith("-f=") && !dp.startsWith("--force=") && dp != "-y" && dp != "--yes" && !dp.startsWith("-y=") && !dp.startsWith("--yes=") {
+        ao =: true;
         break
     }
 }
-if !al {
+if an {
+    am =: true;
+}
+if !ao && !an {
     s1.println("<cyan>╭─────────────────────────────────────────────────────────────╮</>");
     s1.println("<cyan>│</>  <bold>🚀  XyPriss Project Initializer (Interactive)</>              <cyan>│</>");
     s1.println("<cyan>╰─────────────────────────────────────────────────────────────╯</>");
     s1.println("");
     s1::in {
-        const de = ::input("<cyan>?</> <bold>Project name or directory:</> (my-xypriss-app) ", "my-xypriss-app");
-        ag =: de;
-        const df = if de.startsWith("/") -> de else s8.Join(s3.cwd(), de);
-        if s5.exists(df) && !ak {
-            const dg = ::confirm("<yellow>?</> <bold>Target directory '$f{de}' already exists. Overwrite?</>", false);
-            if !dg {
+        const dq = ::input("<cyan>?</> <bold>Project name or directory:</> (my-xypriss-app) ", "my-xypriss-app");
+        ai =: dq;
+        const dr = if dq.startsWith("/") -> dq else s8.Join(s3.cwd(), dq);
+        if s5.exists(dr) && !am {
+            const ds = ::confirm("<yellow>?</> <bold>Target directory '$f{dq}' already exists. Overwrite?</>", false);
+            if !ds {
                 s1.println("<red>[ABORT]</> Destination directory already exists. Setup aborted.");
                 s3.exit(1);
             }
-            ak =: true;
+            am =: true;
         }
-        const dh = ::select("<cyan>?</> <bold>Select architecture preset:</>", ["default (Enterprise multi-server: Auth, API, CDN, XEMS)", "minimal (Lightweight single-server)"]);
-        if dh.startsWith("minimal") {
-            ah =: "minimal";
+        const dt = ::select("<cyan>?</> <bold>Select architecture preset:</>", ["default (Enterprise multi-server: Auth, API, CDN, XEMS)", "minimal (Lightweight single-server)"]);
+        if dt.startsWith("minimal") {
+            aj =: "minimal";
         } else {
-            ah =: "default";
+            aj =: "default";
         };
-        const di = ::select("<cyan>?</> <bold>Select database / ORM provider:</>", ["none (No database - default)", "drizzle (Drizzle ORM with PostgreSQL - Recommended)", "prisma (Prisma ORM v7 with PostgreSQL)"]);
-        if di.startsWith("drizzle") {
-            ai =: "drizzle";
-        } elif di.startsWith("prisma") {
-            ai =: "prisma";
+        const du = ::select("<cyan>?</> <bold>Select database / ORM provider:</>", ["none (No database - default)", "drizzle (Drizzle ORM with PostgreSQL - Recommended)", "prisma (Prisma ORM v7 with PostgreSQL)"]);
+        if du.startsWith("drizzle") {
+            ak =: "drizzle";
+        } elif du.startsWith("prisma") {
+            ak =: "prisma";
         } else {
-            ai =: "none";
+            ak =: "none";
         };
-        const dj = ::confirm("<cyan>?</> <bold>Install dependencies immediately with xfpm?</>", true);
-        aj =: dj;
+        const dv = ::confirm("<cyan>?</> <bold>Install dependencies immediately with xfpm?</>", true);
+        al =: dv;
     }
     s1.println("");
 }
-const am = if s8.IsAbs(ag) -> ag else s8.Join(s3.cwd(), ag);
-let an = false;
+const ap = if s8.IsAbs(ai) -> ai else s8.Join(s3.cwd(), ai);
+let aq = false;
 trap s2::@map{interrupt, terminate} as s {
-    if !an {
+    if !aq {
         s1.println("\n<red>[CRITICAL:ABORT]</> Process interrupted by <bold>$f{s}</>. Cleaning up...");
-        if s5.exists(am) {
-            s5.remove(am);
-            s1.println("<yellow>[CLEANUP]</> Removed incomplete directory '<bold>$f{am}</>'");
+        if s5.exists(ap) {
+            s5.remove(ap);
+            s1.println("<yellow>[CLEANUP]</> Removed incomplete directory '<bold>$f{ap}</>'");
         }
     }
 }
-if s5.exists(am) {
-    if ak == false {
-        s1.fatal("Destination directory '$f{am}' already exists. Use --force to overwrite.");
+if s5.exists(ap) {
+    if am == false {
+        s1.fatal("Destination directory '$f{ap}' already exists. Use --force to overwrite.");
     }
-    s1.println("<yellow>[CLEANUP]</> Overwriting existing directory '<bold>$f{am}</>'...");
-    s5.remove(am);
+    s1.println("<yellow>[CLEANUP]</> Overwriting existing directory '<bold>$f{ap}</>'...");
+    s5.remove(ap);
 }
-const ao = if aj -> "<green>enabled</>" else "<yellow>disabled</>";
+const ar = if al -> "<green>enabled</>" else "<yellow>disabled</>";
 s1.println("<cyan>╭─────────────────────────────────────────────────────────────╮</>");
 s1.println("<cyan>│</>  <bold>🚀  XyPriss Project Initializer</>                               <cyan>│</>");
 s1.println("<cyan>├─────────────────────────────────────────────────────────────┤</>");
-s1.println("<cyan>│</>  Target   : <bold>$f{ag}</>");
-s1.println("<cyan>│</>  Preset   : <cyan><bold>$f{ah}</></>");
-s1.println("<cyan>│</>  Database : <yellow><bold>$f{ai}</></>");
+s1.println("<cyan>│</>  Target   : <bold>$f{ai}</>");
+s1.println("<cyan>│</>  Preset   : <cyan><bold>$f{aj}</></>");
+s1.println("<cyan>│</>  Database : <yellow><bold>$f{ak}</></>");
 s1.println("<cyan>│</>  Port     : <bold>$f{j}</>");
-s1.println("<cyan>│</>  Install  : $f{ao}");
+s1.println("<cyan>│</>  Install  : $f{ar}");
 s1.println("<cyan>╰─────────────────────────────────────────────────────────────╯</>");
 s1.println("");
+if al == true && !ah() {
+    s1.println("<yellow>[RUNTIME]</> XyPriss requires the <bold>Bun runtime</> to execute scripts and servers.");
+    let dw = false;
+    if an {
+        dw =: true;
+    } else {
+        s1::in {
+            dw =: ::confirm("<cyan>?</> <bold>Would you like to install Bun globally now with 'xfpm i -g bun'?</>", true);
+        }
+    };
+    if dw {
+        s1.println("<cyan>[RUNTIME]</> Bootstrapping Bun runtime via <bold>xfpm i -g bun</>...");
+        s9.exec("xfpm i -g bun") catch dx;
+        if dx != nil {
+            s1.println("<yellow>[WARNING]</> Failed to auto-install Bun: $f{dx}");
+            s1.println("<yellow>[HINT]</> You can install it later with 'xfpm i -g bun'.");
+        } else {
+            s1.println("  <green>✔</> Bun runtime integrated successfully.");
+        }
+    } else {
+        s1.println("<yellow>[WARNING]</> Bun runtime installation skipped. Run 'xfpm i -g bun' manually if needed.");
+    };
+    s1.println("");
+}
 s1.println("<cyan><bold>◆ [1/4]</> Resolving template bundle...");
-const ap = ae();
-s1.println("\n<cyan><bold>◆ [2/4]</> Extracting project template into '<bold>$f{am}</>'...");
-s9.exec("xru unpack \"$f{ap}\" \"$f{am}\"");
+const at = af();
+s1.println("\n<cyan><bold>◆ [2/4]</> Extracting project template into '<bold>$f{ap}</>'...");
+s9.exec("xru unpack \"$f{at}\" \"$f{ap}\"");
 s1.println("  <green>✔</> Template unpacked successfully.");
-const aq = @map {
-    targetDir: am, projectMode: ah, projectName: ag, shouldInstall: aj, projectDb: ai
+const au = @map {
+    targetDir: ap, projectMode: aj, projectName: ai, shouldInstall: al, projectDb: ak, yes: an
 };
-af(aq);
-an =: true;
+ag(au);
+aq =: true;
 s1.println("");
 s1.println("<green>╭─────────────────────────────────────────────────────────────╮</>");
 s1.println("<green>│</>  <bold>✨  Project initialized successfully!</>                       <green>│</>");
 s1.println("<green>╰─────────────────────────────────────────────────────────────╯</>");
 s1.println("");
-if !n {
+if !o {
     s1.println("  <bold>Next steps:</>");
-    if ag != "." && ag != "./" {
-        s1.println("    <cyan>→</> cd <bold>$f{ag}</>");
+    if ai != "." && ai != "./" {
+        s1.println("    <cyan>→</> cd <bold>$f{ai}</>");
     }
-    if !aj {
+    if !al {
         s1.println("    <cyan>→</> 'xfpm install'</>");
     }
-    if ai == "prisma" {
+    if ak == "prisma" {
         s1.println("    <cyan>→</> 'xfpmx prisma db push' <bold>(sync schema to database)</>");
-    } elif ai == "drizzle" {
+    } elif ak == "drizzle" {
         s1.println("    <cyan>→</> 'xfpmx drizzle-kit push' <bold>(sync schema to database)</>");
     };
     s1.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>");
 } else {
-    const dk = s8.join(am);
-    if !aj {
+    const dy = s8.join(ap);
+    if !al {
         s1.println("  <yellow>[WARNING]</> Dependencies are not installed. Run <cyan>'xfpm install'</> before starting the dev server.");
         return;
     }
     s1.println("  <bold>Starting dev server...</>");
-    s9.exec(if aa -> "xfpm run dev" else "dev", dk)
+    s9.exec(if ab -> "xfpm run dev" else "dev", dy)
 };
 s1.println("");
