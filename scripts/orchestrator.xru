@@ -41,11 +41,21 @@ global func exec(props: IExecProps) {
         }
     }
 
- let runCmd = "xru run \"$f{mainScript}\" --name=\"$f{projectName}\" --mode=\"$f{projectMode}\" --port=$f{port} --version=\"$f{version}\" --description=\"$f{description}\" --author=\"$f{author}\" --server_timeout=$f{server_timeout} --database=\"$f{projectDb}\""
-    if xems == false {
+    let runCmd = "xru run \"$f{mainScript}\" --name=\"$f{projectName}\" --mode=\"$f{projectMode}\" --port=$f{port} --version=\"$f{version}\" --server_timeout=$f{server_timeout} --database=\"$f{projectDb}\""
+    if description != "" && description != "Enterprise-grade XyPriss backend service" {
+        runCmd =: runCmd + " --description=\"$f{description}\""
+    }
+    if author != "" {
+        runCmd =: runCmd + " --author=\"$f{author}\""
+    }
+    if xems == true {
+        runCmd =: runCmd + " --xems"
+    } else {
         runCmd =: runCmd + " --no-xems"
     }
-    if cdn == false {
+    if cdn == true {
+        runCmd =: runCmd + " --cdn"
+    } else {
         runCmd =: runCmd + " --no-cdn"
     }
     if plugin == true {
