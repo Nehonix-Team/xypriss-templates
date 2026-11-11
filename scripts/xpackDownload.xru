@@ -14,6 +14,7 @@ use fs as Fs
 use json as Json
 use sys as Sys
 use crypto as Crypto
+use path as Path
 from "dmod" use xruV::xruMinVersion
 
 Sys.require(xruMinVersion, @map{
@@ -144,7 +145,7 @@ unit ReleaseDownloader {
             return "out/project.xpack"
         }
 
-        &cacheDir =: "$f{Sys.homeDir()}/.xfpm/cache"
+        &cacheDir =: Path.Join(Sys.homeDir(), ".xfpm", "cache")
         Fs.ensureDir(&cacheDir)
 
         &self::fetchLatestMetadata()
@@ -155,7 +156,7 @@ unit ReleaseDownloader {
 
         &self::fetchExpectedChecksum()
 
-        const targetBundle = "$f{&cacheDir}/project-$f{&latestVersion}.xpack"
+        const targetBundle = Path.Join(&cacheDir, "project-$f{&latestVersion}.xpack")
         const sidecarPath = "$f{targetBundle}.sha256"
 
         // 1. Check if valid cached bundle exists
