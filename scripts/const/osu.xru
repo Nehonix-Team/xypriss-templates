@@ -1,0 +1,51 @@
+mod syos
+use fs
+use cmd 
+use sys as Sys
+use path as Path
+
+// Detect Windows vs Unix-like systems
+global const isWin = Sys.os() == "windows"
+global const isLinux = Sys.os() == "linux"
+global const isMac = Sys.os() == "macos" 
+global const isPosix = Sys.os() == "posix"
+
+global func isBunInstalled() -> bool {
+    const isWindows = Sys.os() == "windows"
+    const bunBin = if isWindows -> "bun.exe" else "bun"
+    const xfpmBunPath = Path.Join(Sys.homeDir(), ".xfpm", "bin", bunBin)
+    const userBunPath = Path.Join(Sys.homeDir(), ".bun", "bin", bunBin)
+
+    // 1. Direct execution test via PATH (Source of Truth)
+    const ver = cmd.exec("bun --version") catch ePath
+    if ePath == nil && ver != nil && ver.trim().contains(".") {
+        return true
+    }
+
+    // 2. Direct execution test of ~/.xfpm/bin/bun[.exe]
+    if fs.exists(xfpmBunPath) {
+        // A valid compiled native Bun binary is >= 20MB. A 450-byte stub is corrupt / incomplete!
+        const bSize = fs.size(xfpmBunPath) catch eSize1
+        if eSize1 == nil && bSize >= 1000000 {
+            const xfpmVer = cmd.exec("\"$f{xfpmBunPath}\" --version") catch eXfpm
+            if eXfpm == nil && xfpmVer != nil && xfpmVer.trim().contains(".") {
+                return true
+            }
+        }
+        // If file exists but is corrupted (< 1MB or execution fails), purge it immediately
+        fs.remove(xfpmBunPath) catch ePurge
+    }
+
+    // 3. Direct execution test of ~/.bun/bin/bun[.exe]
+    if fs.exists(userBunPath) {
+        const uSize = fs.size(userBunPath) catch eSize2
+        if eSize2 == nil && uSize >= 1000000 {
+            const userVer = cmd.exec("\"$f{userBunPath}\" --version") catch eUser
+            if eUser == nil && userVer != nil && userVer.trim().contains(".") {
+                return true
+            }
+        }
+    }
+
+    return false
+}
