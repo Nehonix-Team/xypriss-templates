@@ -57,16 +57,48 @@ let shouldForce = force
 let shouldYes = yes
 
 // -----------------------------------------------------------------------------
-// 3. INTERACTIVE SETUP (IF NO IMPORTANT CLI ARGUMENTS WERE PROVIDED)
+// 3. INTERACTIVE SETUP (IF NO BASE CLI ARGUMENTS WERE PROVIDED)
 // -----------------------------------------------------------------------------
-let hasImportantArgs = false
-for a in Sys.args() {
-    const clean = a.trim()
-    if clean != "-f" && clean != "--force" && !clean.startsWith("-f=") && !clean.startsWith("--force=") &&
-       clean != "-y" && clean != "--yes" && !clean.startsWith("-y=") && !clean.startsWith("--yes=") {
-        hasImportantArgs =: true
-        break
+func isNonBaseOption(a: string) -> bool {
+    const c = a.trim()
+    if c == "-f" || c == "--force" || c.startsWith("-f=") || c.startsWith("--force=") {
+        return true
     }
+    if c == "-y" || c == "--yes" || c.startsWith("-y=") || c.startsWith("--yes=") {
+        return true
+    }
+    if c == "-st" || c == "--start_server" || c.startsWith("-st=") || c.startsWith("--start_server=") {
+        return true
+    }
+    if c == "-i" || c == "--install" || c.startsWith("-i=") || c.startsWith("--install=") {
+        return true
+    }
+    if c == "-S" || c == "--silent" {
+        return true
+    }
+    if c == "-t" || c == "--server_timeout" || c.startsWith("-t=") || c.startsWith("--server_timeout=") {
+        return true
+    }
+    return false
+}
+
+let hasImportantArgs = false
+let skipNextArg = false
+let clean = ""
+for a in Sys.args() {
+    if skipNextArg {
+        skipNextArg =: false
+        continue
+    }
+    clean =: a.trim()
+    if isNonBaseOption(clean) {
+        if clean == "-t" || clean == "--server_timeout" {
+            skipNextArg =: true
+        }
+        continue
+    }
+    hasImportantArgs =: true
+    break
 }
 
 if shouldYes {
@@ -113,8 +145,10 @@ if !hasImportantArgs && !shouldYes {
             projectDb =: "none"
         }
 
-        const askInstall = ::confirm("<cyan>?</> <bold>Install dependencies immediately with xfpm?</>", true)
-        shouldInstall =: askInstall
+        if !install {
+            const askInstall = ::confirm("<cyan>?</> <bold>Install dependencies immediately with xfpm?</>", true)
+            shouldInstall =: askInstall
+        }
     }
     std.println("")
 }
