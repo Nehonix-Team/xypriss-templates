@@ -168,23 +168,33 @@ if shouldInstall == true && !isBunInstalled() {
         installBunNow =: true
     } else {
         std::in {
-            installBunNow =: ::confirm("<cyan>?</> <bold>Would you like to install Bun globally now with 'xfpm i -g bun'?</>", true)
+            installBunNow =: ::confirm("<cyan>?</> <bold>Would you like to install Bun globally now?</>", true)
         }
     }
 
     if installBunNow {
-        std.println("<cyan>[RUNTIME]</> Bootstrapping Bun runtime via <bold>xfpm i -g bun</>...")
-        Cmd.exec("xfpm i -g bun") catch bunErr
-        if bunErr != nil || !isBunInstalled() {
-            if isWin {
-                std.println("<yellow>[HINT]</> Running official native installer fallback for Windows...")
-                Cmd.exec("powershell -ExecutionPolicy Bypass -Command \"irm bun.sh/install.ps1 | iex\"") catch psErr
+        if isWin {
+            std.println("<cyan>[RUNTIME]</> Bootstrapping Bun runtime via official Windows installer...")
+            std.println("<dim>[POWERSHELL]</> Running: irm bun.sh/install.ps1 | iex (with -NoProfile)...</>")
+            Cmd.exec("powershell -NoProfile -ExecutionPolicy Bypass -Command \"irm bun.sh/install.ps1 | iex; if (Test-Path $HOME\\.bun\\bin\\bun.exe) { Copy-Item -Force $HOME\\.bun\\bin\\bun.exe $HOME\\.xfpm\\bin\\bun.exe }\"") catch psErr
+        } else {
+            std.println("<cyan>[RUNTIME]</> Bootstrapping Bun runtime via <bold>xfpm i -g bun</>...")
+            Cmd.exec("xfpm i -g bun") catch bunErr
+            if bunErr != nil || !isBunInstalled() {
+                std.println("<yellow>[HINT]</> Running official native installer fallback...")
+                Cmd.exec("curl -fsSL https://bun.sh/install | bash") catch bashErr
             }
         }
+
         if isBunInstalled() {
             std.println("  <green>✔</> Bun runtime integrated and verified successfully.")
         } else {
-            std.println("<yellow>[WARNING]</> Bun runtime installation could not be verified. You can install it manually: https://bun.sh")
+            std.println("<yellow>[WARNING]</> Bun runtime installation could not be verified automatically.")
+            if isWin {
+                std.println("<yellow>[HINT]</> You can install Bun manually in PowerShell: <cyan>irm bun.sh/install.ps1 | iex</>")
+            } else {
+                std.println("<yellow>[HINT]</> You can install Bun manually: <cyan>curl -fsSL https://bun.sh/install | bash</>")
+            }
         }
     } else {
         std.println("<yellow>[WARNING]</> Bun runtime installation skipped. Run 'xfpm i -g bun' manually if needed.")

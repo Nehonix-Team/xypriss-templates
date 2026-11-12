@@ -22,330 +22,17 @@ global arg force, f as l: bool = false;
 global arg yes, y as m: bool = false;
 global arg database, db as n: "none" or "drizzle" or "prisma" or "postgresql" = "none";
 arg start_server, st as o: bool = false;
-
-interface orchestrator__IExecProps @map {
-    targetDir string;
-    projectName string;
-    projectMode string;
-    shouldInstall bool;
-    projectDb string;
-    yes bool;
-}
-
-unit z {
-    declare private p: string = "Nehonix-Team/xypriss-templates";
-    declare private q: string = "";
-    declare private r: string = "";
-    declare private s: string = "";
-    declare t: string = "";
-
-    func u(av) {
-        const aw = "Downloading error: $f{av}";
-        s3.fatal(aw);
-    }
-
-    func v() {
-        const ax = "https://api.github.com/repos/$f{&p}/releases/latest";
-        s3.print("<yellow>[FETCHING]</> Querying latest template release...");
-        let ay = with s7.fetch(ax);
-        while ay.isDone() == false {
-            s3.print("<cyan>.</>");
-            s3.sleep(120ms);
-        }
-        s3.println("");
-        const az = ay.wait() catch ba;
-        if ba != nil {
-            &self::u(ba);
-        }
-        const bb = s8.parse(az) catch bc;
-        if bc != nil {
-            &self::u("Failed to parse metadata JSON: $f{bc}");
-        }
-        &r =: az;
-        &t =: bb.tag_name;
-        return az;
-    }
-
-    func w() {
-        const bd = "https://github.com/$f{&p}/releases/download/$f{&t}/project.xpack.sha256";
-        let be = with s7.fetch(bd);
-        while be.isDone() == false {
-            s3.sleep(40ms);
-        }
-        const bf = be.wait() catch bg;
-        if bg == nil && bf != "" {
-            let bh = bf.trim();
-            if bh.contains(" ") {
-                let bi = bh.split(" ");
-                bh =: bi.get(0).trim();
-            }
-            if bh.len() >= 64 {
-                &s =: bh.slice(0, 64);
-                return&s;
-            }
-        }
-        if&r != "" {
-            const bj = s8.parse(&r) catch nil;
-            if bj != nil && bj.body != nil {
-                let bk = bj.body;
-                if bk.contains("sha256") || bk.contains("SHA256") {
-                    let bl = bk.split("\n");
-                    for bm in bl {
-                        let bn = bm.trim();
-                        if bn.toLower().contains("sha256") && bn.contains(":") {
-                            let bo = bn.split(":");
-                            if bo.len() >= 2 {
-                                let bp = bo.get(1).trim();
-                                if bp.len() >= 64 {
-                                    &s =: bp.slice(0, 64);
-                                    return&s;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return "";
-    }
-
-    func x(bq, br) {
-        if !s1.exists(bq) {
-            return false;
-        }
-        const bs = s9.fileSha256(bq) catch bt;
-        if bt != nil || bs == "" {
-            s3.println("<red>[SECURITY:ERROR]</> Failed to compute SHA-256 for '$f{bq}'");
-            return false;
-        }
-        if br != "" {
-            const bu = s9.verify(bs, br);
-            if !bu {
-                s3.println("<red>[INTEGRITY:ERROR]</> Checksum mismatch for template bundle!");
-                s3.println("  Expected : <yellow>$f{br}</>");
-                s3.println("  Received : <red>$f{bs}</>");
-                s1.remove(bq);
-                return false;
-            }
-            s3.println("<green>[VERIFIED]</> Checksum verified successfully (SHA-256: <bold>$f{bs.slice(0, 16)}...</>)");
-        } else {
-            s3.println("<cyan>[INTEGRITY]</> Template bundle SHA-256: <bold>$f{bs}</>");
-        };
-        const bv = "$f{bq}.sha256";
-        s1.write(bv, bs);
-        return true;
-    }
-
-    func y() {
-        if s1.exists("out/project.xpack") {
-            s3.println("<green>[LOCAL]</> Using local template bundle <bold>out/project.xpack</>");
-            return "out/project.xpack";
-        }
-        &q =: s6.Join(s5.homeDir(), ".xfpm", "cache");
-        s1.ensureDir(&q);
-        &self::v();
-        if !&t {
-            s3.fatal("Failed to resolve latest template version from GitHub");
-        }
-        &self::w();
-        const bw = s6.Join(&q, "project-$f{&t}.xpack");
-        const bx = "$f{bw}.sha256";
-        if s1.exists(bw) {
-            let bz = &s;
-            if bz == "" && s1.exists(bx) {
-                bz =: s1.read(bx).trim();
-            }
-            if bz != "" {
-                const ca = s9.verifyFile(bw, bz);
-                if ca {
-                    s3.println("<green>[CACHE]</> Using verified cached template bundle <bold>$f{&t}</>");
-                    return bw;
-                }
-                s3.println("<yellow>[WARN]</> Cached template bundle failed integrity verification. Purging corrupt cache...");
-                s1.remove(bw);
-                if s1.exists(bx) {
-                    s1.remove(bx);
-                }
-            } else {
-                s3.println("<green>[CACHE]</> Using cached template bundle <bold>$f{&t}</>");
-                return bw;
-            }
-        }
-        const cb = "https://github.com/$f{&p}/releases/download/$f{&t}/project.xpack";
-        s3.print("<blue>[DOWNLOADING]</> Fetching template bundle <bold>$f{&t}</>...");
-        let cc = with s7.fetch(cb);
-        while cc.isDone() == false {
-            s3.print("<cyan>.</>");
-            s3.sleep(120ms);
-        }
-        s3.println("");
-        const cd = cc.wait() catch ce;
-        if ce != nil {
-            &self::u("Failed to download project bundle: $f{ce}");
-        }
-        s1.write(bw, cd);
-        const cf = &self::x(bw, &s);
-        if !cf && &s != "" {
-            s3.fatal("Aborting initialization: Downloaded template bundle is corrupted or compromised.");
-        }
-        s3.println("<green>[SAVED]</> Template bundle cached at '<bold>$f{bw}</>'");
-        return bw;
-    }
-}
-
+interface orchestrator__IExecProps @map{targetDir string;projectName string;projectMode string;shouldInstall bool;projectDb string;yes bool};
+unit z{declare private p: string = "Nehonix-Team/xypriss-templates";declare private q: string = "";declare private r: string = "";declare private s: string = "";declare t: string = "";func u(av){const aw = "Downloading error: $f{av}";s3.fatal(aw)};func v(){const ax = "https://api.github.com/repos/$f{&p}/releases/latest";s3.print("<yellow>[FETCHING]</> Querying latest template release...");let ay = with s7.fetch(ax);while ay.isDone()==false{s3.print("<cyan>.</>");s3.sleep(120ms)};s3.println("");const az = ay.wait() catch ba;if ba!=nil{&self::u(ba)};const bb = s8.parse(az) catch bc;if bc!=nil{&self::u("Failed to parse metadata JSON: $f{bc}")};&r=:az;&t=:bb.tag_name;return az};func w(){const bd = "https://github.com/$f{&p}/releases/download/$f{&t}/project.xpack.sha256";let be = with s7.fetch(bd);while be.isDone()==false{s3.sleep(40ms)};const bf = be.wait() catch bg;if bg==nil&&bf!=""{let bh = bf.trim();if bh.contains(" "){let bi = bh.split(" ");bh=:bi.get(0).trim()};if bh.len()>=64{&s=:bh.slice(0,64);return &s}};if &r!=""{const bj = s8.parse(&r) catch nil;if bj!=nil&&bj.body!=nil{let bk = bj.body;if bk.contains("sha256")||bk.contains("SHA256"){let bl = bk.split("\n");for bm in bl{let bn = bm.trim();if bn.toLower().contains("sha256")&&bn.contains(":"){let bo = bn.split(":");if bo.len()>=2{let bp = bo.get(1).trim();if bp.len()>=64{&s=:bp.slice(0,64);return &s}}}}}}};return ""};func x(bq,br){if !s1.exists(bq){return false};const bs = s9.fileSha256(bq) catch bt;if bt!=nil||bs==""{s3.println("<red>[SECURITY:ERROR]</> Failed to compute SHA-256 for '$f{bq}'");return false};if br!=""{const bu = s9.verify(bs,br);if !bu{s3.println("<red>[INTEGRITY:ERROR]</> Checksum mismatch for template bundle!");s3.println("  Expected : <yellow>$f{br}</>");s3.println("  Received : <red>$f{bs}</>");s1.remove(bq);return false};s3.println("<green>[VERIFIED]</> Checksum verified successfully (SHA-256: <bold>$f{bs.slice(0, 16)}...</>)")} else{s3.println("<cyan>[INTEGRITY]</> Template bundle SHA-256: <bold>$f{bs}</>")};const bv = "$f{bq}.sha256";s1.write(bv,bs);return true};func y(){if s1.exists("out/project.xpack"){s3.println("<green>[LOCAL]</> Using local template bundle <bold>out/project.xpack</>");return "out/project.xpack"};&q=:s6.Join(s5.homeDir(),".xfpm","cache");s1.ensureDir(&q);&self::v();if !&t{s3.fatal("Failed to resolve latest template version from GitHub")};&self::w();const bw = s6.Join(&q,"project-$f{&t}.xpack");const bx = "$f{bw}.sha256";if s1.exists(bw){let bz = &s;if bz==""&&s1.exists(bx){bz=:s1.read(bx).trim()};if bz!=""{const ca = s9.verifyFile(bw,bz);if ca{s3.println("<green>[CACHE]</> Using verified cached template bundle <bold>$f{&t}</>");return bw};s3.println("<yellow>[WARN]</> Cached template bundle failed integrity verification. Purging corrupt cache...");s1.remove(bw);if s1.exists(bx){s1.remove(bx)}} else{s3.println("<green>[CACHE]</> Using cached template bundle <bold>$f{&t}</>");return bw}};const cb = "https://github.com/$f{&p}/releases/download/$f{&t}/project.xpack";s3.print("<blue>[DOWNLOADING]</> Fetching template bundle <bold>$f{&t}</>...");let cc = with s7.fetch(cb);while cc.isDone()==false{s3.print("<cyan>.</>");s3.sleep(120ms)};s3.println("");const cd = cc.wait() catch ce;if ce!=nil{&self::u("Failed to download project bundle: $f{ce}")};s1.write(bw,cd);const cf = &self::x(bw,&s);if !cf&&&s!=""{s3.fatal("Aborting initialization: Downloaded template bundle is corrupted or compromised.")};s3.println("<green>[SAVED]</> Template bundle cached at '<bold>$f{bw}</>'");return bw}};
 const aa = "2.1.14";
-const ab = s5.os() == "windows";
-const ac = s5.os() == "linux";
-const ad = s5.os() == "macos";
-const ae = s5.os() == "posix";
-
-func af() {
-    const cg = s5.os() == "windows";
-    const ch = if cg -> "bun.exe" else "bun";
-    const ci = s6.Join(s5.homeDir(), ".xfpm", "bin", ch);
-    const cj = s6.Join(s5.homeDir(), ".bun", "bin", ch);
-    const ck = s2.exec("bun --version") catch cl;
-    if cl == nil && ck != nil && ck.trim().contains(".") {
-        return true;
-    }
-    if s1.exists(ci) {
-        const cm = s1.size(ci) catch cn;
-        if cn == nil && cm >= 1000000 {
-            const co = s2.exec("\"$f{ci}\" --version") catch cp;
-            if cp == nil && co != nil && co.trim().contains(".") {
-                return true;
-            }
-        }
-        s1.remove(ci) catch cq;
-    }
-    if s1.exists(cj) {
-        const cr = s1.size(cj) catch cs;
-        if cs == nil && cr >= 1000000 {
-            const ct = s2.exec("\"$f{cj}\" --version") catch cu;
-            if cu == nil && ct != nil && ct.trim().contains(".") {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-func ag() {
-    if s1.exists("out/project.xpack") {
-        s3.println("<green>[LOCAL]</> Using local template bundle <bold>out/project.xpack</>");
-        return "out/project.xpack";
-    }
-    let cv = @z();
-    return cv.y();
-}
-
-func ah(cw) {
-    const cx = cw.targetDir;
-    const cy = cw.projectName;
-    const cz = cw.projectMode;
-    const da = cw.shouldInstall;
-    const db = cw.projectDb;
-    const dc = s6.Join(cx, "main.xru");
-    if !s1.exists(dc) {
-        s3.fatal("Critical error: main.xru was not found in destination directory after unpack!");
-    }
-    const dd = s6.Join(cx, "xfpm.resolve.lock");
-    if s1.exists(dd) {
-        s1.remove(dd);
-    }
-    const de = s6.Join(cx, "fileonix.config.json");
-    if s1.exists(de) {
-        file de, (df, dg) -> {
-            if dg != nil {
-                return;
-            }
-            df.setJson("watch", [cx]);
-        }
-    }
-    let dh = "xru run \"$f{dc}\" --name=\"$f{cy}\" --mode=\"$f{cz}\" --port=$f{j} --version=\"$f{b}\" --server_timeout=$f{k} --database=\"$f{db}\"";
-    if c != "" && c != "Enterprise-grade XyPriss backend service" {
-        dh =: dh + " --description=\"$f{c}\"";
-    }
-    if d != "" {
-        dh =: dh + " --author=\"$f{d}\"";
-    }
-    if f == true {
-        dh =: dh + " --xems";
-    } else {
-        dh =: dh + " --no-xems";
-    };
-    if g == true {
-        dh =: dh + " --cdn";
-    } else {
-        dh =: dh + " --no-cdn";
-    };
-    if h == true {
-        dh =: dh + " --plugin";
-    }
-    if da == true {
-        dh =: dh + " --install";
-    } else {
-        dh =: dh + " --no-install";
-    };
-    if cw.yes == true {
-        dh =: dh + " --yes";
-    }
-    s3.println("\n<cyan><bold>◆ [3/4]</> Configuring project & running parallel orchestrations...");
-    const di = with s2.exec(dh, cx);
-    const dj = with s7.isPortBusy(j);
-    let dk = 0;
-    const dl = if da -> 300000 else 60000;
-    const dm = if k > 30000 -> k else dl;
-    while !di.isDone() {
-        s3.sleep(500ms);
-        dk =: dk + 500;
-        if dk >= dm {
-            s3.println("\n<red>[TIMEOUT]</> Template orchestration exceeded timeout limit ($f{dm}ms).");
-            di.cancel();
-            break
-        }
-    }
-    di.wait() catch dn;
-    if dn != nil {
-        s3.fatal("Template orchestration failed: $f{dn}");
-    }
-    s3.println("  <green>✔</> Environment & presets configured.");
-    const do = s6.Join(cx, ".git");
-    if !s1.exists(do) {
-        const dp = s6.Join(cx, ".gitignore");
-        file dp, (dq, dr) -> {
-            if dr != nil {
-                return;
-            }
-            dq.append("\n# Environment variables & secrets\n.env\n.env.*\n.env.local\n.env.remote\n.storage.xems\n");
-        }
-        const ds = "master";
-        const dt = if d != "" -> "by $f{d}" else ".";
-        cout s2::@map{dir : cx, out, err} as c {
-            ::exec("git init");
-            ::exec("git add .");
-            ::exec("git reset HEAD .env");
-            ::exec("git commit -m \"Initial commit from xfpm init $f{dt}\"");
-            ::exec("git branch -M $f{ds}");
-        }
-        if c.ok {
-            s3.println("  <green>✔</> Git repository initialized.");
-        }
-    }
-    s3.println("\n<cyan><bold>◆ [4/4]</> Validating network environment...");
-    const du = dj.wait() catch or false;
-    if du {
-        s3.println("  <yellow>▲ [WARN]</> Port <bold>$f{j}</> is currently in use on localhost.");
-        s3.println("  <yellow>▲ [WARN]</> You may want to configure a different port before launching.");
-    } else {
-        s3.println("  <green>✔</> Port <bold>$f{j}</> is free and available.");
-    }
-}
-
-s5.require(">= 2.1.14", @map {
-    onMismatch: "auto-update", mode: "log"
-}
-);
+const ab = s5.os()=="windows";
+const ac = s5.os()=="linux";
+const ad = s5.os()=="macos";
+const ae = s5.os()=="posix";
+func af(){const cg = s5.os()=="windows";const ch = if cg -> "bun.exe" else "bun";const ci = s6.Join(s5.homeDir(),".xfpm","bin",ch);const cj = s6.Join(s5.homeDir(),".bun","bin",ch);if s1.exists(ci){const ck = s1.size(ci) catch cl;if cl!=nil||ck<5000000{s1.remove(ci) catch cm}};if s1.exists(cj){const cn = s1.size(cj) catch co;if co!=nil||cn<5000000{s1.remove(cj) catch cp}};if s1.exists(cj){const cq = s2.exec("\"$f{cj}\" --version") catch cr;if cr==nil&&cq!=nil&&cq.trim().contains("."){return true}};if s1.exists(ci){const cs = s2.exec("\"$f{ci}\" --version") catch ct;if ct==nil&&cs!=nil&&cs.trim().contains("."){return true}};const cu = s2.exec("bun --version") catch cv;if cv==nil&&cu!=nil&&cu.trim().contains("."){return true};return false};
+func ag(){if s1.exists("out/project.xpack"){s3.println("<green>[LOCAL]</> Using local template bundle <bold>out/project.xpack</>");return "out/project.xpack"};let cw = @z();return cw.y()};
+func ah(cx){const cy = cx.targetDir;const cz = cx.projectName;const da = cx.projectMode;const db = cx.shouldInstall;const dc = cx.projectDb;const dd = s6.Join(cy,"main.xru");if !s1.exists(dd){s3.fatal("Critical error: main.xru was not found in destination directory after unpack!")};const de = s6.Join(cy,"xfpm.resolve.lock");if s1.exists(de){s1.remove(de)};const df = s6.Join(cy,"fileonix.config.json");if s1.exists(df){file df,(dg,dh)->{if dh!=nil{return};dg.setJson("watch",[cy])}};let di = "xru run \"$f{dd}\" --name=\"$f{cz}\" --mode=\"$f{da}\" --port=$f{j} --version=\"$f{b}\" --server_timeout=$f{k} --database=\"$f{dc}\"";if c!=""&&c!="Enterprise-grade XyPriss backend service"{di=:di+" --description=\"$f{c}\""};if d!=""{di=:di+" --author=\"$f{d}\""};if f==true{di=:di+" --xems"} else{di=:di+" --no-xems"};if g==true{di=:di+" --cdn"} else{di=:di+" --no-cdn"};if h==true{di=:di+" --plugin"};if db==true{di=:di+" --install"} else{di=:di+" --no-install"};if cx.yes==true{di=:di+" --yes"};s3.println("\n<cyan><bold>◆ [3/4]</> Configuring project & running parallel orchestrations...");const dj = with s2.exec(di,cy);const dk = with s7.isPortBusy(j);let dl = 0;const dm = if db -> 300000 else 60000;const dn = if k>30000 -> k else dm;while !dj.isDone(){s3.sleep(500ms);dl=:dl+500;if dl>=dn{s3.println("\n<red>[TIMEOUT]</> Template orchestration exceeded timeout limit ($f{dn}ms).");dj.cancel();break}};dj.wait() catch do;if do!=nil{s3.fatal("Template orchestration failed: $f{do}")};s3.println("  <green>✔</> Environment & presets configured.");const dp = s6.Join(cy,".git");if !s1.exists(dp){const dq = s6.Join(cy,".gitignore");file dq,(dr,ds)->{if ds!=nil{return};dr.append("\n# Environment variables & secrets\n.env\n.env.*\n.env.local\n.env.remote\n.storage.xems\n")};const dt = "master";const du = if d!="" -> "by $f{d}" else ".";cout s2::@map{dir:cy,out,err} as c{::exec("git init");::exec("git add .");::exec("git reset HEAD .env");::exec("git commit -m \"Initial commit from xfpm init $f{du}\"");::exec("git branch -M $f{dt}")};if c.ok{s3.println("  <green>✔</> Git repository initialized.")}};s3.println("\n<cyan><bold>◆ [4/4]</> Validating network environment...");const dv = dk.wait() catch or false;if dv{s3.println("  <yellow>▲ [WARN]</> Port <bold>$f{j}</> is currently in use on localhost.");s3.println("  <yellow>▲ [WARN]</> You may want to configure a different port before launching.")} else{s3.println("  <green>✔</> Port <bold>$f{j}</> is free and available.")}};
+s5.require(">= 2.1.14",@map{onMismatch:"auto-update",mode:"log"});
 let ai = a;
 let aj = e;
 let ak = n;
@@ -353,70 +40,13 @@ let al = i;
 let am = l;
 let an = m;
 let ao = false;
-for dv in s5.args() {
-    const dw = dv.trim();
-    if dw != "-f" && dw != "--force" && !dw.startsWith("-f=") && !dw.startsWith("--force=") && dw != "-y" && dw != "--yes" && !dw.startsWith("-y=") && !dw.startsWith("--yes=") {
-        ao =: true;
-        break
-    }
-}
-if an {
-    am =: true;
-}
-if !ao && !an {
-    s3.println("<cyan>╭─────────────────────────────────────────────────────────────╮</>");
-    s3.println("<cyan>│</>  <bold>🚀  XyPriss Project Initializer (Interactive)</>              <cyan>│</>");
-    s3.println("<cyan>╰─────────────────────────────────────────────────────────────╯</>");
-    s3.println("");
-    s3::in {
-        const dx = ::input("<cyan>?</> <bold>Project name or directory:</> (my-xypriss-app) ", "my-xypriss-app");
-        ai =: dx;
-        const dy = if dx.startsWith("/") -> dx else s6.Join(s5.cwd(), dx);
-        if s1.exists(dy) && !am {
-            const dz = ::confirm("<yellow>?</> <bold>Target directory '$f{dx}' already exists. Overwrite?</>", false);
-            if !dz {
-                s3.println("<red>[ABORT]</> Destination directory already exists. Setup aborted.");
-                s5.exit(1);
-            }
-            am =: true;
-        }
-        const ea = ::select("<cyan>?</> <bold>Select architecture preset:</>", ["default (Enterprise multi-server: Auth, API, CDN, XEMS)", "minimal (Lightweight single-server)"]);
-        if ea.startsWith("minimal") {
-            aj =: "minimal";
-        } else {
-            aj =: "default";
-        };
-        const eb = ::select("<cyan>?</> <bold>Select database / ORM provider:</>", ["none (No database - default)", "drizzle (Drizzle ORM with PostgreSQL - Recommended)", "prisma (Prisma ORM v7 with PostgreSQL)"]);
-        if eb.startsWith("drizzle") {
-            ak =: "drizzle";
-        } elif eb.startsWith("prisma") {
-            ak =: "prisma";
-        } else {
-            ak =: "none";
-        };
-        const ec = ::confirm("<cyan>?</> <bold>Install dependencies immediately with xfpm?</>", true);
-        al =: ec;
-    }
-    s3.println("");
-}
-const ap = if s6.IsAbs(ai) -> ai else s6.Join(s5.cwd(), ai);
+for dw in s5.args(){const dx = dw.trim();if dx!="-f"&&dx!="--force"&&!dx.startsWith("-f=")&&!dx.startsWith("--force=")&&dx!="-y"&&dx!="--yes"&&!dx.startsWith("-y=")&&!dx.startsWith("--yes="){ao=:true;break}};
+if an{am=:true};
+if !ao&&!an{s3.println("<cyan>╭─────────────────────────────────────────────────────────────╮</>");s3.println("<cyan>│</>  <bold>🚀  XyPriss Project Initializer (Interactive)</>              <cyan>│</>");s3.println("<cyan>╰─────────────────────────────────────────────────────────────╯</>");s3.println("");s3::in{const dy = ::input("<cyan>?</> <bold>Project name or directory:</> (my-xypriss-app) ","my-xypriss-app");ai=:dy;const dz = if dy.startsWith("/") -> dy else s6.Join(s5.cwd(),dy);if s1.exists(dz)&&!am{const ea = ::confirm("<yellow>?</> <bold>Target directory '$f{dy}' already exists. Overwrite?</>",false);if !ea{s3.println("<red>[ABORT]</> Destination directory already exists. Setup aborted.");s5.exit(1)};am=:true};const eb = ::select("<cyan>?</> <bold>Select architecture preset:</>",["default (Enterprise multi-server: Auth, API, CDN, XEMS)","minimal (Lightweight single-server)"]);if eb.startsWith("minimal"){aj=:"minimal"} else{aj=:"default"};const ec = ::select("<cyan>?</> <bold>Select database / ORM provider:</>",["none (No database - default)","drizzle (Drizzle ORM with PostgreSQL - Recommended)","prisma (Prisma ORM v7 with PostgreSQL)"]);if ec.startsWith("drizzle"){ak=:"drizzle"} elif ec.startsWith("prisma"){ak=:"prisma"} else{ak=:"none"};const ed = ::confirm("<cyan>?</> <bold>Install dependencies immediately with xfpm?</>",true);al=:ed};s3.println("")};
+const ap = if s6.IsAbs(ai) -> ai else s6.Join(s5.cwd(),ai);
 let aq = false;
-trap s4::@map{interrupt, terminate} as s {
-    if !aq {
-        s3.println("\n<red>[CRITICAL:ABORT]</> Process interrupted by <bold>$f{s}</>. Cleaning up...");
-        if s1.exists(ap) {
-            s1.remove(ap);
-            s3.println("<yellow>[CLEANUP]</> Removed incomplete directory '<bold>$f{ap}</>'");
-        }
-    }
-}
-if s1.exists(ap) {
-    if am == false {
-        s3.fatal("Destination directory '$f{ap}' already exists. Use --force to overwrite.");
-    }
-    s3.println("<yellow>[CLEANUP]</> Overwriting existing directory '<bold>$f{ap}</>'...");
-    s1.remove(ap);
-}
+trap s4::@map{interrupt, terminate} as s{if !aq{s3.println("\n<red>[CRITICAL:ABORT]</> Process interrupted by <bold>$f{s}</>. Cleaning up...");if s1.exists(ap){s1.remove(ap);s3.println("<yellow>[CLEANUP]</> Removed incomplete directory '<bold>$f{ap}</>'")}}};
+if s1.exists(ap){if am==false{s3.fatal("Destination directory '$f{ap}' already exists. Use --force to overwrite.")};s3.println("<yellow>[CLEANUP]</> Overwriting existing directory '<bold>$f{ap}</>'...");s1.remove(ap)};
 const ar = if al -> "<green>enabled</>" else "<yellow>disabled</>";
 s3.println("<cyan>╭─────────────────────────────────────────────────────────────╮</>");
 s3.println("<cyan>│</>  <bold>🚀  XyPriss Project Initializer</>                               <cyan>│</>");
@@ -428,71 +58,19 @@ s3.println("<cyan>│</>  Port     : <bold>$f{j}</>");
 s3.println("<cyan>│</>  Install  : $f{ar}");
 s3.println("<cyan>╰─────────────────────────────────────────────────────────────╯</>");
 s3.println("");
-if al == true && !af() {
-    s3.println("<yellow>[RUNTIME]</> XyPriss requires the <bold>Bun runtime</> to execute scripts and servers.");
-    let ed = false;
-    if an {
-        ed =: true;
-    } else {
-        s3::in {
-            ed =: ::confirm("<cyan>?</> <bold>Would you like to install Bun globally now with 'xfpm i -g bun'?</>", true);
-        }
-    };
-    if ed {
-        s3.println("<cyan>[RUNTIME]</> Bootstrapping Bun runtime via <bold>xfpm i -g bun</>...");
-        s2.exec("xfpm i -g bun") catch ee;
-        if ee != nil || !af() {
-            if ab {
-                s3.println("<yellow>[HINT]</> Running official native installer fallback for Windows...");
-                s2.exec("powershell -ExecutionPolicy Bypass -Command \"irm bun.sh/install.ps1 | iex\"") catch ef;
-            }
-        }
-        if af() {
-            s3.println("  <green>✔</> Bun runtime integrated and verified successfully.");
-        } else {
-            s3.println("<yellow>[WARNING]</> Bun runtime installation could not be verified. You can install it manually: https://bun.sh");
-        }
-    } else {
-        s3.println("<yellow>[WARNING]</> Bun runtime installation skipped. Run 'xfpm i -g bun' manually if needed.");
-    };
-    s3.println("");
-}
+if al==true&&!af(){s3.println("<yellow>[RUNTIME]</> XyPriss requires the <bold>Bun runtime</> to execute scripts and servers.");let ee = false;if an{ee=:true} else{s3::in{ee=:::confirm("<cyan>?</> <bold>Would you like to install Bun globally now?</>",true)}};if ee{if ab{s3.println("<cyan>[RUNTIME]</> Bootstrapping Bun runtime via official Windows installer...");s3.println("<dim>[POWERSHELL]</> Running: irm bun.sh/install.ps1 | iex (with -NoProfile)...</>");s2.exec("powershell -NoProfile -ExecutionPolicy Bypass -Command \"irm bun.sh/install.ps1 | iex; if (Test-Path $HOME\\.bun\\bin\\bun.exe) { Copy-Item -Force $HOME\\.bun\\bin\\bun.exe $HOME\\.xfpm\\bin\\bun.exe }\"") catch ef} else{s3.println("<cyan>[RUNTIME]</> Bootstrapping Bun runtime via <bold>xfpm i -g bun</>...");s2.exec("xfpm i -g bun") catch eg;if eg!=nil||!af(){s3.println("<yellow>[HINT]</> Running official native installer fallback...");s2.exec("curl -fsSL https://bun.sh/install | bash") catch eh}};if af(){s3.println("  <green>✔</> Bun runtime integrated and verified successfully.")} else{s3.println("<yellow>[WARNING]</> Bun runtime installation could not be verified automatically.");if ab{s3.println("<yellow>[HINT]</> You can install Bun manually in PowerShell: <cyan>irm bun.sh/install.ps1 | iex</>")} else{s3.println("<yellow>[HINT]</> You can install Bun manually: <cyan>curl -fsSL https://bun.sh/install | bash</>")}}} else{s3.println("<yellow>[WARNING]</> Bun runtime installation skipped. Run 'xfpm i -g bun' manually if needed.")};s3.println("")};
 s3.println("<cyan><bold>◆ [1/4]</> Resolving template bundle...");
 const at = ag();
 s3.println("\n<cyan><bold>◆ [2/4]</> Extracting project template into '<bold>$f{ap}</>'...");
 s2.exec("xru unpack \"$f{at}\" \"$f{ap}\"");
 s3.println("  <green>✔</> Template unpacked successfully.");
-const au = @map {
-    targetDir: ap, projectMode: aj, projectName: ai, shouldInstall: al, projectDb: ak, yes: an
-};
+const au = @map{targetDir:ap,projectMode:aj,projectName:ai,shouldInstall:al,projectDb:ak,yes:an};
 ah(au);
-aq =: true;
+aq=:true;
 s3.println("");
 s3.println("<green>╭─────────────────────────────────────────────────────────────╮</>");
 s3.println("<green>│</>  <bold>✨  Project initialized successfully!</>                       <green>│</>");
 s3.println("<green>╰─────────────────────────────────────────────────────────────╯</>");
 s3.println("");
-if !o {
-    s3.println("  <bold>Next steps:</>");
-    if ai != "." && ai != "./" {
-        s3.println("    <cyan>→</> cd <bold>$f{ai}</>");
-    }
-    if !al {
-        s3.println("    <cyan>→</> 'xfpm install'</>");
-    }
-    if ak == "prisma" {
-        s3.println("    <cyan>→</> 'xfpmx prisma db push' <bold>(sync schema to database)</>");
-    } elif ak == "drizzle" {
-        s3.println("    <cyan>→</> 'xfpmx drizzle-kit push' <bold>(sync schema to database)</>");
-    };
-    s3.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>");
-} else {
-    const eg = s6.join(ap);
-    if !al {
-        s3.println("  <yellow>[WARNING]</> Dependencies are not installed. Run <cyan>'xfpm install'</> before starting the dev server.");
-        return;
-    }
-    s3.println("  <bold>Starting dev server...</>");
-    s2.exec(if ab -> "xfpm run dev" else "dev", eg)
-};
+if !o{s3.println("  <bold>Next steps:</>");if ai!="."&&ai!="./"{s3.println("    <cyan>→</> cd <bold>$f{ai}</>")};if !al{s3.println("    <cyan>→</> 'xfpm install'</>")};if ak=="prisma"{s3.println("    <cyan>→</> 'xfpmx prisma db push' <bold>(sync schema to database)</>")} elif ak=="drizzle"{s3.println("    <cyan>→</> 'xfpmx drizzle-kit push' <bold>(sync schema to database)</>")};s3.println("    <cyan>→</> 'xfpm run dev' <bold>or</> <cyan>'dev'</>")} else{const ei = s6.join(ap);if !al{s3.println("  <yellow>[WARNING]</> Dependencies are not installed. Run <cyan>'xfpm install'</> before starting the dev server.");return};s3.println("  <bold>Starting dev server...</>");s2.exec(if ab -> "xfpm run dev" else "dev",ei)};
 s3.println("");

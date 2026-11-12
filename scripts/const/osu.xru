@@ -16,35 +16,43 @@ global func isBunInstalled() -> bool {
     const xfpmBunPath = Path.Join(Sys.homeDir(), ".xfpm", "bin", bunBin)
     const userBunPath = Path.Join(Sys.homeDir(), ".bun", "bin", bunBin)
 
-    // 1. Direct execution test via PATH (Source of Truth)
-    const ver = cmd.exec("bun --version") catch ePath
-    if ePath == nil && ver != nil && ver.trim().contains(".") {
-        return true
+    // IMPORTANT: Purge dummy / corrupt stubs (< 5MB) BEFORE testing execution!
+    // On Windows, if a corrupt stub exists in ~/.xfpm/bin/bun.exe and is in PATH,
+    // calling cmd.exec("bun --version") triggers:
+    // "Cette version de bun.exe n’est pas compatible avec la version de Windows..."
+    if fs.exists(xfpmBunPath) {
+        const bSize = fs.size(xfpmBunPath) catch eSize1
+        if eSize1 != nil || bSize < 5000000 {
+            fs.remove(xfpmBunPath) catch ePurge1
+        }
+    }
+    if fs.exists(userBunPath) {
+        const uSize = fs.size(userBunPath) catch eSize2
+        if eSize2 != nil || uSize < 5000000 {
+            fs.remove(userBunPath) catch ePurge2
+        }
+    }
+
+    // 1. Direct execution test of ~/.bun/bin/bun[.exe]
+    if fs.exists(userBunPath) {
+        const userVer = cmd.exec("\"$f{userBunPath}\" --version") catch eUser
+        if eUser == nil && userVer != nil && userVer.trim().contains(".") {
+            return true
+        }
     }
 
     // 2. Direct execution test of ~/.xfpm/bin/bun[.exe]
     if fs.exists(xfpmBunPath) {
-        // A valid compiled native Bun binary is >= 20MB. A 450-byte stub is corrupt / incomplete!
-        const bSize = fs.size(xfpmBunPath) catch eSize1
-        if eSize1 == nil && bSize >= 1000000 {
-            const xfpmVer = cmd.exec("\"$f{xfpmBunPath}\" --version") catch eXfpm
-            if eXfpm == nil && xfpmVer != nil && xfpmVer.trim().contains(".") {
-                return true
-            }
+        const xfpmVer = cmd.exec("\"$f{xfpmBunPath}\" --version") catch eXfpm
+        if eXfpm == nil && xfpmVer != nil && xfpmVer.trim().contains(".") {
+            return true
         }
-        // If file exists but is corrupted (< 1MB or execution fails), purge it immediately
-        fs.remove(xfpmBunPath) catch ePurge
     }
 
-    // 3. Direct execution test of ~/.bun/bin/bun[.exe]
-    if fs.exists(userBunPath) {
-        const uSize = fs.size(userBunPath) catch eSize2
-        if eSize2 == nil && uSize >= 1000000 {
-            const userVer = cmd.exec("\"$f{userBunPath}\" --version") catch eUser
-            if eUser == nil && userVer != nil && userVer.trim().contains(".") {
-                return true
-            }
-        }
+    // 3. Execution test via PATH
+    const ver = cmd.exec("bun --version") catch ePath
+    if ePath == nil && ver != nil && ver.trim().contains(".") {
+        return true
     }
 
     return false
