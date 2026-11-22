@@ -4,6 +4,14 @@
 // https://xypriss.nehonix.com/docs/config/guide
 
 {
+  // XyPriss ProtoShield: Anti-Prototype Pollution Protection Engine
+  // Fortifies the V8 / JavaScriptCore runtime environment against Prototype Pollution attacks
+  // Learn more: https://xypriss.nehonix.com/docs/security/protoshield
+  "$protoShield": {
+    "enabled": true,
+    "mode": "block", // "block" | "warn" | "freeze"
+  },
+
   "$env": {
     "whitelist": [
       "NODE_DISABLE_COLORS",
